@@ -19,7 +19,7 @@
 
         /* Navigation Bar */
         .navbar {
-            background-color: #0A1A2F;
+            background-color: #000000;
             padding: 10px 20px;
             display: flex;
             justify-content: space-between;
@@ -50,7 +50,7 @@
         }
 
         .register-btn {
-            background-color: #00D1B2;
+            background-color: #00C4B4;
             padding: 5px 15px;
             border-radius: 5px;
             text-decoration: none;
@@ -79,16 +79,20 @@
         .ticker-item {
             display: flex;
             align-items: center;
-            margin-right: 40px;
+            margin-right: 20px;
+            padding: 5px 15px;
+            background-color: #2F3B4C;
+            border-radius: 5px;
             font-size: 16px;
+            white-space: nowrap;
         }
 
         .ticker-item span {
-            margin-right: 10px;
+            margin: 0 10px;
         }
 
         .positive {
-            color: #00D1B2;
+            color: #00C4B4;
         }
 
         .negative {
@@ -107,6 +111,7 @@
             background-color: #1A2B43;
             padding: 20px;
             border-radius: 5px;
+            margin-bottom: 20px;
         }
 
         .stats-column {
@@ -116,7 +121,7 @@
 
         .stats-column h3 {
             margin-bottom: 15px;
-            color: #00D1B2;
+            color: #00C4B4;
         }
 
         .stats-item {
@@ -124,6 +129,47 @@
             justify-content: space-between;
             margin-bottom: 10px;
             font-size: 14px;
+        }
+
+        /* Interactive Map */
+        .map-container {
+            background-color: #1A2B43;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px;
+        }
+
+        .map-container h3 {
+            color: #00C4B4;
+            margin-bottom: 15px;
+        }
+
+        #us-map {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .state {
+            fill: #2F3B4C;
+            stroke: #FFFFFF;
+            stroke-width: 1;
+            transition: fill 0.3s;
+        }
+
+        .state:hover {
+            fill: #00C4B4;
+        }
+
+        .tooltip {
+            position: absolute;
+            background-color: #2F3B4C;
+            color: #FFFFFF;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
         }
 
         /* Janitorial Team Page */
@@ -147,7 +193,7 @@
         }
 
         .team-member h3 {
-            color: #00D1B2;
+            color: #00C4B4;
             margin-bottom: 10px;
         }
 
@@ -161,7 +207,7 @@
             position: fixed;
             top: 20px;
             right: 20px;
-            background-color: #00D1B2;
+            background-color: #00C4B4;
             padding: 10px 20px;
             border-radius: 5px;
             cursor: pointer;
@@ -254,6 +300,20 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Interactive Map -->
+            <div class="map-container">
+                <h3>Trading Activity by State</h3>
+                <svg id="us-map" viewBox="0 0 959 593">
+                    <!-- Simplified US map paths (not all states included for brevity) -->
+                    <path class="state" data-state="California" d="M50,150 100,100 150,150 200,200 150,250 100,200 50,150 Z"/>
+                    <path class="state" data-state="Texas" d="M300,300 400,250 450,300 400,350 300,300 Z"/>
+                    <path class="state" data-state="Florida" d="M700,400 750,350 800,400 750,450 700,400 Z"/>
+                    <path class="state" data-state="New York" d="M700,150 750,100 800,150 750,200 700,150 Z"/>
+                    <!-- Add more state paths as needed -->
+                </svg>
+                <div class="tooltip" id="tooltip"></div>
+            </div>
         </div>
     </div>
 
@@ -295,12 +355,12 @@
             }
         });
 
-        // Dynamic Currency Updates (simulated)
+        // Dynamic Currency Updates
         const tickerItems = document.querySelectorAll('.ticker-item');
         setInterval(() => {
             tickerItems.forEach(item => {
                 const price = parseFloat(item.lastChild.textContent);
-                const change = (Math.random() - 0.5) * 2; // Random change between -1% and 1%
+                const change = (Math.random() - 0.5) * 2;
                 const newPrice = price + (price * change / 100);
                 item.lastChild.textContent = newPrice.toFixed(2);
 
@@ -309,6 +369,25 @@
                 changeSpan.className = change > 0 ? 'positive' : 'negative';
             });
         }, 5000);
+
+        // Interactive Map Functionality
+        const states = document.querySelectorAll('.state');
+        const tooltip = document.getElementById('tooltip');
+
+        states.forEach(state => {
+            state.addEventListener('mousemove', (e) => {
+                const stateName = state.getAttribute('data-state');
+                const tradingVolume = Math.floor(Math.random() * 1000);
+                tooltip.style.opacity = '1';
+                tooltip.textContent = `${stateName}: ${tradingVolume} BTC`;
+                tooltip.style.left = e.pageX + 10 + 'px';
+                tooltip.style.top = e.pageY + 10 + 'px';
+            });
+
+            state.addEventListener('mouseout', () => {
+                tooltip.style.opacity = '0';
+            });
+        });
     </script>
 </body>
 </html>
