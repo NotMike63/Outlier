@@ -117,6 +117,17 @@
         .stats-column {
             flex: 1;
             padding: 0 20px;
+            position: relative;
+        }
+
+        .stats-column:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 10%;
+            height: 80%;
+            width: 1px;
+            background-color: #2F3B4C;
         }
 
         .stats-column h3 {
@@ -144,19 +155,19 @@
             margin-bottom: 15px;
         }
 
-        #us-map {
+        #florida-map {
             max-width: 100%;
             height: auto;
         }
 
-        .state {
+        .county {
             fill: #2F3B4C;
             stroke: #FFFFFF;
             stroke-width: 1;
             transition: fill 0.3s;
         }
 
-        .state:hover {
+        .county:hover {
             fill: #00C4B4;
         }
 
@@ -170,6 +181,14 @@
             pointer-events: none;
             opacity: 0;
             transition: opacity 0.3s;
+        }
+
+        /* Hover Effect for Dashboard Page Elements */
+        .dashboard-page .ticker-item:hover,
+        .dashboard-page .stats-column:hover,
+        .dashboard-page .map-container:hover {
+            transform: scale(1.02);
+            transition: transform 0.3s ease;
         }
 
         /* Janitorial Team Page */
@@ -202,15 +221,24 @@
             line-height: 1.6;
         }
 
-        /* Toggle between pages */
-        .page-toggle {
+        /* Footer with Page Toggle */
+        .footer {
+            background-color: #000000;
+            padding: 10px 20px;
+            text-align: center;
             position: fixed;
-            top: 20px;
-            right: 20px;
+            bottom: 0;
+            width: 100%;
+            border-top: 1px solid #2F3B4C;
+        }
+
+        .page-toggle {
             background-color: #00C4B4;
             padding: 10px 20px;
             border-radius: 5px;
             cursor: pointer;
+            display: inline-block;
+            color: #FFFFFF;
         }
     </style>
 </head>
@@ -301,16 +329,16 @@
                 </div>
             </div>
 
-            <!-- Interactive Map -->
+            <!-- Interactive Map (Florida Only) -->
             <div class="map-container">
-                <h3>Trading Activity by State</h3>
-                <svg id="us-map" viewBox="0 0 959 593">
-                    <!-- Simplified US map paths (not all states included for brevity) -->
-                    <path class="state" data-state="California" d="M50,150 100,100 150,150 200,200 150,250 100,200 50,150 Z"/>
-                    <path class="state" data-state="Texas" d="M300,300 400,250 450,300 400,350 300,300 Z"/>
-                    <path class="state" data-state="Florida" d="M700,400 750,350 800,400 750,450 700,400 Z"/>
-                    <path class="state" data-state="New York" d="M700,150 750,100 800,150 750,200 700,150 Z"/>
-                    <!-- Add more state paths as needed -->
+                <h3>Trading Activity in Florida</h3>
+                <svg id="florida-map" viewBox="0 0 300 400">
+                    <!-- Simplified Florida counties -->
+                    <path class="county" data-county="Miami-Dade" d="M200,300 Q220,350 180,380 Q150,350 170,300 Z"/>
+                    <path class="county" data-county="Broward" d="M170,250 Q190,280 200,300 Q180,280 170,250 Z"/>
+                    <path class="county" data-county="Palm Beach" d="M170,200 Q190,230 200,250 Q180,230 170,200 Z"/>
+                    <path class="county" data-county="Hillsborough" d="M100,200 Q120,230 130,200 Q110,170 100,200 Z"/>
+                    <!-- Add more counties as needed -->
                 </svg>
                 <div class="tooltip" id="tooltip"></div>
             </div>
@@ -334,8 +362,10 @@
         </div>
     </div>
 
-    <!-- Page Toggle Button -->
-    <div class="page-toggle" id="pageToggle">View Janitorial Team</div>
+    <!-- Footer with Page Toggle -->
+    <footer class="footer">
+        <div class="page-toggle" id="pageToggle">View Janitorial Team</div>
+    </footer>
 
     <script>
         // Page Toggle Functionality
@@ -370,21 +400,21 @@
             });
         }, 5000);
 
-        // Interactive Map Functionality
-        const states = document.querySelectorAll('.state');
+        // Interactive Map Functionality (Florida)
+        const counties = document.querySelectorAll('.county');
         const tooltip = document.getElementById('tooltip');
 
-        states.forEach(state => {
-            state.addEventListener('mousemove', (e) => {
-                const stateName = state.getAttribute('data-state');
+        counties.forEach(county => {
+            county.addEventListener('mousemove', (e) => {
+                const countyName = county.getAttribute('data-county');
                 const tradingVolume = Math.floor(Math.random() * 1000);
                 tooltip.style.opacity = '1';
-                tooltip.textContent = `${stateName}: ${tradingVolume} BTC`;
+                tooltip.textContent = `${countyName}: ${tradingVolume} BTC`;
                 tooltip.style.left = e.pageX + 10 + 'px';
                 tooltip.style.top = e.pageY + 10 + 'px';
             });
 
-            state.addEventListener('mouseout', () => {
+            county.addEventListener('mouseout', () => {
                 tooltip.style.opacity = '0';
             });
         });
