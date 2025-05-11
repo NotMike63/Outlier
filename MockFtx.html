@@ -69,15 +69,17 @@
             padding: 10px;
             overflow: hidden;
             margin-bottom: 20px;
+            position: relative;
         }
 
         .ticker {
             display: flex;
-            animation: ticker 20s linear infinite;
+            white-space: nowrap;
+            position: absolute;
         }
 
         .ticker-item {
-            display: flex;
+            display: inline-flex;
             align-items: center;
             margin-right: 20px;
             padding: 5px 15px;
@@ -100,8 +102,8 @@
         }
 
         @keyframes ticker {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
         }
 
         /* Market Stats */
@@ -184,11 +186,19 @@
         }
 
         /* Hover Effect for Dashboard Page Elements */
+        .dashboard-page .ticker-item,
+        .dashboard-page .stats-column,
+        .dashboard-page .map-container {
+            transition: transform 0.3s ease;
+            margin: 10px 0; /* Add margin to prevent overlap */
+        }
+
         .dashboard-page .ticker-item:hover,
         .dashboard-page .stats-column:hover,
         .dashboard-page .map-container:hover {
             transform: scale(1.02);
-            transition: transform 0.3s ease;
+            position: relative;
+            z-index: 1; /* Ensure hovered element stays on top */
         }
 
         /* Janitorial Team Page */
@@ -265,19 +275,7 @@
         <div class="main-content">
             <!-- Currency Ticker -->
             <div class="ticker-container">
-                <div class="ticker" id="ticker">
-                    <div class="ticker-item">BTC-PERP <span class="positive">+0.72%</span> 42,097</div>
-                    <div class="ticker-item">ETH-PERP <span class="negative">-0.15%</span> 3,125</div>
-                    <div class="ticker-item">BNB-PERP <span class="positive">+1.23%</span> 425.6</div>
-                    <div class="ticker-item">SOL-PERP <span class="negative">-0.45%</span> 135.2</div>
-                    <div class="ticker-item">ADA-PERP <span class="positive">+0.89%</span> 2.15</div>
-                    <!-- Duplicate for seamless animation -->
-                    <div class="ticker-item">BTC-PERP <span class="positive">+0.72%</span> 42,097</div>
-                    <div class="ticker-item">ETH-PERP <span class="negative">-0.15%</span> 3,125</div>
-                    <div class="ticker-item">BNB-PERP <span class="positive">+1.23%</span> 425.6</div>
-                    <div class="ticker-item">SOL-PERP <span class="negative">-0.45%</span> 135.2</div>
-                    <div class="ticker-item">ADA-PERP <span class="positive">+0.89%</span> 2.15</div>
-                </div>
+                <div class="ticker" id="ticker"></div>
             </div>
 
             <!-- Market Statistics -->
@@ -332,13 +330,13 @@
             <!-- Interactive Map (Florida Only) -->
             <div class="map-container">
                 <h3>Trading Activity in Florida</h3>
-                <svg id="florida-map" viewBox="0 0 300 400">
-                    <!-- Simplified Florida counties -->
-                    <path class="county" data-county="Miami-Dade" d="M200,300 Q220,350 180,380 Q150,350 170,300 Z"/>
-                    <path class="county" data-county="Broward" d="M170,250 Q190,280 200,300 Q180,280 170,250 Z"/>
-                    <path class="county" data-county="Palm Beach" d="M170,200 Q190,230 200,250 Q180,230 170,200 Z"/>
-                    <path class="county" data-county="Hillsborough" d="M100,200 Q120,230 130,200 Q110,170 100,200 Z"/>
-                    <!-- Add more counties as needed -->
+                <svg id="florida-map" viewBox="0 0 300 500">
+                    <!-- Florida outline with iconic panhandle -->
+                    <path class="county" data-county="Florida Panhandle" d="M50,50 H250 V150 H150 L100,100 Z"/>
+                    <path class="county" data-county="North Florida" d="M150,150 H250 V250 H150 Z"/>
+                    <path class="county" data-county="Central Florida" d="M150,250 H250 V350 H150 Z"/>
+                    <path class="county" data-county="South Florida" d="M150,350 H250 V450 Q200,480 150,450 Z"/>
+                    <path class="county" data-county="Miami-Dade" d="M150,450 Q200,480 150,480 Q100,460 150,450 Z"/>
                 </svg>
                 <div class="tooltip" id="tooltip"></div>
             </div>
@@ -385,20 +383,66 @@
             }
         });
 
-        // Dynamic Currency Updates
-        const tickerItems = document.querySelectorAll('.ticker-item');
-        setInterval(() => {
-            tickerItems.forEach(item => {
-                const price = parseFloat(item.lastChild.textContent);
-                const change = (Math.random() - 0.5) * 2;
-                const newPrice = price + (price * change / 100);
-                item.lastChild.textContent = newPrice.toFixed(2);
+        // Dynamic Currency Ticker
+        const ticker = document.getElementById('ticker');
+        const currencies = [
+            { name: "BTC-PERP", price: 42097 },
+            { name: "ETH-PERP", price: 3125 },
+            { name: "BNB-PERP", price: 425.6 },
+            { name: "SOL-PERP", price: 135.2 },
+            { name: "ADA-PERP", price: 2.15 },
+            { name: "XRP-PERP", price: 0.75 },
+            { name: "DOT-PERP", price: 18.4 },
+            { name: "LUNA-PERP", price: 85.3 },
+            { name: "AVAX-PERP", price: 92.1 },
+            { name: "MATIC-PERP", price: 1.65 }
+        ];
 
-                const changeSpan = item.querySelector('span');
-                changeSpan.textContent = `${change > 0 ? '+' : ''}${change.toFixed(2)}%`;
-                changeSpan.className = change > 0 ? 'positive' : 'negative';
-            });
-        }, 5000);
+        let currentIndex = 0;
+
+        function createTickerItem(currency, change) {
+            const item = document.createElement('div');
+            item.className = 'ticker-item';
+            item.innerHTML = `${currency.name} <span class="${change > 0 ? 'positive' : 'negative'}">${change > 0 ? '+' : ''}${change.toFixed(2)}%</span> ${currency.price.toFixed(2)}`;
+            return item;
+        }
+
+        function updateTicker() {
+            const containerWidth = ticker.parentElement.offsetWidth;
+            const tickerWidth = ticker.offsetWidth;
+
+            // Add new items if ticker width is less than container width
+            while (ticker.offsetWidth < containerWidth * 2) {
+                const currency = currencies[currentIndex % currencies.length];
+                const change = (Math.random() - 0.5) * 2;
+                const newPrice = currency.price + (currency.price * change / 100);
+                currency.price = newPrice;
+                ticker.appendChild(createTickerItem(currency, change));
+                currentIndex++;
+            }
+
+            // Remove items that are off-screen
+            const items = ticker.children;
+            for (let i = items.length - 1; i >= 0; i--) {
+                const item = items[i];
+                const rect = item.getBoundingClientRect();
+                if (rect.right < 0) {
+                    item.remove();
+                }
+            }
+
+            // Reset transform if all items are off-screen
+            if (ticker.children.length === 0) {
+                ticker.style.transform = 'translateX(100%)';
+            }
+        }
+
+        // Initial population of ticker
+        updateTicker();
+
+        // Continuous ticker animation
+        ticker.style.animation = 'ticker 20s linear infinite';
+        setInterval(updateTicker, 1000);
 
         // Interactive Map Functionality (Florida)
         const counties = document.querySelectorAll('.county');
