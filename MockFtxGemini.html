@@ -1,10 +1,484 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Dashboard</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            background-color: #131722; /* Dark background */
+            color: #e0e6ed; /* Light text */
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: #1a1f2d; /* Darker header */
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo img {
+            height: 30px; /* Adjust as needed */
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+        }
+
+        nav ul li {
+            margin-left: 20px;
+        }
+
+        nav ul li a {
+            color: #abb2bf;
+            text-decoration: none;
+        }
+
+        nav ul li a:hover {
+            color: #c678dd; /* Highlight color */
+        }
+
+        .search-bar input {
+            background-color: #2c313c;
+            color: #abb2bf;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+        }
+
+        .user-actions button {
+            background-color: transparent;
+            color: #abb2bf;
+            border: 1px solid #5c6379;
+            padding: 8px 15px;
+            border-radius: 5px;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+
+        .user-actions button:hover {
+            background-color: #5c6379;
+            color: #fff;
+        }
+
+        .language-selector select {
+            background-color: #2c313c;
+            color: #abb2bf;
+            border: none;
+            padding: 8px;
+            border-radius: 5px;
+            margin-left: 10px;
+        }
+
+        .subheader {
+            background-color: #1a1f2d;
+            padding: 10px 20px;
+        }
+
+        .currency-ticker-container {
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .currency-ticker {
+            display: inline-block;
+            animation: ticker 15s linear infinite; /* Adjust speed as needed */
+        }
+
+        .currency-ticker span {
+            margin-right: 30px;
+            font-size: 14px;
+            color: #98c379; /* Example currency color */
+        }
+
+        @keyframes ticker {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        main {
+            display: flex;
+            flex-grow: 1;
+            padding: 20px;
+        }
+
+        .left-sidebar {
+            width: 200px; /* Adjust width as needed */
+            margin-right: 20px;
+        }
+
+        .market-overview h3,
+        .trade-options h3,
+        .order-book h3,
+        .market-trades h3 {
+            color: #d19a66;
+            margin-bottom: 10px;
+        }
+
+        .market-overview ul,
+        .trade-options ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .market-overview ul li,
+        .trade-options ul li {
+            margin-bottom: 8px;
+        }
+
+        .market-overview ul li a,
+        .trade-options ul li a {
+            color: #abb2bf;
+            text-decoration: none;
+            display: block;
+            padding: 5px 10px;
+            border-radius: 3px;
+        }
+
+        .market-overview ul li a:hover,
+        .trade-options ul li a:hover,
+        .market-overview ul li.active a {
+            background-color: #2c313c;
+            color: #fff;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chart-area {
+            background-color: #1a1f2d;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .chart-area h2 {
+            color: #e06c75;
+            margin-top: 0;
+        }
+
+        .placeholder-chart {
+            background-color: #2c313c;
+            color: #abb2bf;
+            padding: 50px;
+            text-align: center;
+            border-radius: 5px;
+        }
+
+        .market-info {
+            background-color: #1a1f2d;
+            padding: 20px;
+            border-radius: 5px;
+            display: grid;
+            grid-template-columns: auto auto;
+            gap: 10px 20px;
+        }
+
+        .market-info p {
+            margin: 0;
+        }
+
+        .market-info p:first-child {
+            color: #abb2bf;
+            font-weight: bold;
+        }
+
+        .right-sidebar {
+            width: 200px; /* Adjust width as needed */
+            margin-left: 20px;
+        }
+
+        footer {
+            background-color: #1a1f2d;
+            padding: 15px 20px;
+            text-align: center;
+            color: #abb2bf;
+        }
+
+        /* Bio Page Styles */
+        .bio-page {
+            display: none; /* Hidden by default */
+            justify-content: center;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent background */
+            z-index: 1000;
+        }
+
+        .bio-container {
+            background-color: #1a1f2d;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            width: 80%;
+            max-width: 900px;
+            position: relative;
+        }
+
+        .bio-container h1 {
+            color: #d19a66;
+            margin-bottom: 20px;
+        }
+
+        .team-member {
+            margin-bottom: 30px;
+            padding: 20px;
+            border-radius: 5px;
+            background-color: #2c313c;
+        }
+
+        .team-member img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 10px;
+        }
+
+        .team-member h2 {
+            color: #e06c75;
+            margin-top: 10px;
+            margin-bottom: 5px;
+        }
+
+        .team-member .title {
+            color: #abb2bf;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        .team-member .bio {
+            text-align: left;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .team-member .fun-fact {
+            color: #98c379;
+            font-style: italic;
+        }
+
+        .close-bio-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: #abb2bf;
+            font-size: 1.2em;
+            cursor: pointer;
+        }
+
+        .close-bio-btn:hover {
+            color: #e06c75;
+        }
+
+        .footer-link {
+            color: #abb2bf;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .footer-link:hover {
+            color: #c678dd;
+        }
+    </style>
 </head>
 <body>
-$END$
+    <div class="container">
+        <header>
+            <div class="logo">
+                <img src="placeholder-logo.png" alt="Logo">
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#">Markets</a></li>
+                    <li><a href="#">OTC</a></li>
+                    <li><a href="#">Support</a></li>
+                    <li><a href="#">FTT</a></li>
+                    <li><a href="#">NFTs</a></li>
+                    <li><a href="#">Docs</a></li>
+                </ul>
+            </nav>
+            <div class="search-bar">
+                <input type="text" placeholder="Search">
+            </div>
+            <div class="user-actions">
+                <button class="login-btn">Login</button>
+                <button class="register-btn">Register</button>
+                <div class="language-selector">
+                    <select>
+                        <option>English</option>
+                    </select>
+                </div>
+            </div>
+        </header>
+
+        <div class="subheader">
+            <div class="currency-ticker-container">
+                <div class="currency-ticker">
+                    <span>BTC/USD: $42,097.50</span>
+                    <span>ETH/USD: $2,250.25</span>
+                    <span>BNB/USD: $300.75</span>
+                    <span>XRP/USD: $0.55</span>
+                    <span>ADA/USD: $0.40</span>
+                    <span>SOL/USD: $180.10</span>
+                    <span>DOGE/USD: $0.15</span>
+                    <span>MATIC/USD: $0.95</span>
+                </div>
+            </div>
+        </div>
+
+        <main>
+            <div class="left-sidebar">
+                <div class="market-overview">
+                    <h3>Markets</h3>
+                    <ul>
+                        <li><a href="#">FTT</a></li>
+                        <li><a href="#">SRM</a></li>
+                        <li class="active"><a href="#">BTC</a></li>
+                        <li><a href="#">ETH</a></li>
+                    </ul>
+                </div>
+                <div class="trade-options">
+                    <ul>
+                        <li><a href="#">Futures</a></li>
+                        <li><a href="#">Spot</a></li>
+                        <li><a href="#">Leveraged Tokens</a></li>
+                        <li><a href="#">Volatility</a></li>
+                        <li><a href="#">Prediction</a></li>
+                        <li><a href="#">Fiat</a></li>
+                        <li><a href="#">Recent</a></li>
+                    </ul>
+                </div>
+                <div class="chart-controls">
+                    </div>
+                <div class="order-book">
+                    <h3>Orderbook</h3>
+                    </div>
+                <div class="market-trades">
+                    <h3>Market Trades</h3>
+                    </div>
+            </div>
+
+            <div class="main-content">
+                <div class="chart-area">
+                    <h2>BTC-PERP</h2>
+                    <div class="placeholder-chart">Time Series Chart Placeholder</div>
+                </div>
+                <div class="market-info">
+                    <div class="index-price">
+                        <p>Index price:</p>
+                        <p>42,091</p>
+                    </div>
+                    <div class="mark-price">
+                        <p>Mark price:</p>
+                        <p>42,107</p>
+                    </div>
+                    <div class="open-interest">
+                        <p>Open interest:</p>
+                        <p>50.537 BTC</p>
+                    </div>
+                    <div class="volume">
+                        <p>24h volume:</p>
+                        <p>$363,596,747</p>
+                    </div>
+                    <div class="next-funding-time">
+                        <p>Next funding time:</p>
+                        <p>11:00:00</p>
+                    </div>
+                    <div class="predicted-funding-rate">
+                        <p>Predicted funding rate:</p>
+                        <p>0.0001%</p>
+                    </div>
+                    <div class="minimum-order-size">
+                        <p>Minimum order size:</p>
+                        <p>0.001 BTC</p>
+                    </div>
+                    <div class="minimum-size-increment">
+                        <p>Minimum size increment:</p>
+                        <p>0.0001 BTC</p>
+                    </div>
+                    <div class="minimum-price-increment">
+                        <p>Minimum price increment:</p>
+                        <p>1 USD</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-sidebar">
+                </div>
+        </main>
+
+        <footer>
+            <p>&copy; 2025 Finance Dashboard. <a href="#" class="footer-link" id="bio-link">Meet the Team</a></p>
+        </footer>
+    </div>
+
+    <div class="bio-page" id="bio-page">
+        <div class="bio-container">
+            <h1>Meet Our Dedicated Janitorial Team</h1>
+            <button class="close-bio-btn" onclick="closeBio()">×</button>
+
+            <div class="team-member">
+                <img src="placeholder-person1.jpg" alt="Team Member 1">
+                <h2>Alex Johnson</h2>
+                <p class="title">Head of Sanitation</p>
+                <p class="bio">Alex has been ensuring a clean and healthy environment for our finance dashboard team for over 5 years. Their meticulous attention to detail and dedication are crucial to our daily operations. When not keeping things spotless, Alex enjoys hiking and photography.</p>
+                <p class="fun-fact">Fun Fact: Alex can identify any cleaning supply by its scent!</p>
+            </div>
+
+            <div class="team-member">
+                <img src="placeholder-person2.jpg" alt="Team Member 2">
+                <h2>Maria Rodriguez</h2>
+                <p class="title">Sanitation Specialist</p>
+                <p class="bio">Maria joined our team 3 years ago and quickly became an indispensable part of our support system. Her efficiency and friendly demeanor make her a favorite among the staff. In her free time, Maria is an avid gardener and loves to bake.</p>
+                <p class="fun-fact">Fun Fact: Maria holds the office record for the fastest spill cleanup!</p>
+            </div>
+
+            <div class="team-member">
+                <img src="placeholder-person3.jpg" alt="Team Member 3">
+                <h2>David Lee</h2>
+                <p class="title">Evening Sanitation Associate</p>
+                <p class="bio">David works tirelessly behind the scenes to ensure our workspace is pristine for the next day. His quiet dedication and thoroughness are greatly appreciated. Outside of work, David is a passionate chess player and volunteers at a local animal shelter.</p>
+                <p class="fun-fact">Fun Fact: David has a perfect score in office cleanliness inspections!</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const bioLink = document.getElementById('bio-link');
+        const bioPage = document.getElementById('bio-page');
+
+        bioLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            bioPage.style.display = 'flex';
+        });
+
+        function closeBio() {
+            bioPage.style.display = 'none';
+        }
+    </script>
 </body>
 </html>
