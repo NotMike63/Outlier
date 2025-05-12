@@ -50,12 +50,23 @@
             font-size: 14px;
         }
 
+        .main-content {
+            display: flex;
+            flex: 1;
+            width: 100%;
+        }
+
+        .ad-left, .ad-right {
+            width: 160px; /* Standard size for vertical skyscraper ads */
+            padding: 20px;
+        }
+
         .container {
-            max-width: 1200px;
+            max-width: 960px; /* Adjusted to accommodate ads */
             margin: 0 auto;
             padding: 40px 20px;
-            flex: 1; /* Makes the container take up remaining space */
-            width: 100%;
+            flex: 1;
+            width: calc(100% - 400px); /* Adjusted for ad widths and padding */
         }
 
         .bitcoin-section {
@@ -136,7 +147,7 @@
             background-repeat: repeat;
             background-size: 30px;
             padding: 20px 0;
-            flex: 1; /* Extends to take up remaining space */
+            flex: 1;
             width: 100%;
         }
 
@@ -160,6 +171,13 @@
         footer a:hover {
             text-decoration: underline;
         }
+
+        /* Ensure ads are centered vertically */
+        .ad-left, .ad-right {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
     </style>
 </head>
 <body>
@@ -172,38 +190,67 @@
         </nav>
     </header>
 
-    <div class="money-theme">
-        <div class="container">
-            <div class="bitcoin-section" id="home-section">
-                <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiB2aWV3Qm94PSIwIDAgNTEyIDUxMiI+PHBhdGggZmlsbD0iI2FmOGE0OSIgZD0iTTI1NS45NjcgMGExOTEuNDY4IDE5MS40NjggMCAwIDAtMTkxLjQ2OCAxOTEuNDY4IDE5MS40NjggMTkxLjQ2OCAwIDAgMCAxOTEuNDY4IDE5MS40NjggMTkxLjQ2OCAxOTEuNDY4IDAgMCAwIDE5MS40NjgtMTkxLjQ2OCAxOTEuNDY4IDE5MS40NjggMCAwIDAtMTkxLjQ2OC0xOTEuNDY4Wk0zNDMuNzY0IDI5NC4yOTZhMjMuOTM3IDIzLjkzNyAwIDAgMS0yMy45MzcgMjMuOTM4Yy0xMi4zMjIgMC0xOC41MTctMS41NTQtMjMuOTM4LTguOTY4LTMuNTg2LTQuOTYxLTUuMjUzLTExLjg4Mi01LjI1My0yMC41NDggMC05LjI1MyAxLjY2Ny0xNi4xNzQgNS4zMjMtMjEuMTM1IDUuNDIxLTcuNDE0IDExLjYxNi04Ljk2OCAyMy45MzgtOC45NjggMTIuMzIzIDAgMTguNTE3IDEuNTU0IDIzLjkzOCAxMS42MTYgMy41ODUgNC45NjEgNS4yNTMgMTEuODgyIDUuMjUzIDIwLjU0OHptMC05Ni4xMjZhMjMuOTM3IDIzLjkzNyAwIDAgMS0yMy45MzcgMjMuOTM4Yy0xMi4zMjIgMC0xOC41MTctMS41NTQtMjMuOTM4LTguOTY4LTMuNTg2LTQuOTYxLTUuMjUzLTExLjg4Mi01LjI1My0yMC41NDggMC05LjI1MyAxLjY2Ny0xNi4xNzQgNS4yNTMtMjEuMTM1IDUuNDIxLTcuNDE0IDExLjYxNi04Ljk2OCAyMy45MzgtOC45NjggMTIuMzIzIDAgMTguNTE3IDEuNTU0IDIzLjkzOCAxMS42MTYgMy41ODUgNC45NjEgNS4yNTMgMTEuODgyIDUuMjUzIDIwLjU0OHptLTI5LjE5IDE0OS4zNDdjLTE0LjI4MyAxOS4xNDQtMzguOTkxIDI5LjE5LTcxLjgxMiAyOS4xOS0zNC41NDIgMC01OC43MjQtOS4xNzQtNzEuODEyLTI2LjU5NS0xMy4wODgtMTcuNDIxLTE5LjE0NC0zOS44MDQtMTkuMTQ0LTY2LjU1MiAwLTI4LjYzNyA2LjA1Ni01MS4wMTkgMTkuMTQ0LTY4LjQ0MSAxMy4wODgtMTcuNDIxIDM3LjI3LTI2LjU5NSA3MS44MTItMjYuNTk1IDMyLjgyMSAwIDU3LjQ4OSAxMC4wNDYgNzEuODEyIDI5LjE5IDguMzY0IDExLjE5NiAxMi41NDcgMjYuMDExIDEyLjU0NyA0NC40NzIgMCAxOC40NjEtNC4xODMgMzMuMzE2LTEyLjU0NyA0NC41MTF6bS0yLjU5NS0yNDcuNDI4Yy0xMy4wODgtMTcuNDIxLTM3LjI3LTI2LjU5NS03MS4zMTItMjYuNTk1LTM0LjU0MiAwLTU4LjcyNCA5LjE3NC03MS44MTIgMjYuNTk1LTEzLjA4OCAxNy40MjEtMTkuMTQ0IDM5LjgwNC0xOS4xNDQgNjYuNTUyIDAgMjguNjM3IDYuMDU2IDUxLjAxOSAxOS4xNDQgNjguNDQxIDEzLjA4OCAxNy40MjEgMzcuMjcgMjYuNTk1IDcxLjgxMiAyNi41OTUgMzIuODIxIDAgNTcuNDg5LTEwLjA0NiA3MS44MTItMjkuMTkgOC4zNjQtMTEuMTk2IDEyLjU0Ny0yNi4wMTEgMTIuNTQ3LTQ0LjQ3MiAwLTE4LjQ2MS00LjE4My0zMy4zMTYtMTIuNTQ3LTQ0LjUxMXoiLz48L3N2Zz4=" alt="Bitcoin">
-                <h2>Welcome to ProfitCalc</h2>
-            </div>
-            <div class="calculator-section" id="calculator-section">
-                <h2>Dropshipping Profit Calculator</h2>
-                <div class="input-group">
-                    <div class="input-field">
-                        <label for="wholesale-price">Wholesaler Price ($)</label>
-                        <input type="number" id="wholesale-price" step="0.01" oninput="calculateProfit()">
-                    </div>
-                    <div class="input-field">
-                        <label for="selling-price">Selling Price ($)</label>
-                        <input type="number" id="selling-price" step="0.01" oninput="calculateProfit()">
-                    </div>
-                    <div class="input-field">
-                        <label for="wholesale-shipping">Wholesaler Shipping ($)</label>
-                        <input type="number" id="wholesale-shipping" step="0.01" oninput="calculateProfit()">
-                    </div>
-                    <div class="input-field">
-                        <label for="selling-shipping">Selling Shipping ($)</label>
-                        <input type="number" id="selling-shipping" step="0.01" oninput="calculateProfit()">
-                    </div>
-                    <div class="input-field">
-                        <label for="zip-code">Receiver Zip Code (US)</label>
-                        <input type="text" id="zip-code" maxlength="5" pattern="\d{5}" oninput="calculateProfit()">
-                    </div>
+    <div class="main-content">
+        <div class="ad-left">
+<!--            <img src="https://via.placeholder.com/160x600" alt="Ad Placeholder">-->
+            <!-- Google AdSense Vertical Ad (Left) -->'
+            <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1234567890123456"
+                    crossorigin="anonymous"></script>
+            <ins class="adsbygoogle"
+                 style="display:inline-block;width:160px;height:600px"
+                 data-ad-client="ca-pub-1234567890123456"
+                 data-ad-slot="1234567890"></ins>
+            <script>
+                (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
+        </div>
+
+        <div class="money-theme">
+            <div class="container">
+                <div class="bitcoin-section" id="home-section">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiB2aWV3Qm94PSIwIDAgNTEyIDUxMiI+PHBhdGggZmlsbD0iI2FmOGE0OSIgZD0iTTI1NS45NjcgMGExOTEuNDY4IDE5MS40NjggMCAwIDAtMTkxLjQ2OCAxOTEuNDY4IDE5MS40NjggMTkxLjQ2OCAwIDAgMCAxOTEuNDY4IDE5MS40NjggMTkxLjQ2OCAxOTEuNDY4IDAgMCAwIDE5MS40NjgtMTkxLjQ2OCAxOTEuNDY4IDE5MS40NjggMCAwIDAtMTkxLjQ2OC0xOTEuNDY4Wk0zNDMuNzY0IDI5NC4yOTZhMjMuOTM3IDIzLjkzNyAwIDAgMS0yMy45MzcgMjMuOTM4Yy0xMi4zMjIgMC0xOC41MTctMS41NTQtMjMuOTM4LTguOTY4LTMuNTg2LTQuOTYxLTUuMjUzLTExLjg4Mi01LjI1My0yMC41NDggMC05LjI1MyAxLjY2Ny0xNi4xNzQgNS4yNTMtMjEuMTM1IDUuNDIxLTcuNDE0IDExLjYxNi04Ljk2OCAyMy45MzgtOC45NjggMTIuMzIzIDAgMTguNTE3IDEuNTU0IDIzLjkzOCAxMS42MTYgMy41ODUgNC45NjEgNS4yNTMgMTEuODgyIDUuMjUzIDIwLjU0OHptMC05Ni4xMjZhMjMuOTM3IDIzLjkzNyAwIDAgMS0yMy45MzcgMjMuOTM4Yy0xMi4zMjIgMC0xOC41MTctMS41NTQtMjMuOTM4LTguOTY4LTMuNTg2LTQuOTYxLTUuMjUzLTExLjg4Mi01LjI1My0yMC41NDggMC05LjI1MyAxLjY2Ny0xNi4xNzQgNS4yNTMtMjEuMTM1IDUuNDIxLTcuNDE0IDExLjYxNi04Ljk2OCAyMy45MzgtOC45NjggMTIuMzIzIDAgMTguNTE3IDEuNTU0IDIzLjkzOCAxMS42MTYgMy41ODUgNC45NjEgNS4yNTMgMTEuODgyIDUuMjUzIDIwLjU0OHptLTI5LjE5IDE0OS4zNDdjLTE0LjI4MyAxOS4xNDQtMzguOTkxIDI5LjE5LTcxLjgxMiAyOS4xOS0zNC41NDIgMC01OC43MjQtOS4xNzQtNzEuODEyLTI2LjU5NS0xMy4wODgtMTcuNDIxLTE5LjE0NC0zOS44MDQtMTkuMTQ0LTY2LjU1MiAwLTI4LjYzNyA2LjA1Ni01MS4wMTkgMTkuMTQ0LTY4LjQ0MSAxMy4wODgtMTcuNDIxIDM3LjI3LTI2LjU5NSA3MS44MTItMjYuNTk1IDMyLjgyMSAwIDU3LjQ4OSAxMC4wNDYgNzEuODEyIDI5LjE5IDguMzY0IDExLjE5NiAxMi41NDcgMjYuMDExIDEyLjU0NyA0NC40NzIgMCAxOC40NjEtNC4xODMgMzMuMzE2LTEyLjU0NyA0NC41MTF6bS0yLjU5NS0yNDcuNDI4Yy0xMy4wODgtMTcuNDIxLTM3LjI3LTI2LjU5NS03MS44MTItMjYuNTk1LTM0LjU0MiAwLTU4LjcyNCA5LjE3NC03MS44MTIgMjYuNTk1LTEzLjA4OCAxNy40MjEtMTkuMTQ0IDM5LjgwNC0xOS4xNDQgNjYuNTUyIDAgMjguNjM3IDYuMDU2IDUxLjAxOSAxOS4xNDQgNjguNDQxIDEzLjA4OCAxNy40MjEgMzcuMjcgMjYuNTk1IDcxLjgxMiAyNi41OTUgMzIuODIxIDAgNTcuNDg5LTEwLjA0NiA3MS44MTItMjkuMTkgOC4zNjQtMTEuMTk2IDE2LjU0Ny0yNi4wMTEgMTIuNTQ3LTQ0LjQ3MiAwLTE4LjQ2MS00LjE4My0zMy4zMTYtMTIuNTQ3LTQ0LjUxMXoiLz48L3N2Zz4=" alt="Bitcoin">
+                    <h2>Welcome to ProfitCalc</h2>
                 </div>
-                <div class="result" id="result"></div>
+                <div class="calculator-section" id="calculator-section">
+                    <h2>Dropshipping Profit Calculator</h2>
+                    <div class="input-group">
+                        <div class="input-field">
+                            <label for="wholesale-price">Wholesaler Price ($)</label>
+                            <input type="number" id="wholesale-price" step="0.01" oninput="calculateProfit()">
+                        </div>
+                        <div class="input-field">
+                            <label for="selling-price">Selling Price ($)</label>
+                            <input type="number" id="selling-price" step="0.01" oninput="calculateProfit()">
+                        </div>
+                        <div class="input-field">
+                            <label for="wholesale-shipping">Wholesaler Shipping ($)</label>
+                            <input type="number" id="wholesale-shipping" step="0.01" oninput="calculateProfit()">
+                        </div>
+                        <div class="input-field">
+                            <label for="selling-shipping">Selling Shipping ($)</label>
+                            <input type="number" id="selling-shipping" step="0.01" oninput="calculateProfit()">
+                        </div>
+                        <div class="input-field">
+                            <label for="zip-code">Receiver Zip Code (US)</label>
+                            <input type="text" id="zip-code" maxlength="5" pattern="\d{5}" oninput="calculateProfit()">
+                        </div>
+                    </div>
+                    <div class="result" id="result"></div>
+                </div>
             </div>
+        </div>
+
+        <div class="ad-right">
+            <!-- Google AdSense Vertical Ad (Right) -->
+            <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1234567890123456"
+                    crossorigin="anonymous"></script>
+            <ins class="adsbygoogle"
+                 style="display:inline-block;width:160px;height:600px"
+                 data-ad-client="ca-pub-1234567890123456"
+                 data-ad-slot="0987654321"></ins>
+            <script>
+                (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
         </div>
     </div>
 
