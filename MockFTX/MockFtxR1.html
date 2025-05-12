@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #0A1A2F;
+            color: #FFFFFF;
+        }
+
+        /* Navigation Bar */
+        .navbar {
+            background-color: #000000;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #2F3B4C;
+        }
+
+        .navbar-logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-links a {
+            color: #FFFFFF;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .nav-right {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .register-btn {
+            background-color: #00C4B4;
+            padding: 5px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            color: #FFFFFF;
+            font-size: 14px;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 20px;
+        }
+
+        /* Currency Ticker */
+        .ticker-container {
+            background-color: #1A2B43;
+            padding: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .ticker {
+            display: flex;
+            white-space: nowrap;
+        }
+
+        .ticker-item {
+            display: inline-flex;
+            align-items: center;
+            margin-right: 20px;
+            padding: 5px 15px;
+            background-color: #2F3B4C;
+            border-radius: 5px;
+            font-size: 16px;
+            margin: 5px;
+        }
+
+        .ticker-item span {
+            margin: 0 10px;
+        }
+
+        .positive {
+            color: #00C4B4;
+        }
+
+        .negative {
+            color: #FF3860;
+        }
+
+        /* Market Stats */
+        .market-stats {
+            display: flex;
+            justify-content: space-between;
+            background-color: #1A2B43;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .stats-column {
+            flex: 1;
+            padding: 0 20px;
+            position: relative;
+            margin: 5px;
+        }
+
+        .stats-column:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 10%;
+            height: 80%;
+            width: 1px;
+            background-color: #2F3B4C;
+        }
+
+        .stats-column h3 {
+            margin-bottom: 15px;
+            color: #00C4B4;
+        }
+
+        .stats-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        /* Interactive Map */
+        .map-container {
+            background-color: #1A2B43;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px;
+        }
+
+        .map-container h3 {
+            color: #00C4B4;
+            margin-bottom: 15px;
+        }
+
+        #florida-map {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .county {
+            fill: #2F3B4C;
+            stroke: #FFFFFF;
+            stroke-width: 1;
+            transition: fill 0.3s;
+        }
+
+        .county:hover {
+            fill: #00C4B4;
+        }
+
+        .tooltip {
+            position: absolute;
+            background-color: #2F3B4C;
+            color: #FFFFFF;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        /* Hover Effect for Dashboard Page Elements */
+        .dashboard-page .ticker-item,
+        .dashboard-page .stats-column,
+        .dashboard-page .map-container {
+            transition: transform 0.3s ease;
+        }
+
+        .dashboard-page .ticker-item:hover,
+        .dashboard-page .stats-column:hover,
+        .dashboard-page .map-container:hover {
+            transform: scale(1.02);
+            z-index: 1;
+        }
+
+        /* Janitorial Team Page */
+        .team-page {
+            display: none;
+            padding: 40px;
+            min-height: 100vh;
+            background-color: #0A1A2F;
+        }
+
+        .team-member {
+            background-color: #1A2B43;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            transition: transform 0.3s ease;
+        }
+
+        .team-member:hover {
+            transform: scale(1.02);
+        }
+
+        .team-member h3 {
+            color: #00C4B4;
+            margin-bottom: 10px;
+        }
+
+        .team-member p {
+            color: #A3BFFA;
+            line-height: 1.6;
+        }
+
+        /* Footer with Page Toggle */
+        .footer {
+            background-color: #000000;
+            padding: 10px 20px;
+            text-align: center;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            border-top: 1px solid #2F3B4C;
+        }
+
+        .page-toggle {
+            background-color: #00C4B4;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: inline-block;
+            color: #FFFFFF;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="navbar-logo">FTX</div>
+        <div class="nav-links">
+            <a href="#">Markets</a>
+            <a href="#">OTC</a>
+            <a href="#">Support</a>
+            <a href="#">FTT</a>
+            <a href="#">NFTs</a>
+            <a href="#">Docs</a>
+        </div>
+        <div class="nav-right">
+            <input type="text" placeholder="Search market" style="padding: 5px; background: #2F3B4C; border: none; color: white;">
+            <a href="#" class="register-btn">REGISTER</a>
+        </div>
+    </nav>
+
+    <!-- Main Dashboard Page -->
+    <div class="dashboard-page" id="dashboardPage">
+        <div class="main-content">
+            <!-- Currency Ticker -->
+            <div class="ticker-container">
+                <div class="ticker" id="ticker"></div>
+            </div>
+
+            <!-- Market Statistics -->
+            <div class="market-stats">
+                <div class="stats-column">
+                    <h3>Market Overview</h3>
+                    <div class="stats-item">
+                        <span>Index price</span>
+                        <span>42,091</span>
+                    </div>
+                    <div class="stats-item">
+                        <span>Mark price</span>
+                        <span>42,107</span>
+                    </div>
+                    <div class="stats-item">
+                        <span>Open Interest</span>
+                        <span>50.537 BTC</span>
+                    </div>
+                </div>
+                <div class="stats-column">
+                    <h3>Trading Volume</h3>
+                    <div class="stats-item">
+                        <span>24h volume</span>
+                        <span>130.040 BTC</span>
+                    </div>
+                    <div class="stats-item">
+                        <span>Next funding time</span>
+                        <span>11:00:00</span>
+                    </div>
+                    <div class="stats-item">
+                        <span>Predicted funding rate</span>
+                        <span>0.0001%</span>
+                    </div>
+                </div>
+                <div class="stats-column">
+                    <h3>Order Settings</h3>
+                    <div class="stats-item">
+                        <span>Minimum order size</span>
+                        <span>0.0001 BTC</span>
+                    </div>
+                    <div class="stats-item">
+                        <span>Minimum size increment</span>
+                        <span>0.0001 BTC</span>
+                    </div>
+                    <div class="stats-item">
+                        <span>Minimum price increment</span>
+                        <span>1 USD</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactive Map (Florida) -->
+            <div class="map-container">
+                <h3>Trading Activity in Florida</h3>
+                <svg id="florida-map" viewBox="0 0 300 500" preserveAspectRatio="xMidYMid meet">
+                    <!-- Accurate Florida shape with panhandle -->
+                    <path class="county" data-county="Escambia" d="M20,20 H80 V60 H20 Z"/>
+                    <path class="county" data-county="Santa Rosa" d="M80,20 H120 V60 H80 Z"/>
+                    <path class="county" data-county="Okaloosa" d="M120,20 H160 V60 H120 Z"/>
+                    <path class="county" data-county="Walton" d="M160,20 H200 V60 H160 Z"/>
+                    <path class="county" data-county="Bay" d="M160,60 H200 V100 H160 Z"/>
+                    <path class="county" data-county="Gulf" d="M140,100 H160 V140 H140 Z"/>
+                    <path class="county" data-county="Franklin" d="M140,140 H160 V180 H140 Z"/>
+                    <path class="county" data-county="Wakulla" d="M140,180 H160 V220 H140 Z"/>
+                    <path class="county" data-county="Leon" d="M120,100 H140 V140 H120 Z"/>
+                    <path class="county" data-county="Jefferson" d="M120,140 H140 V180 H120 Z"/>
+                    <path class="county" data-county="Madison" d="M100,100 H120 V140 H100 Z"/>
+                    <path class="county" data-county="Taylor" d="M100,140 H120 V180 H100 Z"/>
+                    <path class="county" data-county="Dixie" d="M100,180 H120 V220 H100 Z"/>
+                    <path class="county" data-county="Levy" d="M100,220 H120 V260 H100 Z"/>
+                    <path class="county" data-county="Citrus" d="M100,260 H120 V300 H100 Z"/>
+                    <path class="county" data-county="Hernando" d="M100,300 H120 V340 H100 Z"/>
+                    <path class="county" data-county="Pasco" d="M100,340 H120 V380 H100 Z"/>
+                    <path class="county" data-county="Pinellas" d="M80,380 H100 V420 H80 Z"/>
+                    <path class="county" data-county="Hillsborough" d="M100,380 H120 V420 H100 Z"/>
+                    <path class="county" data-county="Manatee" d="M100,420 H120 V460 H100 Z"/>
+                    <path class="county" data-county="Sarasota" d="M80,460 H100 V500 H80 Z"/>
+                    <path class="county" data-county="Charlotte" d="M100,460 H120 V500 H100 Z"/>
+                    <path class="county" data-county="Lee" d="M120,460 H140 V500 H120 Z"/>
+                    <path class="county" data-county="Collier" d="M140,460 H160 V500 H140 Z"/>
+                    <path class="county" data-county="Monroe" d="M160,480 H180 V500 H160 Z"/>
+                    <path class="county" data-county="Miami-Dade" d="M180,400 H260 V500 H180 Z"/>
+                    <path class="county" data-county="Broward" d="M200,360 H260 V400 H200 Z"/>
+                    <path class="county" data-county="Palm Beach" d="M200,320 H260 V360 H200 Z"/>
+                    <path class="county" data-county="Martin" d="M200,280 H260 V320 H200 Z"/>
+                    <path class="county" data-county="St. Lucie" d="M200,240 H260 V280 H200 Z"/>
+                    <path class="county" data-county="Indian River" d="M200,200 H260 V240 H200 Z"/>
+                    <path class="county" data-county="Brevard" d="M200,160 H260 V200 H200 Z"/>
+                    <path class="county" data-county="Volusia" d="M180,120 H260 V160 H180 Z"/>
+                    <path class="county" data-county="Flagler" d="M160,100 H180 V120 H160 Z"/>
+                    <path class="county" data-county="St. Johns" d="M140,80 H160 V100 H140 Z"/>
+                    <path class="county" data-county="Duval" d="M120,60 H140 V80 H120 Z"/>
+                </svg>
+                <div class="tooltip" id="tooltip"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Janitorial Team Page -->
+    <div class="team-page" id="teamPage">
+        <h1 style="text-align: center; margin-bottom: 40px;">Meet Our Janitorial Team</h1>
+        <div class="team-member">
+            <h3>John "Sparkle" Smith</h3>
+            <p>John has been keeping our trading floors spotless for over 15 years. His attention to detail ensures that every corner of our office shines, creating a pristine environment for our traders to thrive.</p>
+        </div>
+        <div class="team-member">
+            <h3>Maria "Clean Sweep" Gonzalez</h3>
+            <p>Maria brings a positive energy to our team with her infectious smile. She's known for her lightning-fast cleaning skills and her ability to make any space feel brand new.</p>
+        </div>
+        <div class="team-member">
+            <h3>Tom "Dust Buster" Wilson</h3>
+            <p>Tom is our tech-savvy cleaner, using the latest cleaning technology to keep our office in top shape. He also has a knack for fixing small things around the office, making him a true team player.</p>
+        </div>
+    </div>
+
+    <!-- Footer with Page Toggle -->
+    <footer class="footer">
+        <div class="page-toggle" id="pageToggle">View Janitorial Team</div>
+    </footer>
+
+    <script>
+        // Page Toggle Functionality
+        const dashboardPage = document.getElementById('dashboardPage');
+        const teamPage = document.getElementById('teamPage');
+        const pageToggle = document.getElementById('pageToggle');
+
+        pageToggle.addEventListener('click', () => {
+            if (dashboardPage.style.display === 'none') {
+                dashboardPage.style.display = 'block';
+                teamPage.style.display = 'none';
+                pageToggle.textContent = 'View Janitorial Team';
+            } else {
+                dashboardPage.style.display = 'none';
+                teamPage.style.display = 'block';
+                pageToggle.textContent = 'Back to Dashboard';
+            }
+        });
+
+        // Dynamic Currency Ticker
+        const ticker = document.getElementById('ticker');
+        const currencies = [
+            { name: 'BTC-PERP', price: 42097, change: 0.72 },
+            { name: 'ETH-PERP', price: 3125, change: -0.15 },
+            { name: 'BNB-PERP', price: 425.6, change: 1.23 },
+            { name: 'SOL-PERP', price: 135.2, change: -0.45 },
+            { name: 'ADA-PERP', price: 2.15, change: 0.89 },
+            { name: 'XRP-PERP', price: 0.75, change: 0.34 },
+            { name: 'DOT-PERP', price: 18.2, change: -0.67 },
+            { name: 'LUNA-PERP', price: 85.4, change: 1.12 },
+            { name: 'AVAX-PERP', price: 92.3, change: -0.23 },
+            { name: 'MATIC-PERP', price: 1.65, change: 0.45 }
+        ];
+
+        function createTickerItem(currency) {
+            const item = document.createElement('div');
+            item.className = 'ticker-item';
+            item.innerHTML = `${currency.name} <span class="${currency.change > 0 ? 'positive' : 'negative'}">${currency.change > 0 ? '+' : ''}${currency.change.toFixed(2)}%</span> ${currency.price.toFixed(2)}`;
+            return item;
+        }
+
+        function updateTicker() {
+            const newCurrency = {
+                name: currencies[Math.floor(Math.random() * currencies.length)].name,
+                price: Math.random() * 50000 + 1000,
+                change: (Math.random() - 0.5) * 2
+            };
+            const item = createTickerItem(newCurrency);
+            ticker.appendChild(item);
+
+            // Remove items that are out of view
+            const items = ticker.children;
+            while (items.length > 20) {
+                ticker.removeChild(items[0]);
+            }
+
+            // Update animation
+            ticker.style.transform = `translateX(-${ticker.scrollWidth}px)`;
+            ticker.style.transition = `transform ${items.length * 2}s linear`;
+        }
+
+        // Initialize ticker
+        currencies.forEach(currency => ticker.appendChild(createTickerItem(currency)));
+        setInterval(updateTicker, 2000);
+
+        // Update existing items
+        setInterval(() => {
+            Array.from(ticker.children).forEach(item => {
+                const price = parseFloat(item.lastChild.textContent);
+                const change = (Math.random() - 0.5) * 2;
+                const newPrice = price + (price * change / 100);
+                item.lastChild.textContent = newPrice.toFixed(2);
+
+                const changeSpan = item.querySelector('span');
+                changeSpan.textContent = `${change > 0 ? '+' : ''}${change.toFixed(2)}%`;
+                changeSpan.className = change > 0 ? 'positive' : 'negative';
+            });
+        }, 5000);
+
+        // Interactive Map Functionality (Florida)
+        const counties = document.querySelectorAll('.county');
+        const tooltip = document.getElementById('tooltip');
+
+        counties.forEach(county => {
+            county.addEventListener('mousemove', (e) => {
+                const countyName = county.getAttribute('data-county');
+                const tradingVolume = Math.floor(Math.random() * 1000);
+                tooltip.style.opacity = '1';
+                tooltip.textContent = `${countyName}: ${tradingVolume} BTC`;
+                tooltip.style.left = e.pageX + 10 + 'px';
+                tooltip.style.top = e.pageY + 10 + 'px';
+            });
+
+            county.addEventListener('mouseout', () => {
+                tooltip.style.opacity = '0';
+            });
+        });
+    </script>
+</body>
+</html>
