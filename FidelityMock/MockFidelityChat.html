@@ -2,9 +2,176 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>$Title$</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dropshipping Profit Calculator</title>
+  <style>
+    /* Global */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f8fdf8;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+    /* Navbar */
+    nav {
+      width: 100%;
+      background-color: #f0f0f0;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    nav .logo img {
+      height: 40px;
+    }
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 15px;
+      margin: 0;
+      padding: 0;
+    }
+    nav a {
+      text-decoration: none;
+      font-weight: bold;
+      color: #555;
+      transition: color 0.2s;
+    }
+    nav a:hover {
+      color: #A6FF00;
+    }
+    /* Calculator Card */
+    .calculator {
+      background-color: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      padding: 30px;
+      width: 360px;
+      margin-top: 40px;
+    }
+    .calculator h1 {
+      margin: 0 0 20px;
+      color: #A6FF00;
+      text-align: center;
+      font-size: 1.75rem;
+    }
+    .field {
+      margin-bottom: 15px;
+      position: relative;
+    }
+    .field input {
+      width: 100%;
+      padding: 12px 16px;
+      border: none;
+      border-bottom: 2px solid #ccc;
+      border-radius: 4px 4px 0 0;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+      background: #f8f8f8;
+    }
+    .field input:focus {
+      border-bottom-color: #A6FF00;
+      background: #ffffff;
+    }
+    .field label {
+      position: absolute;
+      top: -8px;
+      left: 12px;
+      background: #ffffff;
+      padding: 0 4px;
+      font-size: 0.85rem;
+      color: #777;
+    }
+    .calculator button {
+      width: 100%;
+      padding: 12px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #fff;
+      background-color: #A6FF00;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .calculator button:hover {
+      background-color: #8dd600;
+    }
+    .result {
+      margin-top: 25px;
+      text-align: center;
+      font-size: 1.3rem;
+      font-weight: bold;
+    }
+    .profit-positive {
+      color: #2a7f2a;
+    }
+    .profit-negative {
+      color: #d12a2a;
+    }
+  </style>
 </head>
 <body>
-$END$
+  <nav>
+    <div class="logo">
+      <a href="/"><img src="bitcoin-giant.png" alt="Home"></a>
+    </div>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="https://www.schwab.com/resource-center">Resources</a></li>
+      <li><a href="https://chat.openai.com">Support</a></li>
+    </ul>
+  </nav>
+
+  <div class="calculator">
+    <h1>Profit Calculator</h1>
+    <div class="field">
+      <label for="wholesalePrice">Wholesaler Price ($)</label>
+      <input type="number" id="wholesalePrice" placeholder="10.00" step="0.01" />
+    </div>
+    <div class="field">
+      <label for="sellingPrice">Selling Price ($)</label>
+      <input type="number" id="sellingPrice" placeholder="20.00" step="0.01" />
+    </div>
+    <div class="field">
+      <label for="wholesaleShipping">Wholesaler Shipping ($)</label>
+      <input type="number" id="wholesaleShipping" placeholder="3.00" step="0.01" />
+    </div>
+    <div class="field">
+      <label for="sellingShipping">Selling Shipping ($)</label>
+      <input type="number" id="sellingShipping" placeholder="5.00" step="0.01" />
+    </div>
+    <button onclick="calculateProfit()">Calculate Profit</button>
+    <div id="result" class="result"></div>
+  </div>
+
+  <script>
+    function calculateProfit() {
+      const wp = parseFloat(document.getElementById('wholesalePrice').value) || 0;
+      const sp = parseFloat(document.getElementById('sellingPrice').value) || 0;
+      const ws = parseFloat(document.getElementById('wholesaleShipping').value) || 0;
+      const ss = parseFloat(document.getElementById('sellingShipping').value) || 0;
+      const revenue = sp + ss;
+      const cost = wp + ws;
+      const profit = (revenue - cost).toFixed(2);
+      const res = document.getElementById('result');
+      if (profit >= 0) {
+        res.textContent = `Profit: $${profit}`;
+        res.classList.add('profit-positive');
+        res.classList.remove('profit-negative');
+      } else {
+        res.textContent = `Loss: $${profit}`;
+        res.classList.add('profit-negative');
+        res.classList.remove('profit-positive');
+      }
+    }
+  </script>
 </body>
 </html>
