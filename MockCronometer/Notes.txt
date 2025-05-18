@@ -6,3 +6,14 @@ The response must have a color scheme matching the attached image. For example,
 The response must contain an interactive chart displaying the user's data selected with checkboxes. For example,
 
 Turn 2:
+The response must have a data input including minutes exercised and date which is selected on a calendar popup.
+The response must have a dynamic chart allowing the user to zoom in or out. For example using the JavaScript chart library chart.js.
+
+Turn 3:
+The response must make sure the chart is updating
+The response must contain a login popup matching the sites theme linked to the login button. For example,
+The response must contain a login allowing the user to enter username and password, after signing in the page should refresh and display "Hello <Username>".
+
+Turn 4:
+The response must contain a sign up popup matching the sites theme linked to the sign up button. For example,
+The response must contain a UI button in the top right to switch from light to dark theme, using the sun to represent light and moon for dark.

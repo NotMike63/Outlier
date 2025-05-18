@@ -76,6 +76,12 @@
             margin-bottom: 30px;
         }
 
+        .welcome-message {
+            margin-bottom: 20px;
+            font-size: 24px;
+            text-align: center;
+        }
+
         .input-form {
             display: flex;
             gap: 20px;
@@ -128,6 +134,82 @@
             padding: 20px;
             border-radius: 10px;
             height: 400px;
+            position: relative;
+        }
+
+        .chart-controls {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .chart-controls button {
+            background-color: #FF6B35;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+        }
+
+        /* Login Popup Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: #2A3537;
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 400px;
+            position: relative;
+        }
+
+        .close {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            color: white;
+        }
+
+        .modal-content h2 {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .modal-content form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .modal-content input {
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            background-color: #1C2526;
+            color: white;
+        }
+
+        .modal-content button {
+            background-color: #FF6B35;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
         }
 
         footer {
@@ -161,19 +243,25 @@
             <nav>
                 <a href="#">Products</a>
                 <a href="#">Features</a>
-                <a href="#">Log In</a>
+                <a href="#" id="loginButton">Log In</a>
                 <a href="#" class="cta-button">Sign Up</a>
             </nav>
         </header>
 
         <section class="hero">
             <h1>Science-backed health tracking at your fingertips</h1>
-            <p>Track your steps, calories, and heart rate to make more informed decisions about your health</p>
+            <p>Track your steps, calories, heart rate, and exercise minutes to make more informed decisions about your health</p>
             <a href="#" class="cta-button">Sign Up - It's Free!</a>
         </section>
 
         <section class="tracker-section">
+            <div id="welcomeMessage" class="welcome-message" style="display: none;"></div>
+
             <form id="healthForm" class="input-form">
+                <div class="input-group">
+                    <label for="date">Date</label>
+                    <input type="date" id="date" required>
+                </div>
                 <div class="input-group">
                     <label for="steps">Steps</label>
                     <input type="number" id="steps" placeholder="Enter steps">
@@ -186,6 +274,10 @@
                     <label for="heartRate">Average Heart Rate</label>
                     <input type="number" id="heartRate" placeholder="Enter heart rate">
                 </div>
+                <div class="input-group">
+                    <label for="minutes">Minutes Exercised</label>
+                    <input type="number" id="minutes" placeholder="Enter minutes">
+                </div>
                 <button type="submit" class="submit-button">Add Data</button>
             </form>
 
@@ -193,12 +285,37 @@
                 <label><input type="checkbox" id="showSteps" checked> Show Steps</label>
                 <label><input type="checkbox" id="showCalories" checked> Show Calories</label>
                 <label><input type="checkbox" id="showHeartRate" checked> Show Heart Rate</label>
+                <label><input type="checkbox" id="showMinutes" checked> Show Minutes Exercised</label>
             </div>
 
             <div class="chart-container">
                 <canvas id="healthChart"></canvas>
             </div>
+            <div class="chart-controls">
+                <button onclick="zoomIn()">Zoom In</button>
+                <button onclick="zoomOut()">Zoom Out</button>
+                <button onclick="resetZoom()">Reset Zoom</button>
+            </div>
         </section>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Log In</h2>
+            <form id="loginForm">
+                <div class="input-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" required placeholder="Enter username">
+                </div>
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required placeholder="Enter password">
+                </div>
+                <button type="submit">Log In</button>
+            </form>
+        </div>
     </div>
 
     <footer>
@@ -210,37 +327,59 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/dist/chartjs-plugin-zoom.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <script>
-        const healthData = {
+        // Initialize health data
+        let healthData = {
             labels: [],
             steps: [],
             calories: [],
-            heartRate: []
+            heartRate: [],
+            minutes: []
         };
 
+        // Check if user is logged in
+        const loggedInUser = localStorage.getItem('username');
+        if (loggedInUser) {
+            document.getElementById('welcomeMessage').style.display = 'block';
+            document.getElementById('welcomeMessage').textContent = `Welcome ${loggedInUser}`;
+        }
+
+        // Initialize Chart
         const ctx = document.getElementById('healthChart').getContext('2d');
         const healthChart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: healthData.labels,
                 datasets: [
                     {
                         label: 'Steps',
-                        data: healthData.steps,
+                        data: [],
                         borderColor: '#FF6B35',
-                        hidden: false
+                        hidden: false,
+                        fill: false
                     },
                     {
                         label: 'Calories Burned',
-                        data: healthData.calories,
+                        data: [],
                         borderColor: '#4CAF50',
-                        hidden: false
+                        hidden: false,
+                        fill: false
                     },
                     {
                         label: 'Heart Rate',
-                        data: healthData.heartRate,
+                        data: [],
                         borderColor: '#2196F3',
-                        hidden: false
+                        hidden: false,
+                        fill: false
+                    },
+                    {
+                        label: 'Minutes Exercised',
+                        data: [],
+                        borderColor: '#FFC107',
+                        hidden: false,
+                        fill: false
                     }
                 ]
             },
@@ -248,46 +387,167 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 scales: {
+                    x: {
+                        type: 'time',
+                        time: {
+                            unit: 'day',
+                            displayFormats: {
+                                day: 'MMM d'
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Date'
+                        }
+                    },
                     y: {
-                        beginAtZero: true
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Value'
+                        }
+                    }
+                },
+                plugins: {
+                    zoom: {
+                        zoom: {
+                            wheel: {
+                                enabled: true
+                            },
+                            pinch: {
+                                enabled: true
+                            },
+                            mode: 'xy'
+                        },
+                        pan: {
+                            enabled: true,
+                            mode: 'xy'
+                        }
                     }
                 }
             }
         });
 
+        // Function to update chart data
+        function updateChart() {
+            const datasets = [
+                {
+                    label: 'Steps',
+                    data: healthData.labels.map((date, index) => ({
+                        x: date,
+                        y: parseFloat(healthData.steps[index]) || 0
+                    })),
+                    borderColor: '#FF6B35',
+                    hidden: !document.getElementById('showSteps').checked
+                },
+                {
+                    label: 'Calories Burned',
+                    data: healthData.labels.map((date, index) => ({
+                        x: date,
+                        y: parseFloat(healthData.calories[index]) || 0
+                    })),
+                    borderColor: '#4CAF50',
+                    hidden: !document.getElementById('showCalories').checked
+                },
+                {
+                    label: 'Heart Rate',
+                    data: healthData.labels.map((date, index) => ({
+                        x: date,
+                        y: parseFloat(healthData.heartRate[index]) || 0
+                    })),
+                    borderColor: '#2196F3',
+                    hidden: !document.getElementById('showHeartRate').checked
+                },
+                {
+                    label: 'Minutes Exercised',
+                    data: healthData.labels.map((date, index) => ({
+                        x: date,
+                        y: parseFloat(healthData.minutes[index]) || 0
+                    })),
+                    borderColor: '#FFC107',
+                    hidden: !document.getElementById('showMinutes').checked
+                }
+            ];
+
+            healthChart.data.datasets = datasets;
+            healthChart.update();
+        }
+
+        // Form submission
         document.getElementById('healthForm').addEventListener('submit', (e) => {
             e.preventDefault();
 
+            const date = new Date(document.getElementById('date').value);
             const steps = document.getElementById('steps').value;
             const calories = document.getElementById('calories').value;
             const heartRate = document.getElementById('heartRate').value;
+            const minutes = document.getElementById('minutes').value;
 
-            const now = new Date();
-            const timeLabel = `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
+            healthData.labels.push(date);
+            healthData.steps.push(steps);
+            healthData.calories.push(calories);
+            healthData.heartRate.push(heartRate);
+            healthData.minutes.push(minutes);
 
-            healthData.labels.push(timeLabel);
-            healthData.steps.push(steps || 0);
-            healthData.calories.push(calories || 0);
-            healthData.heartRate.push(heartRate || 0);
+            // Sort data by date
+            const indices = healthData.labels.map((_, index) => index)
+                .sort((a, b) => healthData.labels[a] - healthData.labels[b]);
 
-            healthChart.update();
+            healthData.labels = indices.map(i => healthData.labels[i]);
+            healthData.steps = indices.map(i => healthData.steps[i]);
+            healthData.calories = indices.map(i => healthData.calories[i]);
+            healthData.heartRate = indices.map(i => healthData.heartRate[i]);
+            healthData.minutes = indices.map(i => healthData.minutes[i]);
 
+            updateChart();
             document.getElementById('healthForm').reset();
         });
 
-        document.getElementById('showSteps').addEventListener('change', (e) => {
-            healthChart.data.datasets[0].hidden = !e.target.checked;
-            healthChart.update();
-        });
+        // Checkbox event listeners
+        document.getElementById('showSteps').addEventListener('change', updateChart);
+        document.getElementById('showCalories').addEventListener('change', updateChart);
+        document.getElementById('showHeartRate').addEventListener('change', updateChart);
+        document.getElementById('showMinutes').addEventListener('change', updateChart);
 
-        document.getElementById('showCalories').addEventListener('change', (e) => {
-            healthChart.data.datasets[1].hidden = !e.target.checked;
-            healthChart.update();
-        });
+        // Zoom functions
+        function zoomIn() {
+            healthChart.zoom(1.2);
+        }
 
-        document.getElementById('showHeartRate').addEventListener('change', (e) => {
-            healthChart.data.datasets[2].hidden = !e.target.checked;
-            healthChart.update();
+        function zoomOut() {
+            healthChart.zoom(0.8);
+        }
+
+        function resetZoom() {
+            healthChart.resetZoom();
+        }
+
+        // Login Modal functionality
+        const modal = document.getElementById('loginModal');
+        const loginButton = document.getElementById('loginButton');
+        const closeButton = document.getElementsByClassName('close')[0];
+        const loginForm = document.getElementById('loginForm');
+
+        loginButton.onclick = function() {
+            modal.style.display = 'block';
+        }
+
+        closeButton.onclick = function() {
+            modal.style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            localStorage.setItem('username', username);
+            modal.style.display = 'none';
+            location.reload();
         });
     </script>
 </body>
