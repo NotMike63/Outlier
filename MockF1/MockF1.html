@@ -62,6 +62,88 @@
             box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
         }
 
+        /* Gallery Styles */
+        .gallery {
+            max-width: 1200px;
+            margin: 20px auto;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .gallery-slides {
+            display: flex;
+            transition: transform 0.5s ease;
+        }
+
+        .gallery-slide {
+            min-width: 100%;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .gallery-slide img {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .gallery-slide .overlay {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .gallery-slide .overlay h3 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .gallery-nav {
+            position: absolute;
+            top: 50%;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            transform: translateY(-50%);
+        }
+
+        .gallery-nav button {
+            background: rgba(0, 0, 0, 0.5);
+            border: none;
+            color: white;
+            font-size: 24px;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 50%;
+            margin: 0 10px;
+        }
+
+        .gallery-nav button:hover {
+            background: rgba(0, 0, 0, 0.8);
+        }
+
+        .gallery-dots {
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .dot {
+            height: 10px;
+            width: 10px;
+            background-color: #bbb;
+            border-radius: 50%;
+            display: inline-block;
+            margin: 0 5px;
+            cursor: pointer;
+        }
+
+        .dot.active {
+            background-color: #1E90FF;
+        }
+
         /* Main Content Styles */
         .container {
             max-width: 1200px;
@@ -277,6 +359,11 @@
             gap: 5px;
         }
 
+        .like-dislike-buttons button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
         .like-btn {
             background-color: #4CAF50;
             color: white;
@@ -312,11 +399,56 @@
             <a href="#">Mental Health</a>
             <a href="#">Wellness</a>
             <a href="#">Videos</a>
+            <a href="#american-health">American Health</a>
         </nav>
         <div class="search-container">
             <input type="text" class="search-bar" placeholder="Search articles..." id="searchInput">
         </div>
     </header>
+
+    <!-- Gallery Section -->
+    <div class="gallery" id="gallery">
+        <div class="gallery-slides" id="gallerySlides">
+            <div class="gallery-slide" data-id="1">
+                <img src="https://via.placeholder.com/1200x400" alt="Featured Article 1">
+                <div class="overlay">
+                    <div class="category">NUTRITION</div>
+                    <h3>Superfoods You Should Add to Your Diet in 2023</h3>
+                </div>
+            </div>
+            <div class="gallery-slide" data-id="2">
+                <img src="https://via.placeholder.com/1200x400" alt="Featured Article 2">
+                <div class="overlay">
+                    <div class="category">FITNESS</div>
+                    <h3>Best Morning Exercises to Start Your Day Right</h3>
+                </div>
+            </div>
+            <div class="gallery-slide" data-id="3">
+                <img src="https://via.placeholder.com/1200x400" alt="Featured Article 3">
+                <div class="overlay">
+                    <div class="category">WELLNESS</div>
+                    <h3>The Benefits of Daily Meditation</h3>
+                </div>
+            </div>
+            <div class="gallery-slide" data-id="4">
+                <img src="https://via.placeholder.com/1200x400" alt="Featured Article 4">
+                <div class="overlay">
+                    <div class="category">NUTRITION</div>
+                    <h3>Top 5 Smoothie Recipes for a Healthy Breakfast</h3>
+                </div>
+            </div>
+        </div>
+        <div class="gallery-nav">
+            <button id="prevBtn">&larr;</button>
+            <button id="nextBtn">&rarr;</button>
+        </div>
+        <div class="gallery-dots" id="galleryDots">
+            <span class="dot active" data-index="0"></span>
+            <span class="dot" data-index="1"></span>
+            <span class="dot" data-index="2"></span>
+            <span class="dot" data-index="3"></span>
+        </div>
+    </div>
 
     <!-- Article Detail View -->
     <div class="article-detail" id="articleDetail">
@@ -502,19 +634,19 @@
     <button class="more-news" id="moreNewsBtn">More Health News</button>
 
     <script>
-        // Article data with initial likes and dislikes
+        // Article data with initial likes, dislikes, and user vote tracking
         const articlesData = {
-            1: { title: "Superfoods You Should Add to Your Diet in 2023", category: "NUTRITION", content: "Discover the top superfoods that can boost your health and energy levels this year. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.", image: "https://via.placeholder.com/800x400", likes: 0, dislikes: 0 },
-            2: { title: "Best Morning Exercises to Start Your Day Right", category: "FITNESS", content: "Learn the most effective morning workouts to improve your fitness and mood. Lorem ipsum dolor sit amet, consectetur adipiscing elit.", image: "https://via.placeholder.com/800x400", likes: 0, dislikes: 0 },
-            3: { title: "The Benefits of Daily Meditation", category: "WELLNESS", content: "Explore how a daily meditation practice can transform your life. Lorem ipsum dolor sit amet.", image: "https://via.placeholder.com/800x400", likes: 0, dislikes: 0 },
-            4: { title: "Top 5 Smoothie Recipes for a Healthy Breakfast", category: "NUTRITION", content: "Quick and nutritious smoothie recipes to kickstart your day. Lorem ipsum dolor sit amet.", image: "https://via.placeholder.com/800x400", likes: 0, dislikes: 0 },
-            5: { title: "HIIT Workouts for Beginners", category: "FITNESS", content: "Get started with high-intensity interval training with these easy routines. Lorem ipsum dolor sit amet.", image: "https://via.placeholder.com/800x400", likes: 0, dislikes: 0 },
-            6: { title: "Managing Stress in a Busy World", category: "MENTAL HEALTH", content: "Practical tips to reduce stress and improve mental well-being. Lorem ipsum dolor sit amet.", image: "https://via.placeholder.com/800x400", likes: 0, dislikes: 0 },
-            7: { title: "The Importance of Quality Sleep", category: "WELLNESS", content: "Learn why sleep is crucial for your overall health and how to improve it. Lorem ipsum dolor sit amet.", image: "https://via.placeholder.com/800x400", likes: 0, dislikes: 0 },
-            8: { title: "5-Minute Meditation for Stress Relief", category: "VIDEO", content: "Follow this quick guided meditation to reduce stress and find calm. Lorem ipsum dolor sit amet.", image: "https://via.placeholder.com/400x200", likes: 0, dislikes: 0 },
-            9: { title: "New Study Reveals Benefits of Daily Yoga", category: "NEWS", content: "Research shows how yoga can improve both physical and mental health. Lorem ipsum dolor sit amet.", image: "https://via.placeholder.com/400x200", likes: 0, dislikes: 0 },
-            10: { title: "How I Improved My Sleep Quality", category: "BLOG", content: "Personal journey to better sleep with practical tips. Lorem ipsum dolor sit amet.", image: "https://via.placeholder.com/100x100", likes: 0, dislikes: 0 },
-            11: { title: "Expert Tips for Better Hydration", category: "NEWS", content: "Nutritionists share advice on staying hydrated throughout the day. Lorem ipsum dolor sit amet.", image: "https://via.placeholder.com/100x100", likes: 0, dislikes: 0 }
+            1: { title: "Superfoods You Should Add to Your Diet in 2023", category: "NUTRITION", content: "Discover the top superfoods that can boost your health and energy levels this year. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.", image: "https://via.placeholder.com/800x400", likes: 0, dislikes: 0, userVoted: false },
+            2: { title: "Best Morning Exercises to Start Your Day Right", category: "FITNESS", content: "Learn the most effective morning workouts to improve your fitness and mood. Lorem ipsum dolor sit amet, consectetur adipiscing elit.", image: "https://via.placeholder.com/800x400", likes: 0, dislikes: 0, userVoted: false },
+            3: { title: "The Benefits of Daily Meditation", category: "WELLNESS", content: "Explore how a daily meditation practice can transform your life. Lorem ipsum dolor sit amet.", image: "https://via.placeholder.com/800x400", likes: 0, dislikes: 0, userVoted: false },
+            4: { title: "Top 5 Smoothie Recipes for a Healthy Breakfast", category: "NUTRITION", content: "Quick and nutritious smoothie recipes to kickstart your day. Lorem ipsum dolor sit amet.", image: "https://via.placeholder.com/800x400", likes: 0, dislikes: 0, userVoted: false },
+            5: { title: "HIIT Workouts for Beginners", category: "FITNESS", content: "Get started with high-intensity interval training with these easy routines. Lorem ipsum dolor sit amet.", image: "https://via.placeholder.com/800x400", likes: 0, dislikes: 0, userVoted: false },
+            6: { title: "Managing Stress in a Busy World", category: "MENTAL HEALTH", content: "Practical tips to reduce stress and improve mental well-being. Lorem ipsum dolor sit amet.", image: "https://via.placeholder.com/800x400", likes: 0, dislikes: 0, userVoted: false },
+            7: { title: "The Importance of Quality Sleep", category: "WELLNESS", content: "Learn why sleep is crucial for your overall health and how to improve it. Lorem ipsum dolor sit amet.", image: "https://via.placeholder.com/800x400", likes: 0, dislikes: 0, userVoted: false },
+            8: { title: "5-Minute Meditation for Stress Relief", category: "VIDEO", content: "Follow this quick guided meditation to reduce stress and find calm. Lorem ipsum dolor sit amet.", image: "https://via.placeholder.com/400x200", likes: 0, dislikes: 0, userVoted: false },
+            9: { title: "New Study Reveals Benefits of Daily Yoga", category: "NEWS", content: "Research shows how yoga can improve both physical and mental health. Lorem ipsum dolor sit amet.", image: "https://via.placeholder.com/400x200", likes: 0, dislikes: 0, userVoted: false },
+            10: { title: "How I Improved My Sleep Quality", category: "BLOG", content: "Personal journey to better sleep with practical tips. Lorem ipsum dolor sit amet.", image: "https://via.placeholder.com/100x100", likes: 0, dislikes: 0, userVoted: false },
+            11: { title: "Expert Tips for Better Hydration", category: "NEWS", content: "Nutritionists share advice on staying hydrated throughout the day. Lorem ipsum dolor sit amet.", image: "https://via.placeholder.com/100x100", likes: 0, dislikes: 0, userVoted: false }
         };
 
         // DOM Elements
@@ -534,20 +666,30 @@
         let currentArticleId = null;
 
         // Show article detail view
+        function showArticleDetail(id) {
+            currentArticleId = id;
+            const article = articlesData[currentArticleId];
+
+            detailImage.src = article.image;
+            detailCategory.textContent = article.category;
+            detailTitle.textContent = article.title;
+            detailContent.textContent = article.content;
+            likeCountDetail.textContent = article.likes;
+            dislikeCountDetail.textContent = article.dislikes;
+
+            // Disable buttons if user has already voted
+            likeBtn.disabled = article.userVoted;
+            dislikeBtn.disabled = article.userVoted;
+
+            mainContainer.style.display = 'none';
+            articleDetail.classList.add('active');
+            document.getElementById('gallery').style.display = 'none';
+        }
+
         articleCards.forEach(card => {
             card.addEventListener('click', () => {
-                currentArticleId = card.getAttribute('data-id');
-                const article = articlesData[currentArticleId];
-
-                detailImage.src = article.image;
-                detailCategory.textContent = article.category;
-                detailTitle.textContent = article.title;
-                detailContent.textContent = article.content;
-                likeCountDetail.textContent = article.likes;
-                dislikeCountDetail.textContent = article.dislikes;
-
-                mainContainer.style.display = 'none';
-                articleDetail.classList.add('active');
+                const id = card.getAttribute('data-id');
+                showArticleDetail(id);
             });
         });
 
@@ -555,21 +697,28 @@
         backBtn.addEventListener('click', () => {
             mainContainer.style.display = 'flex';
             articleDetail.classList.remove('active');
+            document.getElementById('gallery').style.display = 'block';
             currentArticleId = null;
         });
 
         // Like and Dislike button functionality
         likeBtn.addEventListener('click', () => {
-            if (currentArticleId) {
+            if (currentArticleId && !articlesData[currentArticleId].userVoted) {
                 articlesData[currentArticleId].likes++;
+                articlesData[currentArticleId].userVoted = true;
                 updateLikeDislikeCounts(currentArticleId);
+                likeBtn.disabled = true;
+                dislikeBtn.disabled = true;
             }
         });
 
         dislikeBtn.addEventListener('click', () => {
-            if (currentArticleId) {
+            if (currentArticleId && !articlesData[currentArticleId].userVoted) {
                 articlesData[currentArticleId].dislikes++;
+                articlesData[currentArticleId].userVoted = true;
                 updateLikeDislikeCounts(currentArticleId);
+                likeBtn.disabled = true;
+                dislikeBtn.disabled = true;
             }
         });
 
@@ -615,6 +764,52 @@
         moreNewsBtn.addEventListener('click', function() {
             moreArticles.classList.toggle('active');
             moreNewsBtn.textContent = moreArticles.classList.contains('active') ? 'Show Less' : 'More Health News';
+        });
+
+        // Gallery functionality
+        const gallerySlides = document.getElementById('gallerySlides');
+        const slides = document.querySelectorAll('.gallery-slide');
+        const dots = document.querySelectorAll('.dot');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        let currentSlide = 0;
+
+        function showSlide(index) {
+            gallerySlides.style.transform = `translateX(-${index * 100}%)`;
+            dots.forEach(dot => dot.classList.remove('active'));
+            dots[index].classList.add('active');
+            currentSlide = index;
+        }
+
+        prevBtn.addEventListener('click', () => {
+            if (currentSlide > 0) {
+                showSlide(currentSlide - 1);
+            } else {
+                showSlide(slides.length - 1);
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentSlide < slides.length - 1) {
+                showSlide(currentSlide + 1);
+            } else {
+                showSlide(0);
+            }
+        });
+
+        dots.forEach(dot => {
+            dot.addEventListener('click', () => {
+                const index = parseInt(dot.getAttribute('data-index'));
+                showSlide(index);
+            });
+        });
+
+        // Click on gallery slide to show article detail
+        slides.forEach(slide => {
+            slide.addEventListener('click', () => {
+                const id = slide.getAttribute('data-id');
+                showArticleDetail(id);
+            });
         });
     </script>
 </body>

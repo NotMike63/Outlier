@@ -1,10 +1,123 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Health Blog</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f8f9fc;
+      color: #333;
+    }
+    header {
+      background-color: #007acc;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+    .search-bar {
+      border: none;
+      padding: 8px;
+      border-radius: 4px;
+    }
+    .container {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 20px;
+      padding: 20px;
+    }
+    .main-article {
+      grid-column: span 2;
+      background-color: white;
+      padding: 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      position: relative;
+    }
+    .main-article:hover {
+      transform: scale(1.02);
+      box-shadow: 0 4px 15px rgba(0, 122, 204, 0.4);
+    }
+    .articles {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+    }
+    .article {
+      background-color: white;
+      padding: 15px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      position: relative;
+    }
+    .article:hover {
+      transform: scale(1.03);
+      box-shadow: 0 4px 15px rgba(0, 122, 204, 0.4);
+    }
+    .article h3 {
+      margin-top: 0;
+    }
+    .highlight-border {
+      content: '';
+      position: absolute;
+      width: 40px;
+      height: 5px;
+      background-color: #007acc;
+      bottom: 10px;
+      right: 10px;
+    }
+  </style>
 </head>
 <body>
-$END$
+  <header>
+    <h1>Health Insights</h1>
+    <input type="text" class="search-bar" placeholder="Search articles..." onkeyup="searchArticles()">
+  </header>
+  <main class="container">
+    <section class="main-article">
+      <h2>10 Simple Habits for a Healthier Life</h2>
+      <p>Discover how small lifestyle changes can significantly improve your well-being. From staying hydrated to regular walks, find out what works.</p>
+    </section>
+    <section class="articles" id="article-list">
+      <div class="article">
+        <h3>Understanding Nutrition Labels</h3>
+        <p>Learn how to decode the information on food packaging to make better dietary decisions.</p>
+        <div class="highlight-border"></div>
+      </div>
+      <div class="article">
+        <h3>Mental Health Matters</h3>
+        <p>Why taking care of your mental health is just as important as physical health.</p>
+        <div class="highlight-border"></div>
+      </div>
+      <div class="article">
+        <h3>Staying Active at Home</h3>
+        <p>Tips and tricks to maintain your fitness levels without hitting the gym.</p>
+        <div class="highlight-border"></div>
+      </div>
+      <div class="article">
+        <h3>Benefits of Drinking Water</h3>
+        <p>Explore how staying hydrated boosts your health and productivity.</p>
+        <div class="highlight-border"></div>
+      </div>
+    </section>
+  </main>
+  <script>
+    function searchArticles() {
+      const input = document.querySelector('.search-bar').value.toLowerCase();
+      const articles = document.querySelectorAll('.article');
+      articles.forEach(article => {
+        const text = article.textContent.toLowerCase();
+        article.style.display = text.includes(input) ? 'block' : 'none';
+      });
+    }
+  </script>
 </body>
 </html>

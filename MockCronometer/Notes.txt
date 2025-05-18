@@ -1,0 +1,8 @@
+Turn 1:
+The response must consist of one file using HTML, CSS, and JavaScript. For example by using inline CSS and inline JavaScript.
+The response must allow the user to input health information including steps, calories burned, and average heart rate.
+The response must have a color scheme matching the attached image. For example,
+(I)The response must have a modern layout with a focus on the input text. For example,
+The response must contain an interactive chart displaying the user's data selected with checkboxes. For example,
+
+Turn 2:
