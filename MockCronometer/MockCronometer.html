@@ -13,8 +13,29 @@
         }
 
         body {
-            background-color: #1C2526;
-            color: white;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+
+        :root {
+            --background-color: #1C2526;
+            --text-color: white;
+            --secondary-bg: #2A3537;
+            --accent-color: #FF6B35;
+            --chart-bg: white;
+            --footer-bg: #F5F5F5;
+            --footer-text: #2A3537;
+        }
+
+        body.light-theme {
+            --background-color: #F5F5F5;
+            --text-color: #2A3537;
+            --secondary-bg: #E0E0E0;
+            --accent-color: #FF6B35;
+            --chart-bg: #FFFFFF;
+            --footer-bg: #2A3537;
+            --footer-text: white;
         }
 
         .container {
@@ -33,14 +54,27 @@
         .logo {
             font-size: 24px;
             font-weight: bold;
-            color: #FF6B35;
+            color: var(--accent-color);
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            gap: 20px;
         }
 
         nav a {
-            color: white;
+            color: var(--text-color);
             text-decoration: none;
-            margin-left: 20px;
             font-weight: bold;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 24px;
+            cursor: pointer;
         }
 
         .hero {
@@ -60,7 +94,7 @@
         }
 
         .cta-button {
-            background-color: #FF6B35;
+            background-color: var(--accent-color);
             color: white;
             padding: 15px 30px;
             border-radius: 25px;
@@ -70,7 +104,7 @@
         }
 
         .tracker-section {
-            background-color: #2A3537;
+            background-color: var(--secondary-bg);
             padding: 30px;
             border-radius: 10px;
             margin-bottom: 30px;
@@ -103,12 +137,12 @@
             padding: 10px;
             border-radius: 5px;
             border: none;
-            background-color: #1C2526;
-            color: white;
+            background-color: var(--background-color);
+            color: var(--text-color);
         }
 
         .submit-button {
-            background-color: #FF6B35;
+            background-color: var(--accent-color);
             border: none;
             padding: 10px 20px;
             border-radius: 5px;
@@ -130,7 +164,7 @@
         }
 
         .chart-container {
-            background-color: white;
+            background-color: var(--chart-bg);
             padding: 20px;
             border-radius: 10px;
             height: 400px;
@@ -145,7 +179,7 @@
         }
 
         .chart-controls button {
-            background-color: #FF6B35;
+            background-color: var(--accent-color);
             border: none;
             padding: 8px 16px;
             border-radius: 5px;
@@ -153,7 +187,7 @@
             cursor: pointer;
         }
 
-        /* Login Popup Styles */
+        /* Modal Styles */
         .modal {
             display: none;
             position: fixed;
@@ -166,7 +200,7 @@
         }
 
         .modal-content {
-            background-color: #2A3537;
+            background-color: var(--secondary-bg);
             margin: 15% auto;
             padding: 20px;
             border-radius: 10px;
@@ -181,7 +215,7 @@
             top: 20px;
             font-size: 24px;
             cursor: pointer;
-            color: white;
+            color: var(--text-color);
         }
 
         .modal-content h2 {
@@ -199,12 +233,12 @@
             padding: 10px;
             border-radius: 5px;
             border: none;
-            background-color: #1C2526;
-            color: white;
+            background-color: var(--background-color);
+            color: var(--text-color);
         }
 
         .modal-content button {
-            background-color: #FF6B35;
+            background-color: var(--accent-color);
             border: none;
             padding: 10px;
             border-radius: 5px;
@@ -215,8 +249,8 @@
         footer {
             text-align: center;
             padding: 20px 0;
-            background-color: #F5F5F5;
-            color: #2A3537;
+            background-color: var(--footer-bg);
+            color: var(--footer-text);
         }
 
         footer img {
@@ -244,14 +278,15 @@
                 <a href="#">Products</a>
                 <a href="#">Features</a>
                 <a href="#" id="loginButton">Log In</a>
-                <a href="#" class="cta-button">Sign Up</a>
+                <a href="#" class="cta-button" id="signupButton">Sign Up</a>
+                <button class="theme-toggle" id="themeToggle">🌙</button>
             </nav>
         </header>
 
         <section class="hero">
             <h1>Science-backed health tracking at your fingertips</h1>
             <p>Track your steps, calories, heart rate, and exercise minutes to make more informed decisions about your health</p>
-            <a href="#" class="cta-button">Sign Up - It's Free!</a>
+            <a href="#" class="cta-button" id="signupButtonHero">Sign Up - It's Free!</a>
         </section>
 
         <section class="tracker-section">
@@ -318,6 +353,25 @@
         </div>
     </div>
 
+    <!-- Sign Up Modal -->
+    <div id="signupModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Sign Up</h2>
+            <form id="signupForm">
+                <div class="input-group">
+                    <label for="signupUsername">Username</label>
+                    <input type="text" id="signupUsername" required placeholder="Enter username">
+                </div>
+                <div class="input-group">
+                    <label for="signupPassword">Password</label>
+                    <input type="password" id="signupPassword" required placeholder="Enter password">
+                </div>
+                <button type="submit">Sign Up</button>
+            </form>
+        </div>
+    </div>
+
     <footer>
         <img src="https://via.placeholder.com/100x30?text=GOOD+HOUSEKEEPING" alt="Good Housekeeping">
         <img src="https://via.placeholder.com/100x30?text=healthline" alt="Healthline">
@@ -340,7 +394,24 @@
             minutes: []
         };
 
-        // Check if user is logged in
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('themeToggle');
+        const body = document.body;
+
+        // Load saved theme
+        if (localStorage.getItem('theme') === 'light') {
+            body.classList.add('light-theme');
+            themeToggle.textContent = '☀️';
+        }
+
+        themeToggle.addEventListener('click', () => {
+            body.classList.toggle('light-theme');
+            const isLightTheme = body.classList.contains('light-theme');
+            themeToggle.textContent = isLightTheme ? '☀️' : '🌙';
+            localStorage.setItem('theme', isLightTheme ? 'light' : 'dark');
+        });
+
+        // Check if user is logged in or signed up
         const loggedInUser = localStorage.getItem('username');
         if (loggedInUser) {
             document.getElementById('welcomeMessage').style.display = 'block';
@@ -523,32 +594,64 @@
         }
 
         // Login Modal functionality
-        const modal = document.getElementById('loginModal');
+        const loginModal = document.getElementById('loginModal');
         const loginButton = document.getElementById('loginButton');
-        const closeButton = document.getElementsByClassName('close')[0];
+        const loginCloseButton = loginModal.getElementsByClassName('close')[0];
         const loginForm = document.getElementById('loginForm');
 
         loginButton.onclick = function() {
-            modal.style.display = 'block';
+            loginModal.style.display = 'block';
         }
 
-        closeButton.onclick = function() {
-            modal.style.display = 'none';
-        }
-
-        window.onclick = function(event) {
-            if (event.target == modal) {
-                modal.style.display = 'none';
-            }
+        loginCloseButton.onclick = function() {
+            loginModal.style.display = 'none';
         }
 
         loginForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const username = document.getElementById('username').value;
             localStorage.setItem('username', username);
-            modal.style.display = 'none';
+            loginModal.style.display = 'none';
             location.reload();
         });
+
+        // Sign Up Modal functionality
+        const signupModal = document.getElementById('signupModal');
+        const signupButton = document.getElementById('signupButton');
+        const signupButtonHero = document.getElementById('signupButtonHero');
+        const signupCloseButton = signupModal.getElementsByClassName('close')[0];
+        const signupForm = document.getElementById('signupForm');
+
+        signupButton.onclick = function() {
+            signupModal.style.display = 'block';
+        }
+
+        signupButtonHero.onclick = function(e) {
+            e.preventDefault();
+            signupModal.style.display = 'block';
+        }
+
+        signupCloseButton.onclick = function() {
+            signupModal.style.display = 'none';
+        }
+
+        signupForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = document.getElementById('signupUsername').value;
+            localStorage.setItem('username', username);
+            signupModal.style.display = 'none';
+            location.reload();
+        });
+
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            if (event.target == loginModal) {
+                loginModal.style.display = 'none';
+            }
+            if (event.target == signupModal) {
+                signupModal.style.display = 'none';
+            }
+        }
     </script>
 </body>
 </html>
