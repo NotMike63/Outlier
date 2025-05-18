@@ -1,10 +1,527 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Dashboard</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            line-height: 1.6;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        header {
+            background: #fff;
+            color: #333;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #ddd;
+            position: sticky; /* Makes the header sticky */
+            top: 0;
+            z-index: 1000; /* Ensures header stays on top */
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: orange;
+        }
+
+        nav .nav-button {
+            color: #333;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        nav .nav-button:hover {
+            background-color: orange;
+            color: #fff;
+        }
+
+        .plane-container {
+            position: absolute;
+            top: 10px; /* Adjust as needed */
+            left: 0;
+            width: 100%;
+            height: 50px; /* Adjust as needed */
+            overflow: hidden; /* Important for the plane movement illusion */
+            pointer-events: none; /* Allows clicks to pass through */
+        }
+
+        #movingPlane {
+            position: absolute;
+            font-size: 2rem; /* Adjust plane size */
+            color: orange;
+            left: 0; /* Start position */
+            transition: left 0.1s linear; /* Smooth movement */
+        }
+
+        main {
+            padding: 2rem;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 2rem 0;
+            background-color: #e9e9e9;
+            margin-bottom: 2rem;
+        }
+
+        .hero h1 {
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+        }
+
+        .search-bar-container {
+            background-color: #fff;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .search-options {
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 0.5rem; /* Spacing between buttons */
+        }
+
+        .search-option-btn {
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            padding: 0.75rem 1.25rem;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .search-option-btn.active {
+            background-color: orange;
+            color: white;
+            border-color: orange;
+        }
+
+        .search-option-btn:hover {
+            background-color: #ddd;
+            border-color: #bbb;
+        }
+
+        .search-option-btn.active:hover {
+            background-color: darkorange;
+            border-color: darkorange;
+        }
+
+
+        .search-form {
+            display: flex;
+            flex-wrap: wrap; /* Allow items to wrap on smaller screens */
+            gap: 0.5rem; /* Spacing between form elements */
+            align-items: center;
+        }
+
+        .search-form input[type="text"],
+        .search-form input[type="date"],
+        .search-form select {
+            padding: 0.75rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            flex-grow: 1; /* Allow inputs to take available space */
+            min-width: 150px; /* Minimum width for inputs */
+            font-size: 0.9rem;
+        }
+
+        .search-form input[type="text"]#departureAirport,
+        .search-form input[type="text"]#arrivalAirport {
+            position: relative; /* Needed for autocomplete positioning */
+        }
+
+        .search-button {
+            background-color: orange;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.25rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .search-button:hover {
+            background-color: darkorange;
+        }
+
+        /* Autocomplete styles (basic) */
+        .autocomplete-items {
+            position: absolute;
+            border: 1px solid #d4d4d4;
+            border-bottom: none;
+            border-top: none;
+            z-index: 99;
+            /* These will be controlled by JS or relative to the input */
+            /* top: 100%; */
+            /* left: 0; */
+            /* right: 0; */
+            max-height: 200px; /* Prevent list from being too long */
+            overflow-y: auto; /* Add scroll for long lists */
+        }
+
+        .autocomplete-items div {
+            padding: 10px;
+            cursor: pointer;
+            background-color: #fff;
+            border-bottom: 1px solid #d4d4d4;
+        }
+
+        .autocomplete-items div:hover {
+            background-color: #e9e9e9;
+        }
+
+        .autocomplete-active {
+            background-color: DodgerBlue !important;
+            color: #ffffff;
+        }
+
+
+        .info-cards, .deal-cards {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card, .deal-card {
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            text-align: center;
+            flex-basis: 30%; /* Adjust for number of cards per row */
+            min-width: 250px; /* Ensure cards don't get too small */
+            opacity: 0; /* Initially hidden for reveal effect */
+            transform: translateY(20px); /* Start slightly lower for reveal effect */
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+
+        .card.visible, .deal-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .deal-image-placeholder {
+            width: 100%;
+            height: 150px; /* Adjust as needed */
+            background-color: #e0e0e0; /* Placeholder color */
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #aaa;
+            font-style: italic;
+        }
+        .deal-image-placeholder::before {
+            content: "Image Placeholder"; /* Text for the placeholder */
+        }
+
+
+        .deal-card h4 {
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .deal-card p {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        footer {
+            text-align: center;
+            padding: 1.5rem;
+            background: #333;
+            color: #fff;
+            margin-top: 2rem;
+        }
+    </style>
 </head>
 <body>
-$END$
+    <header>
+        <div class="logo">TRAVELCO</div>
+        <nav>
+            <a href="#" class="nav-button">Sign In</a>
+        </nav>
+        <div class="plane-container">
+            <div id="movingPlane">&#9992;</div> {/* Plane icon */}
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <h1>Save up to 22% on flights - Compare 100s of travel sites at once.</h1>
+            <div class="search-bar-container">
+                <div class="search-options">
+                    <button class="search-option-btn active">Flights</button>
+                    <button class="search-option-btn">Stays</button>
+                    <button class="search-option-btn">Cars</button>
+                    <button class="search-option-btn">Packages</button>
+                    <button class="search-option-btn">More</button>
+                </div>
+                <div class="search-form">
+                    <div style="position: relative; flex-grow: 1;"> {/* Wrapper for autocomplete positioning */}
+                        <input type="text" id="departureAirport" placeholder="Departure Airport (e.g., LAX)" autocomplete="off">
+                    </div>
+                    <div style="position: relative; flex-grow: 1;"> {/* Wrapper for autocomplete positioning */}
+                        <input type="text" id="arrivalAirport" placeholder="Arrival Airport" autocomplete="off">
+                    </div>
+                    <input type="date" id="departureDate">
+                    <input type="date" id="returnDate">
+                    <select id="travelers">
+                        <option value="1">1 Adult</option>
+                        <option value="2">2 Adults</option>
+                        {/* Add more options as needed */}
+                    </select>
+                    <button class="search-button">&#128269;</button> {/* Search icon */}
+                </div>
+            </div>
+        </section>
+
+        <section class="info-cards">
+            <div class="card reveal">
+                <h3>Save when you compare</h3>
+                <p>More deals. More sites. One search.</p>
+            </div>
+            <div class="card reveal">
+                <h3>41,000,000+</h3>
+                <p>Searches this week</p>
+            </div>
+            <div class="card reveal">
+                <h3>Travelers love us</h3>
+                <p>Top ratings on our app</p>
+            </div>
+        </section>
+
+        <section class="deals">
+            <h2>Travel deals under $150</h2>
+            <div class="deal-cards">
+                <div class="deal-card reveal">
+                    <div class="deal-image-placeholder"></div>
+                    <h4>New York</h4>
+                    <p>Flight + Hotel</p>
+                    <p>Dates for travel</p>
+                </div>
+                <div class="deal-card reveal">
+                    <div class="deal-image-placeholder"></div>
+                    <h4>Miami</h4>
+                    <p>Flight + Hotel</p>
+                    <p>Dates for travel</p>
+                </div>
+                <div class="deal-card reveal">
+                    <div class="deal-image-placeholder"></div>
+                    <h4>Beckley</h4>
+                    <p>Flight + Hotel</p>
+                    <p>Dates for travel</p>
+                </div>
+                <div class="deal-card reveal">
+                    <div class="deal-image-placeholder"></div>
+                    <h4>Detroit</h4>
+                    <p>Flight + Hotel</p>
+                    <p>Dates for travel</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 TRAVELCO. All rights reserved.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const movingPlane = document.getElementById('movingPlane');
+            const header = document.querySelector('header');
+            const revealElements = document.querySelectorAll('.reveal');
+            const searchOptionBtns = document.querySelectorAll('.search-option-btn');
+            const departureAirportInput = document.getElementById('departureAirport');
+            const arrivalAirportInput = document.getElementById('arrivalAirport');
+
+            // --- Moving Plane on Scroll ---
+            window.addEventListener('scroll', () => {
+                if (movingPlane) { // Check if element exists
+                    const scrollPercentage = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+                    // Ensure the plane doesn't go beyond the screen width
+                    const maxPlaneLeft = window.innerWidth - movingPlane.offsetWidth - 20; // 20px padding from right
+                    let planePosition = (scrollPercentage / 100) * maxPlaneLeft;
+                    planePosition = Math.min(planePosition, maxPlaneLeft); // Cap at max position
+                    planePosition = Math.max(0, planePosition); // Ensure it doesn't go negative
+
+                    movingPlane.style.left = `${planePosition}px`;
+                }
+            });
+
+            // --- Reveal Elements on Scroll ---
+            const revealOnScroll = () => {
+                const windowHeight = window.innerHeight;
+                revealElements.forEach(el => {
+                    const elementTop = el.getBoundingClientRect().top;
+                    if (elementTop < windowHeight - 100) { // Reveal when 100px from bottom
+                        el.classList.add('visible');
+                    } else {
+                        // Optional: remove 'visible' to re-trigger animation if scrolling up
+                        // el.classList.remove('visible');
+                    }
+                });
+            };
+
+            window.addEventListener('scroll', revealOnScroll);
+            revealOnScroll(); // Initial check in case elements are already in view
+
+            // --- Search Option Button Active State ---
+            searchOptionBtns.forEach(button => {
+                button.addEventListener('click', () => {
+                    searchOptionBtns.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                });
+            });
+
+            // --- Airport Autocomplete (Simple Example) ---
+            // In a real application, you'd fetch this data from an API
+            const airports = [
+                { code: "LAX", name: "Los Angeles International Airport" },
+                { code: "JFK", name: "John F. Kennedy International Airport" },
+                { code: "ORD", name: "O'Hare International Airport" },
+                { code: "ATL", name: "Hartsfield-Jackson Atlanta International Airport" },
+                { code: "DFW", name: "Dallas/Fort Worth International Airport" },
+                { code: "DEN", name: "Denver International Airport" },
+                { code: "SFO", name: "San Francisco International Airport" },
+                { code: "SEA", name: "Seattle-Tacoma International Airport" },
+                { code: "MCO", name: "Orlando International Airport" },
+                { code: "LAS", name: "McCarran International Airport" }, // Current name: Harry Reid International Airport
+                { code: "CLT", name: "Charlotte Douglas International Airport" },
+                { code: "PHX", name: "Phoenix Sky Harbor International Airport" },
+                { code: "MIA", name: "Miami International Airport" },
+                { code: "LHR", name: "London Heathrow Airport" },
+                { code: "CDG", name: "Charles de Gaulle Airport" },
+                { code: "AMS", name: "Amsterdam Airport Schiphol" },
+                { code: "FRA", name: "Frankfurt Airport" },
+                { code: "DXB", name: "Dubai International Airport" },
+                { code: "HND", name: "Tokyo Haneda Airport" },
+                // Add more airports as needed
+            ];
+
+            function autocomplete(inp, arr) {
+                let currentFocus;
+                inp.addEventListener("input", function(e) {
+                    let a, b, i, val = this.value;
+                    closeAllLists();
+                    if (!val) { return false; }
+                    currentFocus = -1;
+                    a = document.createElement("DIV");
+                    a.setAttribute("id", this.id + "autocomplete-list");
+                    a.setAttribute("class", "autocomplete-items");
+                    /*append the autocomplete DIV as a child of the input's parent element (for better positioning control):*/
+                    this.parentNode.appendChild(a);
+                    // Position the autocomplete list
+                    a.style.left = inp.offsetLeft + 'px';
+                    a.style.top = inp.offsetTop + inp.offsetHeight + 'px';
+                    a.style.width = inp.offsetWidth + 'px';
+
+
+                    for (i = 0; i < arr.length; i++) {
+                        const airportText = `${arr[i].name} (${arr[i].code})`;
+                        if (airportText.toUpperCase().includes(val.toUpperCase()) ||
+                            arr[i].code.toUpperCase().includes(val.toUpperCase())) {
+                            b = document.createElement("DIV");
+                            // Make the matching part bold
+                            let matchIndexName = airportText.toUpperCase().indexOf(val.toUpperCase());
+                            let matchIndexCode = arr[i].code.toUpperCase().indexOf(val.toUpperCase());
+
+                            if (matchIndexName !== -1) {
+                                b.innerHTML = airportText.substr(0, matchIndexName);
+                                b.innerHTML += "<strong>" + airportText.substr(matchIndexName, val.length) + "</strong>";
+                                b.innerHTML += airportText.substr(matchIndexName + val.length);
+                            } else if (matchIndexCode !== -1 && airportText.toUpperCase().includes(`(${arr[i].code.toUpperCase()})`)) {
+                                // if code matches, try to bold within the (CODE) part
+                                let codeDisplay = `(${arr[i].code})`;
+                                let boldedCodeDisplay = `(${arr[i].code.substr(0, matchIndexCode)}<strong>${arr[i].code.substr(matchIndexCode, val.length)}</strong>${arr[i].code.substr(matchIndexCode + val.length)})`;
+                                b.innerHTML = airportText.replace(codeDisplay, boldedCodeDisplay);
+                            }
+                            else {
+                                b.innerHTML = airportText; // Fallback if complex bolding fails
+                            }
+
+                            b.innerHTML += "<input type='hidden' value='" + arr[i].code + "'>";
+                            b.innerHTML += "<input type='hidden' value='" + escape(airportText) + "'>";
+                            b.addEventListener("click", function(e) {
+                                inp.value = unescape(this.getElementsByTagName("input")[1].value);
+                                closeAllLists();
+                            });
+                            a.appendChild(b);
+                        }
+                    }
+                });
+
+                inp.addEventListener("keydown", function(e) {
+                    let x = document.getElementById(this.id + "autocomplete-list");
+                    if (x) x = x.getElementsByTagName("div");
+                    if (e.keyCode == 40) { // Down arrow
+                        currentFocus++;
+                        addActive(x);
+                    } else if (e.keyCode == 38) { // Up arrow
+                        currentFocus--;
+                        addActive(x);
+                    } else if (e.keyCode == 13) { // Enter
+                        e.preventDefault();
+                        if (currentFocus > -1) {
+                            if (x) x[currentFocus].click();
+                        }
+                    }
+                });
+
+                function addActive(x) {
+                    if (!x) return false;
+                    removeActive(x);
+                    if (currentFocus >= x.length) currentFocus = 0;
+                    if (currentFocus < 0) currentFocus = (x.length - 1);
+                    x[currentFocus].classList.add("autocomplete-active");
+                }
+
+                function removeActive(x) {
+                    for (let i = 0; i < x.length; i++) {
+                        x[i].classList.remove("autocomplete-active");
+                    }
+                }
+
+                function closeAllLists(elmnt) {
+                    const x = document.getElementsByClassName("autocomplete-items");
+                    for (let i = 0; i < x.length; i++) {
+                        if (elmnt != x[i] && elmnt != inp) {
+                            x[i].parentNode.removeChild(x[i]);
+                        }
+                    }
+                }
+                document.addEventListener("click", function (e) {
+                    closeAllLists(e.target);
+                });
+            }
+
+            if (departureAirportInput) {
+                autocomplete(departureAirportInput, airports);
+            }
+            if (arrivalAirportInput) {
+                autocomplete(arrivalAirportInput, airports);
+            }
+
+        });
+    </script>
 </body>
 </html>

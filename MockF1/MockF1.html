@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health & Wellness Blog</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+        }
+
+        /* Header Styles */
+        .header {
+            background-color: #1E90FF;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .nav {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav a {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .nav a:hover {
+            text-decoration: underline;
+        }
+
+        .search-container {
+            position: relative;
+        }
+
+        .search-bar {
+            padding: 5px;
+            border: none;
+            border-radius: 15px;
+            width: 150px;
+        }
+
+        .search-bar:focus {
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Main Content Styles */
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            display: flex;
+            gap: 20px;
+        }
+
+        .main-content {
+            flex: 3;
+        }
+
+        .sidebar {
+            flex: 1;
+        }
+
+        /* Article Card Styles */
+        .article-card {
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            transition: transform 0.3s ease;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .article-card:hover {
+            transform: scale(1.05);
+        }
+
+        .article-card:hover::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 50px;
+            height: 50px;
+            background-color: #1E90FF;
+            clip-path: polygon(100% 0, 0 100%, 100% 100%);
+        }
+
+        .article-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .article-content {
+            padding: 15px;
+            position: relative;
+        }
+
+        .view-count {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+        .like-dislike {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            display: flex;
+            gap: 10px;
+            font-size: 12px;
+        }
+
+        .like-dislike span {
+            background-color: #e0e0e0;
+            padding: 5px 10px;
+            border-radius: 12px;
+        }
+
+        .article-content h3 {
+            margin-bottom: 10px;
+            font-size: 18px;
+            color: #333;
+        }
+
+        .article-content p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .category {
+            color: #1E90FF;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        /* Banner Styles */
+        .banner {
+            background-color: #f0f0f0;
+            padding: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* Sidebar Article Styles */
+        .sidebar-article {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .sidebar-article img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .sidebar-article h4 {
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .sidebar-article .view-count {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+        .sidebar-article .like-dislike {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+        }
+
+        /* More Articles Section */
+        .more-articles {
+            display: none;
+        }
+
+        .more-articles.active {
+            display: block;
+        }
+
+        /* Button Styles */
+        .more-news {
+            background-color: #1E90FF;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: block;
+            margin: 20px auto;
+        }
+
+        .more-news:hover {
+            background-color: #1873CC;
+        }
+
+        /* Article Detail View */
+        .article-detail {
+            display: none;
+            max-width: 1200px;
+            margin: 20px auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .article-detail.active {
+            display: block;
+        }
+
+        .article-detail img {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .article-detail h2 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .article-detail .category {
+            margin-bottom: 10px;
+        }
+
+        .like-dislike-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .like-dislike-buttons button {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .like-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .dislike-btn {
+            background-color: #F44336;
+            color: white;
+        }
+
+        .back-btn {
+            background-color: #1E90FF;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .back-btn:hover {
+            background-color: #1873CC;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">Health & Wellness</div>
+        <nav class="nav">
+            <a href="#">Latest</a>
+            <a href="#">Nutrition</a>
+            <a href="#">Fitness</a>
+            <a href="#">Mental Health</a>
+            <a href="#">Wellness</a>
+            <a href="#">Videos</a>
+        </nav>
+        <div class="search-container">
+            <input type="text" class="search-bar" placeholder="Search articles..." id="searchInput">
+        </div>
+    </header>
+
+    <!-- Article Detail View -->
+    <div class="article-detail" id="articleDetail">
+        <button class="back-btn" id="backBtn">Back to Articles</button>
+        <div class="like-dislike-buttons">
+            <button class="like-btn" id="likeBtn"><span>👍</span> <span id="likeCountDetail">0</span></button>
+            <button class="dislike-btn" id="dislikeBtn"><span>👎</span> <span id="dislikeCountDetail">0</span></button>
+        </div>
+        <img id="detailImage" src="" alt="Article Image">
+        <div class="category" id="detailCategory"></div>
+        <h2 id="detailTitle"></h2>
+        <p id="detailContent"></p>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container" id="mainContainer">
+        <div class="main-content">
+            <div class="banner">
+                <p>Advertisement Banner - 2023 Health Trends</p>
+            </div>
+
+            <div class="article-card" data-id="1">
+                <img src="https://via.placeholder.com/800x400" alt="Main Article">
+                <div class="article-content">
+                    <div class="category">NUTRITION</div>
+                    <h3>Superfoods You Should Add to Your Diet in 2023</h3>
+                    <p>Discover the top superfoods that can boost your health and energy levels this year.</p>
+                    <span class="view-count">1.2K Views</span>
+                    <div class="like-dislike">
+                        <span class="likes">👍 0</span>
+                        <span class="dislikes">👎 0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="article-card" data-id="2">
+                <img src="https://via.placeholder.com/800x400" alt="Article">
+                <div class="article-content">
+                    <div class="category">FITNESS</div>
+                    <h3>Best Morning Exercises to Start Your Day Right</h3>
+                    <p>Learn the most effective morning workouts to improve your fitness and mood.</p>
+                    <span class="view-count">950 Views</span>
+                    <div class="like-dislike">
+                        <span class="likes">👍 0</span>
+                        <span class="dislikes">👎 0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- More Articles Section -->
+            <div class="more-articles" id="moreArticles">
+                <div class="article-card" data-id="3">
+                    <img src="https://via.placeholder.com/800x400" alt="Article">
+                    <div class="article-content">
+                        <div class="category">WELLNESS</div>
+                        <h3>The Benefits of Daily Meditation</h3>
+                        <p>Explore how a daily meditation practice can transform your life.</p>
+                        <span class="view-count">780 Views</span>
+                        <div class="like-dislike">
+                            <span class="likes">👍 0</span>
+                            <span class="dislikes">👎 0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="article-card" data-id="4">
+                    <img src="https://via.placeholder.com/800x400" alt="Article">
+                    <div class="article-content">
+                        <div class="category">NUTRITION</div>
+                        <h3>Top 5 Smoothie Recipes for a Healthy Breakfast</h3>
+                        <p>Quick and nutritious smoothie recipes to kickstart your day.</p>
+                        <span class="view-count">620 Views</span>
+                        <div class="like-dislike">
+                            <span class="likes">👍 0</span>
+                            <span class="dislikes">👎 0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="article-card" data-id="5">
+                    <img src="https://via.placeholder.com/800x400" alt="Article">
+                    <div class="article-content">
+                        <div class="category">FITNESS</div>
+                        <h3>HIIT Workouts for Beginners</h3>
+                        <p>Get started with high-intensity interval training with these easy routines.</p>
+                        <span class="view-count">1.5K Views</span>
+                        <div class="like-dislike">
+                            <span class="likes">👍 0</span>
+                            <span class="dislikes">👎 0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="article-card" data-id="6">
+                    <img src="https://via.placeholder.com/800x400" alt="Article">
+                    <div class="article-content">
+                        <div class="category">MENTAL HEALTH</div>
+                        <h3>Managing Stress in a Busy World</h3>
+                        <p>Practical tips to reduce stress and improve mental well-being.</p>
+                        <span class="view-count">890 Views</span>
+                        <div class="like-dislike">
+                            <span class="likes">👍 0</span>
+                            <span class="dislikes">👎 0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="article-card" data-id="7">
+                    <img src="https://via.placeholder.com/800x400" alt="Article">
+                    <div class="article-content">
+                        <div class="category">WELLNESS</div>
+                        <h3>The Importance of Quality Sleep</h3>
+                        <p>Learn why sleep is crucial for your overall health and how to improve it.</p>
+                        <span class="view-count">1.1K Views</span>
+                        <div class="like-dislike">
+                            <span class="likes">👍 0</span>
+                            <span class="dislikes">👎 0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="article-card" data-id="8">
+                <img src="https://via.placeholder.com/400x200" alt="Sidebar Article">
+                <div class="article-content">
+                    <div class="category">VIDEO</div>
+                    <h3>5-Minute Meditation for Stress Relief</h3>
+                    <p>Follow this quick guided meditation to reduce stress and find calm.</p>
+                    <span class="view-count">2.3K Views</span>
+                    <div class="like-dislike">
+                        <span class="likes">👍 0</span>
+                        <span class="dislikes">👎 0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="article-card" data-id="9">
+                <img src="https://via.placeholder.com/400x200" alt="Sidebar Article">
+                <div class="article-content">
+                    <div class="category">NEWS</div>
+                    <h3>New Study Reveals Benefits of Daily Yoga</h3>
+                    <p>Research shows how yoga can improve both physical and mental health.</p>
+                    <span class="view-count">1.8K Views</span>
+                    <div class="like-dislike">
+                        <span class="likes">👍 0</span>
+                        <span class="dislikes">👎 0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-article" data-id="10">
+                <img src="https://via.placeholder.com/100x100" alt="Small Article">
+                <div>
+                    <div class="category">BLOG</div>
+                    <h4>How I Improved My Sleep Quality</h4>
+                    <p>Personal journey to better sleep with practical tips.</p>
+                </div>
+                <span class="view-count">500 Views</span>
+                <div class="like-dislike">
+                    <span class="likes">👍 0</span>
+                    <span class="dislikes">👎 0</span>
+                </div>
+            </div>
+
+            <div class="sidebar-article" data-id="11">
+                <img src="https://via.placeholder.com/100x100" alt="Small Article">
+                <div>
+                    <div class="category">NEWS</div>
+                    <h4>Expert Tips for Better Hydration</h4>
+                    <p>Nutritionists share advice on staying hydrated throughout the day.</p>
+                </div>
+                <span class="view-count">700 Views</span>
+                <div class="like-dislike">
+                    <span class="likes">👍 0</span>
+                    <span class="dislikes">👎 0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button class="more-news" id="moreNewsBtn">More Health News</button>
+
+    <script>
+        // Article data with initial likes and dislikes
+        const articlesData = {
+            1: { title: "Superfoods You Should Add to Your Diet in 2023", category: "NUTRITION", content: "Discover the top superfoods that can boost your health and energy levels this year. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.", image: "https://via.placeholder.com/800x400", likes: 0, dislikes: 0 },
+            2: { title: "Best Morning Exercises to Start Your Day Right", category: "FITNESS", content: "Learn the most effective morning workouts to improve your fitness and mood. Lorem ipsum dolor sit amet, consectetur adipiscing elit.", image: "https://via.placeholder.com/800x400", likes: 0, dislikes: 0 },
+            3: { title: "The Benefits of Daily Meditation", category: "WELLNESS", content: "Explore how a daily meditation practice can transform your life. Lorem ipsum dolor sit amet.", image: "https://via.placeholder.com/800x400", likes: 0, dislikes: 0 },
+            4: { title: "Top 5 Smoothie Recipes for a Healthy Breakfast", category: "NUTRITION", content: "Quick and nutritious smoothie recipes to kickstart your day. Lorem ipsum dolor sit amet.", image: "https://via.placeholder.com/800x400", likes: 0, dislikes: 0 },
+            5: { title: "HIIT Workouts for Beginners", category: "FITNESS", content: "Get started with high-intensity interval training with these easy routines. Lorem ipsum dolor sit amet.", image: "https://via.placeholder.com/800x400", likes: 0, dislikes: 0 },
+            6: { title: "Managing Stress in a Busy World", category: "MENTAL HEALTH", content: "Practical tips to reduce stress and improve mental well-being. Lorem ipsum dolor sit amet.", image: "https://via.placeholder.com/800x400", likes: 0, dislikes: 0 },
+            7: { title: "The Importance of Quality Sleep", category: "WELLNESS", content: "Learn why sleep is crucial for your overall health and how to improve it. Lorem ipsum dolor sit amet.", image: "https://via.placeholder.com/800x400", likes: 0, dislikes: 0 },
+            8: { title: "5-Minute Meditation for Stress Relief", category: "VIDEO", content: "Follow this quick guided meditation to reduce stress and find calm. Lorem ipsum dolor sit amet.", image: "https://via.placeholder.com/400x200", likes: 0, dislikes: 0 },
+            9: { title: "New Study Reveals Benefits of Daily Yoga", category: "NEWS", content: "Research shows how yoga can improve both physical and mental health. Lorem ipsum dolor sit amet.", image: "https://via.placeholder.com/400x200", likes: 0, dislikes: 0 },
+            10: { title: "How I Improved My Sleep Quality", category: "BLOG", content: "Personal journey to better sleep with practical tips. Lorem ipsum dolor sit amet.", image: "https://via.placeholder.com/100x100", likes: 0, dislikes: 0 },
+            11: { title: "Expert Tips for Better Hydration", category: "NEWS", content: "Nutritionists share advice on staying hydrated throughout the day. Lorem ipsum dolor sit amet.", image: "https://via.placeholder.com/100x100", likes: 0, dislikes: 0 }
+        };
+
+        // DOM Elements
+        const mainContainer = document.getElementById('mainContainer');
+        const articleDetail = document.getElementById('articleDetail');
+        const backBtn = document.getElementById('backBtn');
+        const detailImage = document.getElementById('detailImage');
+        const detailCategory = document.getElementById('detailCategory');
+        const detailTitle = document.getElementById('detailTitle');
+        const detailContent = document.getElementById('detailContent');
+        const likeBtn = document.getElementById('likeBtn');
+        const dislikeBtn = document.getElementById('dislikeBtn');
+        const likeCountDetail = document.getElementById('likeCountDetail');
+        const dislikeCountDetail = document.getElementById('dislikeCountDetail');
+        const articleCards = document.querySelectorAll('.article-card, .sidebar-article');
+
+        let currentArticleId = null;
+
+        // Show article detail view
+        articleCards.forEach(card => {
+            card.addEventListener('click', () => {
+                currentArticleId = card.getAttribute('data-id');
+                const article = articlesData[currentArticleId];
+
+                detailImage.src = article.image;
+                detailCategory.textContent = article.category;
+                detailTitle.textContent = article.title;
+                detailContent.textContent = article.content;
+                likeCountDetail.textContent = article.likes;
+                dislikeCountDetail.textContent = article.dislikes;
+
+                mainContainer.style.display = 'none';
+                articleDetail.classList.add('active');
+            });
+        });
+
+        // Back to main page
+        backBtn.addEventListener('click', () => {
+            mainContainer.style.display = 'flex';
+            articleDetail.classList.remove('active');
+            currentArticleId = null;
+        });
+
+        // Like and Dislike button functionality
+        likeBtn.addEventListener('click', () => {
+            if (currentArticleId) {
+                articlesData[currentArticleId].likes++;
+                updateLikeDislikeCounts(currentArticleId);
+            }
+        });
+
+        dislikeBtn.addEventListener('click', () => {
+            if (currentArticleId) {
+                articlesData[currentArticleId].dislikes++;
+                updateLikeDislikeCounts(currentArticleId);
+            }
+        });
+
+        // Update like and dislike counts on main page and detail view
+        function updateLikeDislikeCounts(articleId) {
+            const article = articlesData[articleId];
+            const card = document.querySelector(`[data-id="${articleId}"]`);
+            const likesSpan = card.querySelector('.likes');
+            const dislikesSpan = card.querySelector('.dislikes');
+
+            likesSpan.textContent = `👍 ${article.likes}`;
+            dislikesSpan.textContent = `👎 ${article.dislikes}`;
+
+            if (currentArticleId === articleId) {
+                likeCountDetail.textContent = article.likes;
+                dislikeCountDetail.textContent = article.dislikes;
+            }
+        }
+
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        const articles = document.querySelectorAll('.article-card, .sidebar-article');
+
+        searchInput.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+
+            articles.forEach(article => {
+                const title = article.querySelector('h3, h4').textContent.toLowerCase();
+                const content = article.querySelector('p').textContent.toLowerCase();
+
+                if (title.includes(searchTerm) || content.includes(searchTerm)) {
+                    article.style.display = 'block';
+                } else {
+                    article.style.display = 'none';
+                }
+            });
+        });
+
+        // More Health News button functionality
+        const moreNewsBtn = document.getElementById('moreNewsBtn');
+        const moreArticles = document.getElementById('moreArticles');
+
+        moreNewsBtn.addEventListener('click', function() {
+            moreArticles.classList.toggle('active');
+            moreNewsBtn.textContent = moreArticles.classList.contains('active') ? 'Show Less' : 'More Health News';
+        });
+    </script>
+</body>
+</html>
