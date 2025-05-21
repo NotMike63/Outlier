@@ -2,9 +2,871 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Store</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #1a1a2e;
+            color: #fff;
+        }
+
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: #0f0f1a;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            color: #00aaff;
+        }
+
+        .auth-buttons button {
+            background: #00aaff;
+            border: none;
+            padding: 8px 15px;
+            margin-left: 10px;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .auth-buttons button:hover {
+            background: #0088cc;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-top: 60px;
+        }
+
+        /* Featured Section */
+        .featured-section {
+            position: relative;
+            height: 400px;
+            background: url('https://via.placeholder.com/1920x400?text=Featured+Game+Background') no-repeat center/cover;
+        }
+
+        .featured-game {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            width: 600px;
+            display: flex;
+        }
+
+        .featured-game img {
+            width: 150px;
+            height: 200px;
+            margin-right: 20px;
+        }
+
+        .featured-game .details h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .featured-game .details p {
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .featured-game .details .price {
+            font-size: 18px;
+            color: #00aaff;
+        }
+
+        /* Categories */
+        .categories {
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            background: #0f0f1a;
+        }
+
+        .categories button {
+            background: #333;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 5px;
+            color: #fff;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        .categories button:hover {
+            background: #555;
+        }
+
+        .categories button.active {
+            background: #00aaff;
+        }
+
+        /* Game Sections */
+        .game-section {
+            padding: 20px;
+            display: none;
+        }
+
+        .game-section.active {
+            display: block;
+        }
+
+        .game-section h2 {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .game-list {
+            display: flex;
+            overflow-x: auto;
+            gap: 20px;
+        }
+
+        .game-card {
+            width: 200px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .game-card img {
+            width: 100%;
+            height: 250px;
+            border-radius: 10px;
+        }
+
+        .game-card p {
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .game-card .price {
+            color: #00aaff;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background: #1a1a2e;
+            padding: 20px;
+            border-radius: 10px;
+            width: 800px;
+            text-align: left;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-content img.cover {
+            width: 200px;
+            height: 300px;
+            margin-bottom: 20px;
+        }
+
+        .modal-content h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .modal-content p {
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .modal-content .screenshots {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .modal-content .screenshots img {
+            width: 200px;
+            height: 120px;
+            border-radius: 5px;
+        }
+
+        .modal-content .graph {
+            margin: 20px 0;
+        }
+
+        .modal-content button {
+            background: #00aaff;
+            border: none;
+            padding: 10px 20px;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+
+        .modal-content button:hover {
+            background: #0088cc;
+        }
+
+        /* Cart */
+        .cart {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #00aaff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .cart:hover {
+            background: #0088cc;
+        }
+    </style>
 </head>
 <body>
+    <!-- Header -->
+    <div class="header">
+        <h1>Game Store</h1>
+        <div class="auth-buttons">
+            <button onclick="showLogin()">Login</button>
+            <button onclick="showRegister()">Register</button>
+        </div>
+    </div>
 
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Featured Section -->
+        <div class="featured-section">
+            <div class="featured-game">
+                <img src="https://via.placeholder.com/150x200?text=Featured+Game" alt="Featured Game">
+                <div class="details">
+                    <h2>Tom Clancy's Ghost Recon® Wildlands</h2>
+                    <p>Release Date: Mar 7, 2017 | Very Positive (57,247 reviews)</p>
+                    <p>Tags: Open World, Shooter, Co-op, Multiplayer, Action</p>
+                    <p class="price">€39.99</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Categories -->
+        <div class="categories">
+            <button onclick="filterGames('popular')" class="active">Popular</button>
+            <button onclick="filterGames('free')">Free</button>
+            <button onclick="filterGames('sale')">Sale</button>
+        </div>
+
+        <!-- Game Sections -->
+        <div class="game-section active" id="popular-games">
+            <h2>Popular Titles</h2>
+            <div class="game-list">
+                <!-- Popular Games (20 items) -->
+                <div class="game-card" onclick="showGameDetails('Popular Game 1', '€30.99', 'https://via.placeholder.com/200x250?text=Popular+Game+1')">
+                    <img src="https://via.placeholder.com/200x250?text=Popular+Game+1" alt="Popular Game 1">
+                    <p>Popular Game 1</p>
+                    <p class="price">€30.99</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Popular Game 2', '€29.99', 'https://via.placeholder.com/200x250?text=Popular+Game+2')">
+                    <img src="https://via.placeholder.com/200x250?text=Popular+Game+2" alt="Popular Game 2">
+                    <p>Popular Game 2</p>
+                    <p class="price">€29.99</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Popular Game 3', '€35.99', 'https://via.placeholder.com/200x250?text=Popular+Game+3')">
+                    <img src="https://via.placeholder.com/200x250?text=Popular+Game+3" alt="Popular Game 3">
+                    <p>Popular Game 3</p>
+                    <p class="price">€35.99</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Popular Game 4', '€27.99', 'https://via.placeholder.com/200x250?text=Popular+Game+4')">
+                    <img src="https://via.placeholder.com/200x250?text=Popular+Game+4" alt="Popular Game 4">
+                    <p>Popular Game 4</p>
+                    <p class="price">€27.99</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Popular Game 5', '€32.99', 'https://via.placeholder.com/200x250?text=Popular+Game+5')">
+                    <img src="https://via.placeholder.com/200x250?text=Popular+Game+5" alt="Popular Game 5">
+                    <p>Popular Game 5</p>
+                    <p class="price">€32.99</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Popular Game 6', '€28.99', 'https://via.placeholder.com/200x250?text=Popular+Game+6')">
+                    <img src="https://via.placeholder.com/200x250?text=Popular+Game+6" alt="Popular Game 6">
+                    <p>Popular Game 6</p>
+                    <p class="price">€28.99</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Popular Game 7', '€31.99', 'https://via.placeholder.com/200x250?text=Popular+Game+7')">
+                    <img src="https://via.placeholder.com/200x250?text=Popular+Game+7" alt="Popular Game 7">
+                    <p>Popular Game 7</p>
+                    <p class="price">€31.99</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Popular Game 8', '€26.99', 'https://via.placeholder.com/200x250?text=Popular+Game+8')">
+                    <img src="https://via.placeholder.com/200x250?text=Popular+Game+8" alt="Popular Game 8">
+                    <p>Popular Game 8</p>
+                    <p class="price">€26.99</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Popular Game 9', '€34.99', 'https://via.placeholder.com/200x250?text=Popular+Game+9')">
+                    <img src="https://via.placeholder.com/200x250?text=Popular+Game+9" alt="Popular Game 9">
+                    <p>Popular Game 9</p>
+                    <p class="price">€34.99</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Popular Game 10', '€29.99', 'https://via.placeholder.com/200x250?text=Popular+Game+10')">
+                    <img src="https://via.placeholder.com/200x250?text=Popular+Game+10" alt="Popular Game 10">
+                    <p>Popular Game 10</p>
+                    <p class="price">€29.99</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Popular Game 11', '€33.99', 'https://via.placeholder.com/200x250?text=Popular+Game+11')">
+                    <img src="https://via.placeholder.com/200x250?text=Popular+Game+11" alt="Popular Game 11">
+                    <p>Popular Game 11</p>
+                    <p class="price">€33.99</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Popular Game 12', '€27.99', 'https://via.placeholder.com/200x250?text=Popular+Game+12')">
+                    <img src="https://via.placeholder.com/200x250?text=Popular+Game+12" alt="Popular Game 12">
+                    <p>Popular Game 12</p>
+                    <p class="price">€27.99</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Popular Game 13', '€30.99', 'https://via.placeholder.com/200x250?text=Popular+Game+13')">
+                    <img src="https://via.placeholder.com/200x250?text=Popular+Game+13" alt="Popular Game 13">
+                    <p>Popular Game 13</p>
+                    <p class="price">€30.99</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Popular Game 14', '€28.99', 'https://via.placeholder.com/200x250?text=Popular+Game+14')">
+                    <img src="https://via.placeholder.com/200x250?text=Popular+Game+14" alt="Popular Game 14">
+                    <p>Popular Game 14</p>
+                    <p class="price">€28.99</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Popular Game 15', '€32.99', 'https://via.placeholder.com/200x250?text=Popular+Game+15')">
+                    <img src="https://via.placeholder.com/200x250?text=Popular+Game+15" alt="Popular Game 15">
+                    <p>Popular Game 15</p>
+                    <p class="price">€32.99</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Popular Game 16', '€29.99', 'https://via.placeholder.com/200x250?text=Popular+Game+16')">
+                    <img src="https://via.placeholder.com/200x250?text=Popular+Game+16" alt="Popular Game 16">
+                    <p>Popular Game 16</p>
+                    <p class="price">€29.99</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Popular Game 17', '€31.99', 'https://via.placeholder.com/200x250?text=Popular+Game+17')">
+                    <img src="https://via.placeholder.com/200x250?text=Popular+Game+17" alt="Popular Game 17">
+                    <p>Popular Game 17</p>
+                    <p class="price">€31.99</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Popular Game 18', '€26.99', 'https://via.placeholder.com/200x250?text=Popular+Game+18')">
+                    <img src="https://via.placeholder.com/200x250?text=Popular+Game+18" alt="Popular Game 18">
+                    <p>Popular Game 18</p>
+                    <p class="price">€26.99</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Popular Game 19', '€34.99', 'https://via.placeholder.com/200x250?text=Popular+Game+19')">
+                    <img src="https://via.placeholder.com/200x250?text=Popular+Game+19" alt="Popular Game 19">
+                    <p>Popular Game 19</p>
+                    <p class="price">€34.99</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Popular Game 20', '€29.99', 'https://via.placeholder.com/200x250?text=Popular+Game+20')">
+                    <img src="https://via.placeholder.com/200x250?text=Popular+Game+20" alt="Popular Game 20">
+                    <p>Popular Game 20</p>
+                    <p class="price">€29.99</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-section" id="free-games">
+            <h2>Free Games</h2>
+            <div class="game-list">
+                <!-- Free Games (20 items) -->
+                <div class="game-card" onclick="showGameDetails('Free Game 1', 'Free', 'https://via.placeholder.com/200x250?text=Free+Game+1')">
+                    <img src="https://via.placeholder.com/200x250?text=Free+Game+1" alt="Free Game 1">
+                    <p>Free Game 1</p>
+                    <p class="price">Free</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Free Game 2', 'Free', 'https://via.placeholder.com/200x250?text=Free+Game+2')">
+                    <img src="https://via.placeholder.com/200x250?text=Free+Game+2" alt="Free Game 2">
+                    <p>Free Game 2</p>
+                    <p class="price">Free</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Free Game 3', 'Free', 'https://via.placeholder.com/200x250?text=Free+Game+3')">
+                    <img src="https://via.placeholder.com/200x250?text=Free+Game+3" alt="Free Game 3">
+                    <p>Free Game 3</p>
+                    <p class="price">Free</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Free Game 4', 'Free', 'https://via.placeholder.com/200x250?text=Free+Game+4')">
+                    <img src="https://via.placeholder.com/200x250?text=Free+Game+4" alt="Free Game 4">
+                    <p>Free Game 4</p>
+                    <p class="price">Free</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Free Game 5', 'Free', 'https://via.placeholder.com/200x250?text=Free+Game+5')">
+                    <img src="https://via.placeholder.com/200x250?text=Free+Game+5" alt="Free Game 5">
+                    <p>Free Game 5</p>
+                    <p class="price">Free</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Free Game 6', 'Free', 'https://via.placeholder.com/200x250?text=Free+Game+6')">
+                    <img src="https://via.placeholder.com/200x250?text=Free+Game+6" alt="Free Game 6">
+                    <p>Free Game 6</p>
+                    <p class="price">Free</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Free Game 7', 'Free', 'https://via.placeholder.com/200x250?text=Free+Game+7')">
+                    <img src="https://via.placeholder.com/200x250?text=Free+Game+7" alt="Free Game 7">
+                    <p>Free Game 7</p>
+                    <p class="price">Free</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Free Game 8', 'Free', 'https://via.placeholder.com/200x250?text=Free+Game+8')">
+                    <img src="https://via.placeholder.com/200x250?text=Free+Game+8" alt="Free Game 8">
+                    <p>Free Game 8</p>
+                    <p class="price">Free</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Free Game 9', 'Free', 'https://via.placeholder.com/200x250?text=Free+Game+9')">
+                    <img src="https://via.placeholder.com/200x250?text=Free+Game+9" alt="Free Game 9">
+                    <p>Free Game 9</p>
+                    <p class="price">Free</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Free Game 10', 'Free', 'https://via.placeholder.com/200x250?text=Free+Game+10')">
+                    <img src="https://via.placeholder.com/200x250?text=Free+Game+10" alt="Free Game 10">
+                    <p>Free Game 10</p>
+                    <p class="price">Free</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Free Game 11', 'Free', 'https://via.placeholder.com/200x250?text=Free+Game+11')">
+                    <img src="https://via.placeholder.com/200x250?text=Free+Game+11" alt="Free Game 11">
+                    <p>Free Game 11</p>
+                    <p class="price">Free</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Free Game 12', 'Free', 'https://via.placeholder.com/200x250?text=Free+Game+12')">
+                    <img src="https://via.placeholder.com/200x250?text=Free+Game+12" alt="Free Game 12">
+                    <p>Free Game 12</p>
+                    <p class="price">Free</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Free Game 13', 'Free', 'https://via.placeholder.com/200x250?text=Free+Game+13')">
+                    <img src="https://via.placeholder.com/200x250?text=Free+Game+13" alt="Free Game 13">
+                    <p>Free Game 13</p>
+                    <p class="price">Free</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Free Game 14', 'Free', 'https://via.placeholder.com/200x250?text=Free+Game+14')">
+                    <img src="https://via.placeholder.com/200x250?text=Free+Game+14" alt="Free Game 14">
+                    <p>Free Game 14</p>
+                    <p class="price">Free</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Free Game 15', 'Free', 'https://via.placeholder.com/200x250?text=Free+Game+15')">
+                    <img src="https://via.placeholder.com/200x250?text=Free+Game+15" alt="Free Game 15">
+                    <p>Free Game 15</p>
+                    <p class="price">Free</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Free Game 16', 'Free', 'https://via.placeholder.com/200x250?text=Free+Game+16')">
+                    <img src="https://via.placeholder.com/200x250?text=Free+Game+16" alt="Free Game 16">
+                    <p>Free Game 16</p>
+                    <p class="price">Free</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Free Game 17', 'Free', 'https://via.placeholder.com/200x250?text=Free+Game+17')">
+                    <img src="https://via.placeholder.com/200x250?text=Free+Game+17" alt="Free Game 17">
+                    <p>Free Game 17</p>
+                    <p class="price">Free</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Free Game 18', 'Free', 'https://via.placeholder.com/200x250?text=Free+Game+18')">
+                    <img src="https://via.placeholder.com/200x250?text=Free+Game+18" alt="Free Game 18">
+                    <p>Free Game 18</p>
+                    <p class="price">Free</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Free Game 19', 'Free', 'https://via.placeholder.com/200x250?text=Free+Game+19')">
+                    <img src="https://via.placeholder.com/200x250?text=Free+Game+19" alt="Free Game 19">
+                    <p>Free Game 19</p>
+                    <p class="price">Free</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Free Game 20', 'Free', 'https://via.placeholder.com/200x250?text=Free+Game+20')">
+                    <img src="https://via.placeholder.com/200x250?text=Free+Game+20" alt="Free Game 20">
+                    <p>Free Game 20</p>
+                    <p class="price">Free</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-section" id="sale-games">
+            <h2>Games on Sale</h2>
+            <div class="game-list">
+                <!-- Sale Games (20 items) -->
+                <div class="game-card" onclick="showGameDetails('Sale Game 1', '€19.99', 'https://via.placeholder.com/200x250?text=Sale+Game+1')">
+                    <img src="https://via.placeholder.com/200x250?text=Sale+Game+1" alt="Sale Game 1">
+                    <p>Sale Game 1</p>
+                    <p class="price">€19.99</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Sale Game 2', '€15.99', 'https://via.placeholder.com/200x250?text=Sale+Game+2')">
+                    <img src="https://via.placeholder.com/200x250?text=Sale+Game+2" alt="Sale Game 2">
+                    <p>Sale Game 2</p>
+                    <p class="price">€15.99</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Sale Game 3', '€17.99', 'https://via.placeholder.com/200x250?text=Sale+Game+3')">
+                    <img src="https://via.placeholder.com/200x250?text=Sale+Game+3" alt="Sale Game 3">
+                    <p>Sale Game 3</p>
+                    <p class="price">€17.99</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Sale Game 4', '€14.99', 'https://via.placeholder.com/200x250?text=Sale+Game+4')">
+                    <img src="https://via.placeholder.com/200x250?text=Sale+Game+4" alt="Sale Game 4">
+                    <p>Sale Game 4</p>
+                    <p class="price">€14.99</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Sale Game 5', '€18.99', 'https://via.placeholder.com/200x250?text=Sale+Game+5')">
+                    <img src="https://via.placeholder.com/200x250?text=Sale+Game+5" alt="Sale Game 5">
+                    <p>Sale Game 5</p>
+                    <p class="price">€18.99</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Sale Game 6', '€16.99', 'https://via.placeholder.com/200x250?text=Sale+Game+6')">
+                    <img src="https://via.placeholder.com/200x250?text=Sale+Game+6" alt="Sale Game 6">
+                    <p>Sale Game 6</p>
+                    <p class="price">€16.99</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Sale Game 7', '€19.99', 'https://via.placeholder.com/200x250?text=Sale+Game+7')">
+                    <img src="https://via.placeholder.com/200x250?text=Sale+Game+7" alt="Sale Game 7">
+                    <p>Sale Game 7</p>
+                    <p class="price">€19.99</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Sale Game 8', '€13.99', 'https://via.placeholder.com/200x250?text=Sale+Game+8')">
+                    <img src="https://via.placeholder.com/200x250?text=Sale+Game+8" alt="Sale Game 8">
+                    <p>Sale Game 8</p>
+                    <p class="price">€13.99</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Sale Game 9', '€17.99', 'https://via.placeholder.com/200x250?text=Sale+Game+9')">
+                    <img src="https://via.placeholder.com/200x250?text=Sale+Game+9" alt="Sale Game 9">
+                    <p>Sale Game 9</p>
+                    <p class="price">€17.99</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Sale Game 10', '€15.99', 'https://via.placeholder.com/200x250?text=Sale+Game+10')">
+                    <img src="https://via.placeholder.com/200x250?text=Sale+Game+10" alt="Sale Game 10">
+                    <p>Sale Game 10</p>
+                    <p class="price">€15.99</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Sale Game 11', '€18.99', 'https://via.placeholder.com/200x250?text=Sale+Game+11')">
+                    <img src="https://via.placeholder.com/200x250?text=Sale+Game+11" alt="Sale Game 11">
+                    <p>Sale Game 11</p>
+                    <p class="price">€18.99</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Sale Game 12', '€16.99', 'https://via.placeholder.com/200x250?text=Sale+Game+12')">
+                    <img src="https://via.placeholder.com/200x250?text=Sale+Game+12" alt="Sale Game 12">
+                    <p>Sale Game 12</p>
+                    <p class="price">€16.99</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Sale Game 13', '€19.99', 'https://via.placeholder.com/200x250?text=Sale+Game+13')">
+                    <img src="https://via.placeholder.com/200x250?text=Sale+Game+13" alt="Sale Game 13">
+                    <p>Sale Game 13</p>
+                    <p class="price">€19.99</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Sale Game 14', '€14.99', 'https://via.placeholder.com/200x250?text=Sale+Game+14')">
+                    <img src="https://via.placeholder.com/200x250?text=Sale+Game+14" alt="Sale Game 14">
+                    <p>Sale Game 14</p>
+                    <p class="price">€14.99</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Sale Game 15', '€17.99', 'https://via.placeholder.com/200x250?text=Sale+Game+15')">
+                    <img src="https://via.placeholder.com/200x250?text=Sale+Game+15" alt="Sale Game 15">
+                    <p>Sale Game 15</p>
+                    <p class="price">€17.99</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Sale Game 16', '€15.99', 'https://via.placeholder.com/200x250?text=Sale+Game+16')">
+                    <img src="https://via.placeholder.com/200x250?text=Sale+Game+16" alt="Sale Game 16">
+                    <p>Sale Game 16</p>
+                    <p class="price">€15.99</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Sale Game 17', '€18.99', 'https://via.placeholder.com/200x250?text=Sale+Game+17')">
+                    <img src="https://via.placeholder.com/200x250?text=Sale+Game+17" alt="Sale Game 17">
+                    <p>Sale Game 17</p>
+                    <p class="price">€18.99</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Sale Game 18', '€16.99', 'https://via.placeholder.com/200x250?text=Sale+Game+18')">
+                    <img src="https://via.placeholder.com/200x250?text=Sale+Game+18" alt="Sale Game 18">
+                    <p>Sale Game 18</p>
+                    <p class="price">€16.99</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Sale Game 19', '€19.99', 'https://via.placeholder.com/200x250?text=Sale+Game+19')">
+                    <img src="https://via.placeholder.com/200x250?text=Sale+Game+19" alt="Sale Game 19">
+                    <p>Sale Game 19</p>
+                    <p class="price">€19.99</p>
+                </div>
+                <div class="game-card" onclick="showGameDetails('Sale Game 20', '€14.99', 'https://via.placeholder.com/200x250?text=Sale+Game+20')">
+                    <img src="https://via.placeholder.com/200x250?text=Sale+Game+20" alt="Sale Game 20">
+                    <p>Sale Game 20</p>
+                    <p class="price">€14.99</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Details Modal -->
+    <div class="modal" id="gameModal">
+        <div class="modal-content">
+            <img id="modalImage" class="cover" src="" alt="Game Image">
+            <h2 id="modalTitle"></h2>
+            <p id="modalPrice"></p>
+            <h3>Description</h3>
+            <p id="modalGenre"></p>
+            <p id="modalPlot"></p>
+            <h3>Screenshots</h3>
+            <div class="screenshots" id="modalScreenshots"></div>
+            <h3>Player Count Trend</h3>
+            <div class="graph">
+                <canvas id="playerCountChart"></canvas>
+            </div>
+            <button onclick="addToCart()">Add to Cart</button>
+            <button onclick="closeModal()">Close</button>
+        </div>
+    </div>
+
+    <!-- Cart -->
+    <div class="cart" onclick="viewCart()">Cart (<span id="cartCount">0</span>)</div>
+
+    <script>
+        let cart = [];
+        let isLoggedIn = false;
+
+        // Game data with descriptions, genres, plots, screenshots, and player count trends
+        const gameData = {
+            'Popular Game 1': {
+                price: '€30.99',
+                image: 'https://via.placeholder.com/200x250?text=Popular+Game+1',
+                genre: 'Action RPG',
+                plot: 'Embark on an epic journey in a vast open world filled with mythical creatures. As a lone warrior, you must uncover the secrets of an ancient civilization to save the realm from impending doom.',
+                screenshots: [
+                    'https://via.placeholder.com/200x120?text=Screenshot+1',
+                    'https://via.placeholder.com/200x120?text=Screenshot+2',
+                    'https://via.placeholder.com/200x120?text=Screenshot+3'
+                ],
+                playerCounts: [5000, 7000, 9000, 12000, 11000, 13000]
+            },
+            'Popular Game 2': {
+                price: '€29.99',
+                image: 'https://via.placeholder.com/200x250?text=Popular+Game+2',
+                genre: 'Shooter',
+                plot: 'Join an elite task force in a futuristic warzone. Battle against rogue AI and enemy factions to secure critical resources and restore peace to a dystopian world.',
+                screenshots: [
+                    'https://via.placeholder.com/200x120?text=Screenshot+1',
+                    'https://via.placeholder.com/200x120?text=Screenshot+2',
+                    'https://via.placeholder.com/200x120?text=Screenshot+3'
+                ],
+                playerCounts: [3000, 4500, 6000, 7500, 7000, 8000]
+            },
+            // Add more game data for other popular games
+            'Free Game 1': {
+                price: 'Free',
+                image: 'https://via.placeholder.com/200x250?text=Free+Game+1',
+                genre: 'Battle Royale',
+                plot: 'Drop into a massive arena with 100 players and fight to be the last one standing. Scavenge for weapons, build fortifications, and outsmart your opponents in this fast-paced free-to-play game.',
+                screenshots: [
+                    'https://via.placeholder.com/200x120?text=Screenshot+1',
+                    'https://via.placeholder.com/200x120?text=Screenshot+2',
+                    'https://via.placeholder.com/200x120?text=Screenshot+3'
+                ],
+                playerCounts: [10000, 15000, 20000, 18000, 22000, 25000]
+            },
+            'Sale Game 1': {
+                price: '€19.99',
+                image: 'https://via.placeholder.com/200x250?text=Sale+Game+1',
+                genre: 'Adventure',
+                plot: 'Explore a mysterious island filled with puzzles and hidden treasures. As an intrepid explorer, unravel the island’s secrets while facing dangerous wildlife and ancient traps.',
+                screenshots: [
+                    'https://via.placeholder.com/200x120?text=Screenshot+1',
+                    'https://via.placeholder.com/200x120?text=Screenshot+2',
+                    'https://via.placeholder.com/200x120?text=Screenshot+3'
+                ],
+                playerCounts: [2000, 3000, 3500, 4000, 3800, 4200]
+            }
+            // Add more game data for other games as needed
+        };
+
+        // Initialize game data for remaining games
+        for (let i = 3; i <= 20; i++) {
+            gameData[`Popular Game ${i}`] = {
+                price: `€${(25 + i).toFixed(2)}`,
+                image: `https://via.placeholder.com/200x250?text=Popular+Game+${i}`,
+                genre: 'Action',
+                plot: `Dive into an action-packed adventure in Popular Game ${i}. Battle enemies, complete missions, and uncover a thrilling storyline in a dynamic world.`,
+                screenshots: [
+                    'https://via.placeholder.com/200x120?text=Screenshot+1',
+                    'https://via.placeholder.com/200x120?text=Screenshot+2',
+                    'https://via.placeholder.com/200x120?text=Screenshot+3'
+                ],
+                playerCounts: [4000 + i * 100, 5000 + i * 100, 6000 + i * 100, 7000 + i * 100, 6500 + i * 100, 7500 + i * 100]
+            };
+        }
+        for (let i = 2; i <= 20; i++) {
+            gameData[`Free Game ${i}`] = {
+                price: 'Free',
+                image: `https://via.placeholder.com/200x250?text=Free+Game+${i}`,
+                genre: 'Casual',
+                plot: `Enjoy a relaxing experience in Free Game ${i}. Solve puzzles, build your own world, or compete with friends in this free-to-play title.`,
+                screenshots: [
+                    'https://via.placeholder.com/200x120?text=Screenshot+1',
+                    'https://via.placeholder.com/200x120?text=Screenshot+2',
+                    'https://via.placeholder.com/200x120?text=Screenshot+3'
+                ],
+                playerCounts: [8000 + i * 200, 10000 + i * 200, 12000 + i * 200, 11000 + i * 200, 13000 + i * 200, 14000 + i * 200]
+            };
+        }
+        for (let i = 2; i <= 20; i++) {
+            gameData[`Sale Game ${i}`] = {
+                price: `€${(10 + i).toFixed(2)}`,
+                image: `https://via.placeholder.com/200x250?text=Sale+Game+${i}`,
+                genre: 'Strategy',
+                plot: `Lead your forces to victory in Sale Game ${i}. Build empires, manage resources, and engage in tactical battles in this discounted strategy game.`,
+                screenshots: [
+                    'https://via.placeholder.com/200x120?text=Screenshot+1',
+                    'https://via.placeholder.com/200x120?text=Screenshot+2',
+                    'https://via.placeholder.com/200x120?text=Screenshot+3'
+                ],
+                playerCounts: [1500 + i * 50, 2000 + i * 50, 2500 + i * 50, 3000 + i * 50, 2800 + i * 50, 3200 + i * 50]
+            };
+        }
+
+        function showLogin() {
+            const username = prompt("Enter username:");
+            const password = prompt("Enter password:");
+            if (username && password) {
+                isLoggedIn = true;
+                alert("Logged in successfully!");
+            }
+        }
+
+        function showRegister() {
+            const username = prompt("Enter username:");
+            const password = prompt("Enter password:");
+            if (username && password) {
+                alert("Registered successfully! Please login.");
+            }
+        }
+
+        function filterGames(category) {
+            const sections = document.querySelectorAll('.game-section');
+            const buttons = document.querySelectorAll('.categories button');
+
+            sections.forEach(section => section.classList.remove('active'));
+            buttons.forEach(button => button.classList.remove('active'));
+
+            const selectedSection = document.getElementById(`${category}-games`);
+            selectedSection.classList.add('active');
+            event.target.classList.add('active');
+
+            selectedSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        let playerCountChart = null;
+
+        function showGameDetails(title, price, image) {
+            const game = gameData[title] || {
+                price: price,
+                image: image,
+                genre: 'Unknown',
+                plot: 'No description available.',
+                screenshots: [
+                    'https://via.placeholder.com/200x120?text=Screenshot+1',
+                    'https://via.placeholder.com/200x120?text=Screenshot+2',
+                    'https://via.placeholder.com/200x120?text=Screenshot+3'
+                ],
+                playerCounts: [1000, 2000, 3000, 4000, 3500, 5000]
+            };
+
+            document.getElementById("modalTitle").textContent = title;
+            document.getElementById("modalPrice").textContent = `Price: ${game.price}`;
+            document.getElementById("modalImage").src = game.image;
+            document.getElementById("modalGenre").textContent = `Genre: ${game.genre}`;
+            document.getElementById("modalPlot").textContent = `Plot: ${game.plot}`;
+
+            const screenshotsContainer = document.getElementById("modalScreenshots");
+            screenshotsContainer.innerHTML = game.screenshots.map(src => `<img src="${src}" alt="Screenshot">`).join('');
+
+            // Destroy previous chart if it exists
+            if (playerCountChart) {
+                playerCountChart.destroy();
+            }
+
+            // Create new chart
+            const ctx = document.getElementById('playerCountChart').getContext('2d');
+            playerCountChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Player Count',
+                        data: game.playerCounts,
+                        borderColor: '#00aaff',
+                        backgroundColor: 'rgba(0, 170, 255, 0.2)',
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Player Count',
+                                color: '#fff'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Month',
+                                color: '#fff'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#fff'
+                            }
+                        }
+                    }
+                }
+            });
+
+            document.getElementById("gameModal").style.display = "flex";
+        }
+
+        function closeModal() {
+            document.getElementById("gameModal").style.display = "none";
+            if (playerCountChart) {
+                playerCountChart.destroy();
+                playerCountChart = null;
+            }
+        }
+
+        function addToCart() {
+            if (!isLoggedIn) {
+                alert("Please login to add items to your cart.");
+                return;
+            }
+            const title = document.getElementById("modalTitle").textContent;
+            const price = document.getElementById("modalPrice").textContent.replace('Price: ', '');
+            cart.push({ title, price });
+            document.getElementById("cartCount").textContent = cart.length;
+            alert(`${title} added to cart!`);
+        }
+
+        function viewCart() {
+            if (cart.length === 0) {
+                alert("Your cart is empty!");
+                return;
+            }
+            let cartItems = "Your Cart:\n\n";
+            cart.forEach(item => {
+                cartItems += `${item.title} - ${item.price}\n`;
+            });
+            alert(cartItems);
+        }
+    </script>
 </body>
 </html>
