@@ -1,10 +1,29 @@
 Turn 1:
 The response must consist of one file using HTML, CSS, and JavaScript. For example by using inline CSS and inline JavaScript.
 The response must follow the attached images color scheme.
-The response must allow the user to create matches on a separate page.
-The response must allow users to select any international flag when creating matches.
+The response must have a UI button in the top right to switch from light to dark mode.
+The response must contain a timing interval that is customizable.
+
 Turn 2:
+The response must contain a login button leading to a popup matching the sites theme.
+The response must display "Hello <Username>!" after a user logs in.
 
 Turn 3:
+The response must allow users to add tasks where they appear below the timer.
+The response must allow users to click and strike through items on the task list.
 
 Turn 4:
+The response must contain a timer for each task with length specified by the user.
+The response must allow users to focus on a task that will count down when the timer starts.
+
+Turn 5:
+The response must contain a customize page allowing users to upload a background into an upload box.
+The response must allow the user to change background opacity which must update live.
+
+Turn 6:
+The response must contain a header with a link to a forum page.
+The response must contain a forum page that allows users to post a title, link, and description.
+The response must have a forum page that allows users to like, dislike, and comment on posts.
+
+Turn 7:
+The response must display the time left as a circle around the timer. For example using JavaScript to watch the timer then update the HTML accordingly.

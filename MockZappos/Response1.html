@@ -1,10 +1,1218 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zappos Shopping</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body.dark-mode {
+            background-color: #1a1a1a;
+            color: #fff;
+        }
+
+        /* Header Styles */
+        .header {
+            background-color: #fff;
+            padding: 10px 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            transition: background-color 0.3s;
+        }
+
+        body.dark-mode .header {
+            background-color: #333;
+        }
+
+        .header .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .header .nav {
+            display: flex;
+            gap: 20px;
+        }
+
+        .header .nav a {
+            text-decoration: none;
+            color: #333;
+            font-weight: bold;
+        }
+
+        body.dark-mode .header .nav a {
+            color: #fff;
+        }
+
+        .header .nav a.active {
+            color: #007bff;
+        }
+
+        .header .search-bar {
+            position: relative;
+            flex-grow: 1;
+            margin: 0 20px;
+        }
+
+        .header .search-bar input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        body.dark-mode .header .search-bar input {
+            background-color: #444;
+            color: #fff;
+            border-color: #555;
+        }
+
+        .header .search-bar button {
+            position: absolute;
+            right: 0;
+            top: 0;
+            height: 100%;
+            padding: 0 15px;
+            border: none;
+            background-color: #007bff;
+            color: #fff;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
+        }
+
+        .header .icons {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header .icons img {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .theme-toggle label {
+            font-size: 14px;
+            color: #333;
+        }
+
+        body.dark-mode .theme-toggle label {
+            color: #fff;
+        }
+
+        .theme-toggle input {
+            display: none;
+        }
+
+        .theme-toggle .slider {
+            width: 40px;
+            height: 20px;
+            background-color: #ccc;
+            border-radius: 20px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .theme-toggle .slider::before {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background-color: #fff;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s;
+        }
+
+        .theme-toggle input:checked + .slider {
+            background-color: #007bff;
+        }
+
+        .theme-toggle input:checked + .slider::before {
+            transform: translateX(20px);
+        }
+
+        /* Login Popup */
+        .login-popup {
+            position: absolute;
+            top: 50px;
+            right: 20px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: none;
+            z-index: 1000;
+        }
+
+        body.dark-mode .login-popup {
+            background-color: #333;
+            border-color: #555;
+        }
+
+        .login-popup h3 {
+            margin-bottom: 10px;
+        }
+
+        .login-popup form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .login-popup form input {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        body.dark-mode .login-popup form input {
+            background-color: #444;
+            color: #fff;
+            border-color: #555;
+        }
+
+        .login-popup form button {
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .login-popup .forgot-links {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        .login-popup .forgot-links a {
+            font-size: 12px;
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        body.dark-mode .login-popup .forgot-links a {
+            color: #66b0ff;
+        }
+
+        /* Cart Popup */
+        .cart-popup {
+            position: absolute;
+            top: 50px;
+            right: 20px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: none;
+            z-index: 1000;
+            width: 300px;
+        }
+
+        body.dark-mode .cart-popup {
+            background-color: #333;
+            border-color: #555;
+        }
+
+        .cart-popup .tabs {
+            display: flex;
+            margin-bottom: 10px;
+        }
+
+        .cart-popup .tabs button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background-color: #f0f0f0;
+            cursor: pointer;
+            border-radius: 5px 5px 0 0;
+        }
+
+        body.dark-mode .cart-popup .tabs button {
+            background-color: #444;
+            color: #fff;
+        }
+
+        .cart-popup .tabs button.active {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        .cart-popup .cart-content,
+        .cart-popup .history-content {
+            display: none;
+        }
+
+        .cart-popup .cart-content.active,
+        .cart-popup .history-content.active {
+            display: block;
+        }
+
+        .cart-popup .cart-items,
+        .cart-popup .history-items {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .cart-popup .cart-item,
+        .cart-popup .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 0;
+            border-bottom: 1px solid #ddd;
+        }
+
+        body.dark-mode .cart-popup .cart-item,
+        body.dark-mode .cart-popup .history-item {
+            border-color: #555;
+        }
+
+        .cart-popup .cart-item .name,
+        .cart-popup .history-item .name {
+            flex-grow: 1;
+        }
+
+        .cart-popup .cart-item .price,
+        .cart-popup .history-item .price {
+            margin-right: 10px;
+        }
+
+        .cart-popup .cart-item .remove-btn {
+            background-color: #ff4d4d;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .cart-popup .totals {
+            margin-top: 10px;
+        }
+
+        .cart-popup .totals p {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .cart-popup .checkout-btn {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        /* Main Layout */
+        .main-container {
+            display: flex;
+            padding: 20px;
+        }
+
+        .sidebar {
+            width: 250px;
+            padding-right: 20px;
+        }
+
+        .sidebar h3 {
+            margin-bottom: 10px;
+        }
+
+        body.dark-mode .sidebar h3 {
+            color: #fff;
+        }
+
+        .sidebar .filter {
+            margin-bottom: 20px;
+        }
+
+        .sidebar .filter label {
+            display: block;
+            margin: 5px 0;
+            color: #333;
+        }
+
+        body.dark-mode .sidebar .filter label {
+            color: #fff;
+        }
+
+        .content {
+            flex-grow: 1;
+        }
+
+        .content h2 {
+            margin-bottom: 10px;
+        }
+
+        body.dark-mode .content h2,
+        body.dark-mode .content p {
+            color: #fff;
+        }
+
+        .content .sort {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        body.dark-mode .content .sort span,
+        body.dark-mode .content .sort a {
+            color: #fff;
+        }
+
+        .products {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .product {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+            position: relative;
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        body.dark-mode .product {
+            background-color: #333;
+            border-color: #555;
+        }
+
+        .product:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        body.dark-mode .product:hover {
+            box-shadow: 0 4px 8px rgba(255, 255, 255, 0.2);
+        }
+
+        .product img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .product .name {
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        body.dark-mode .product .name {
+            color: #fff;
+        }
+
+        .product .price {
+            color: #007bff;
+            font-weight: bold;
+        }
+
+        .product .rating {
+            margin: 5px 0;
+        }
+
+        .product .colors {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin: 5px 0;
+        }
+
+        .product .colors span {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .product .low-stock {
+            color: red;
+            font-size: 12px;
+        }
+
+        .product .sponsored {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: #f0f0f0;
+            padding: 2px 5px;
+            font-size: 12px;
+            border-radius: 3px;
+        }
+
+        body.dark-mode .product .sponsored {
+            background-color: #555;
+        }
+
+        .product .add-to-cart {
+            margin-top: 10px;
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        /* Item Page */
+        .item-page {
+            display: none;
+            padding: 20px;
+        }
+
+        body.dark-mode .item-page {
+            color: #fff;
+        }
+
+        .item-page h2 {
+            margin-bottom: 20px;
+        }
+
+        body.dark-mode .item-page h2 {
+            color: #fff;
+        }
+
+        .item-page .item-details {
+            display: flex;
+            gap: 20px;
+        }
+
+        .item-page .item-details img {
+            width: 300px;
+            height: 300px;
+            object-fit: cover;
+        }
+
+        .item-page .item-details .info {
+            flex-grow: 1;
+        }
+
+        .item-page .item-details .info p {
+            margin: 10px 0;
+        }
+
+        .item-page .item-details .info .colors {
+            display: flex;
+            gap: 10px;
+        }
+
+        .item-page .item-details .info .colors span {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .item-page .item-details .info .add-to-cart {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        /* Create Item Page */
+        .create-item-page {
+            display: none;
+            padding: 20px;
+        }
+
+        body.dark-mode .create-item-page {
+            color: #fff;
+        }
+
+        .create-item-page h2 {
+            margin-bottom: 20px;
+        }
+
+        body.dark-mode .create-item-page h2 {
+            color: #fff;
+        }
+
+        .create-item-page form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .create-item-page form label {
+            font-weight: bold;
+        }
+
+        body.dark-mode .create-item-page form label {
+            color: #fff;
+        }
+
+        .create-item-page form input,
+        .create-item-page form select {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        body.dark-mode .create-item-page form input,
+        body.dark-mode .create-item-page form select {
+            background-color: #444;
+            color: #fff;
+            border-color: #555;
+        }
+
+        .create-item-page form button {
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        /* Register Page */
+        .register-page {
+            display: none;
+            padding: 20px;
+        }
+
+        body.dark-mode .register-page {
+            color: #fff;
+        }
+
+        .register-page h2 {
+            margin-bottom: 20px;
+        }
+
+        body.dark-mode .register-page h2 {
+            color: #fff;
+        }
+
+        .register-page form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .register-page form label {
+            font-weight: bold;
+        }
+
+        body.dark-mode .register-page form label {
+            color: #fff;
+        }
+
+        .register-page form input {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        body.dark-mode .register-page form input {
+            background-color: #444;
+            color: #fff;
+            border-color: #555;
+        }
+
+        .register-page form button {
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        /* Autocomplete Dropdown */
+        .autocomplete-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            z-index: 1000;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        body.dark-mode .autocomplete-suggestions {
+            background-color: #333;
+            border-color: #555;
+        }
+
+        .autocomplete-suggestions div {
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        body.dark-mode .autocomplete-suggestions div {
+            color: #fff;
+        }
+
+        .autocomplete-suggestions div:hover {
+            background-color: #f0f0f0;
+        }
+
+        body.dark-mode .autocomplete-suggestions div:hover {
+            background-color: #444;
+        }
+    </style>
 </head>
 <body>
-$END$
+    <div class="header">
+        <div class="logo">Zappos</div>
+        <div class="nav">
+            <a href="#" class="active" id="homeLink">Men</a>
+            <a href="#" id="createItemLink">Create Item</a>
+            <a href="#" id="registerLink">Register</a>
+        </div>
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Search for shoes, clothes, etc.">
+            <button>Search</button>
+            <div class="autocomplete-suggestions" id="autocompleteSuggestions"></div>
+        </div>
+        <div class="icons">
+            <img src="https://via.placeholder.com/20" alt="Cart" id="cartIcon">
+            <img src="https://via.placeholder.com/20" alt="Account" id="loginIcon">
+            <div class="theme-toggle">
+                <label>Light/Dark</label>
+                <input type="checkbox" id="themeToggle">
+                <label for="themeToggle" class="slider"></label>
+            </div>
+        </div>
+        <div class="login-popup" id="loginPopup">
+            <h3>Login</h3>
+            <form id="loginForm">
+                <input type="text" id="username" placeholder="Username" required>
+                <input type="password" id="password" placeholder="Password" required>
+                <button type="submit">Login</button>
+            </form>
+            <div class="forgot-links">
+                <a href="#" id="forgotUsernameLink">Forgot Username?</a>
+                <a href="#" id="forgotPasswordLink">Forgot Password?</a>
+            </div>
+        </div>
+        <div class="cart-popup" id="cartPopup">
+            <div class="tabs">
+                <button id="cartTab" class="active">Cart</button>
+                <button id="historyTab">History</button>
+            </div>
+            <div class="cart-content active" id="cartContent">
+                <h3>Shopping Cart</h3>
+                <div class="cart-items" id="cartItems"></div>
+                <div class="totals" id="cartTotals"></div>
+                <button class="checkout-btn" id="checkoutBtn">Checkout</button>
+            </div>
+            <div class="history-content" id="historyContent">
+                <h3>Order History</h3>
+                <div class="history-items" id="historyItems"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container" id="mainContainer">
+        <div class="sidebar">
+            <h3>Your Selections</h3>
+            <div class="filter">
+                <label><input type="checkbox" id="filterClothing" checked> Clothing</label>
+                <label><input type="checkbox" id="filterPants" checked> Pants</label>
+                <label><input type="checkbox" id="filterMen" checked> Men</label>
+            </div>
+            <h3>Filters</h3>
+            <div class="filter">
+                <label>Size</label>
+                <label>Brand</label>
+                <label>Color</label>
+                <label>Price</label>
+            </div>
+        </div>
+        <div class="content">
+            <h2>Men's Pants</h2>
+            <p id="itemsFound">415 items found</p>
+            <div class="sort">
+                <span>Sort By: Relevance</span>
+                <a href="#">Clear Filters</a>
+            </div>
+            <div class="products" id="products">
+                <!-- Products will be dynamically added here -->
+            </div>
+        </div>
+    </div>
+
+    <div class="item-page" id="itemPage">
+        <h2 id="itemName"></h2>
+        <div class="item-details" id="itemDetails"></div>
+    </div>
+
+    <div class="create-item-page" id="createItemPage">
+        <h2>Create New Item</h2>
+        <form id="createItemForm">
+            <label for="itemName">Name:</label>
+            <input type="text" id="itemName" required>
+
+            <label for="itemCategory">Category:</label>
+            <select id="itemCategory" required>
+                <option value="Pants">Pants</option>
+                <option value="Shirts">Shirts</option>
+                <option value="Shoes">Shoes</option>
+            </select>
+
+            <label for="itemPrice">Price:</label>
+            <input type="number" id="itemPrice" step="0.01" required>
+
+            <label for="itemColors">Colors (comma-separated):</label>
+            <input type="text" id="itemColors" placeholder="e.g. Black, Gray, Brown" required>
+
+            <label for="itemRating">Rating (1-5):</label>
+            <input type="number" id="itemRating" min="1" max="5" required>
+
+            <button type="submit">Create Item</button>
+        </form>
+    </div>
+
+    <div class="register-page" id="registerPage">
+        <h2>Register</h2>
+        <form id="registerForm">
+            <label for="registerEmail">Email:</label>
+            <input type="email" id="registerEmail" required>
+
+            <label for="registerPassword">Password:</label>
+            <input type="password" id="registerPassword" required>
+
+            <button type="submit">Register</button>
+        </form>
+    </div>
+
+    <div class="forgot-username-page" id="forgotUsernamePage" style="display: none; padding: 20px;">
+        <h2>Forgot Username</h2>
+        <p>Please contact support to recover your username.</p>
+    </div>
+
+    <div class="forgot-password-page" id="forgotPasswordPage" style="display: none; padding: 20px;">
+        <h2>Forgot Password</h2>
+        <p>Please contact support to reset your password.</p>
+    </div>
+
+    <script>
+        // Sample product data with additional properties for filtering
+        let products = [
+            { id: 1, name: "Nike Dry-Fit Ball Joggers", category: "Pants", type: "Clothing", gender: "Men", price: 90, colors: ["Black", "Gray", "White"], rating: 4, stock: "LOW STOCK" },
+            { id: 2, name: "Toad&Co Mission Ridge Pant", category: "Pants", type: "Clothing", gender: "Men", price: 67.50, colors: ["Gray", "Brown"], rating: 4, stock: "LOW STOCK", discount: "20% OFF" },
+            { id: 3, name: "Dickies Traditional Work Pant", category: "Pants", type: "Clothing", gender: "Men", price: 29.99, colors: ["Black", "Gray", "Brown"], rating: 5, stock: "" },
+            { id: 4, name: "Columbia Rodge Convertible Pant", category: "Pants", type: "Clothing", gender: "Men", price: 45, colors: ["Black", "Beige"], rating: 4, stock: "", discount: "20% OFF" },
+            { id: 5, name: "Adidas Running Shoes", category: "Shoes", type: "Footwear", gender: "Men", price: 120, colors: ["Black", "White"], rating: 5, stock: "" },
+            { id: 6, name: "Levi's T-Shirt", category: "Shirts", type: "Clothing", gender: "Men", price: 25, colors: ["Blue", "White"], rating: 4, stock: "" }
+        ];
+
+        // Cart and history state
+        let cart = [];
+        let history = [];
+
+        // Function to render products
+        function renderProducts(filteredProducts = products) {
+            const productsContainer = document.getElementById('products');
+            const itemsFound = document.getElementById('itemsFound');
+            productsContainer.innerHTML = '';
+            filteredProducts.forEach(product => {
+                const productElement = document.createElement('div');
+                productElement.className = 'product';
+                productElement.dataset.id = product.id;
+                productElement.innerHTML = `
+                    <div class="sponsored">SPONSORED</div>
+                    <img src="https://via.placeholder.com/200" alt="${product.name}">
+                    <div class="name">${product.name}</div>
+                    <div class="price">$${product.price.toFixed(2)} ${product.discount ? `<span>${product.discount}</span>` : ''}</div>
+                    <div class="rating">${'★'.repeat(product.rating)}${'☆'.repeat(5 - product.rating)}</div>
+                    <div class="colors">
+                        ${product.colors.map(color => `<span style="background-color: ${color.toLowerCase()}"></span>`).join('')}
+                    </div>
+                    ${product.stock ? `<div class="low-stock">${product.stock}</div>` : ''}
+                    <button class="add-to-cart" data-id="${product.id}">Add to Cart</button>
+                `;
+                productsContainer.appendChild(productElement);
+
+                // Add click event listener for item page navigation
+                productElement.addEventListener('click', (event) => {
+                    if (!event.target.classList.contains('add-to-cart')) {
+                        showItemPage(product.id);
+                    }
+                });
+            });
+            itemsFound.textContent = `${filteredProducts.length} items found`;
+
+            // Add event listeners to "Add to Cart" buttons
+            document.querySelectorAll('.add-to-cart').forEach(button => {
+                button.addEventListener('click', () => {
+                    const productId = parseInt(button.getAttribute('data-id'));
+                    const product = products.find(p => p.id === productId);
+                    cart.push(product);
+                    renderCart();
+                });
+            });
+        }
+
+        // Function to render item page
+        function showItemPage(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+
+            const itemDetails = document.getElementById('itemDetails');
+            itemDetails.innerHTML = `
+                <img src="https://via.placeholder.com/300" alt="${product.name}">
+                <div class="info">
+                    <p><strong>Price:</strong> $${product.price.toFixed(2)} ${product.discount ? `<span>${product.discount}</span>` : ''}</p>
+                    <p><strong>Category:</strong> ${product.category}</p>
+                    <p><strong>Rating:</strong> ${'★'.repeat(product.rating)}${'☆'.repeat(5 - product.rating)}</p>
+                    <p><strong>Colors:</strong></p>
+                    <div class="colors">
+                        ${product.colors.map(color => `<span style="background-color: ${color.toLowerCase()}"></span>`).join('')}
+                    </div>
+                    ${product.stock ? `<p><strong>Stock:</strong> ${product.stock}</p>` : ''}
+                    <button class="add-to-cart" data-id="${product.id}">Add to Cart</button>
+                </div>
+            `;
+            showPage('itemPage');
+
+            // Add event listener to "Add to Cart" button on item page
+            document.querySelector('.item-page .add-to-cart').addEventListener('click', () => {
+                cart.push(product);
+                renderCart();
+            });
+        }
+
+        // Function to render cart
+        function renderCart() {
+            const cartItemsContainer = document.getElementById('cartItems');
+            const cartTotalsContainer = document.getElementById('cartTotals');
+            cartItemsContainer.innerHTML = '';
+            cartTotalsContainer.innerHTML = '';
+
+            if (cart.length === 0) {
+                cartItemsContainer.innerHTML = '<p>Your cart is empty.</p>';
+            } else {
+                cart.forEach((item, index) => {
+                    const cartItemElement = document.createElement('div');
+                    cartItemElement.className = 'cart-item';
+                    cartItemElement.innerHTML = `
+                        <span class="name">${item.name}</span>
+                        <span class="price">$${item.price.toFixed(2)}</span>
+                        <button class="remove-btn" data-index="${index}">Remove</button>
+                    `;
+                    cartItemsContainer.appendChild(cartItemElement);
+                });
+
+                // Add event listeners to "Remove" buttons
+                document.querySelectorAll('.remove-btn').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const index = parseInt(button.getAttribute('data-index'));
+                        cart.splice(index, 1);
+                        renderCart();
+                    });
+                });
+
+                // Calculate totals
+                const subtotal = cart.reduce((sum, item) => sum + item.price, 0);
+                const taxRate = 0.08; // 8% tax
+                const tax = subtotal * taxRate;
+                const total = subtotal + tax;
+
+                cartTotalsContainer.innerHTML = `
+                    <p><span>Subtotal:</span> <span>$${subtotal.toFixed(2)}</span></p>
+                    <p><span>Tax (8%):</span> <span>$${tax.toFixed(2)}</span></p>
+                    <p><span>Total:</span> <span>$${total.toFixed(2)}</span></p>
+                `;
+            }
+        }
+
+        // Function to render history
+        function renderHistory() {
+            const historyItemsContainer = document.getElementById('historyItems');
+            historyItemsContainer.innerHTML = '';
+
+            if (history.length === 0) {
+                historyItemsContainer.innerHTML = '<p>No order history.</p>';
+            } else {
+                history.forEach(order => {
+                    order.items.forEach(item => {
+                        const historyItemElement = document.createElement('div');
+                        historyItemElement.className = 'history-item';
+                        historyItemElement.innerHTML = `
+                            <span class="name">${item.name}</span>
+                            <span class="price">$${item.price.toFixed(2)}</span>
+                            <span class="date">${order.date}</span>
+                        `;
+                        historyItemsContainer.appendChild(historyItemElement);
+                    });
+                });
+            }
+        }
+
+        // Cart popup functionality
+        const cartIcon = document.getElementById('cartIcon');
+        const cartPopup = document.getElementById('cartPopup');
+        const cartTab = document.getElementById('cartTab');
+        const historyTab = document.getElementById('historyTab');
+        const cartContent = document.getElementById('cartContent');
+        const historyContent = document.getElementById('historyContent');
+
+        cartIcon.addEventListener('click', () => {
+            cartPopup.style.display = cartPopup.style.display === 'block' ? 'none' : 'block';
+            renderCart();
+            renderHistory();
+        });
+
+        cartTab.addEventListener('click', () => {
+            cartTab.classList.add('active');
+            historyTab.classList.remove('active');
+            cartContent.classList.add('active');
+            historyContent.classList.remove('active');
+        });
+
+        historyTab.addEventListener('click', () => {
+            historyTab.classList.add('active');
+            cartTab.classList.remove('active');
+            historyContent.classList.add('active');
+            cartContent.classList.remove('active');
+        });
+
+        // Checkout functionality
+        const checkoutBtn = document.getElementById('checkoutBtn');
+        checkoutBtn.addEventListener('click', () => {
+            if (cart.length > 0) {
+                const order = {
+                    items: [...cart],
+                    date: new Date().toLocaleDateString()
+                };
+                history.push(order);
+                cart = [];
+                renderCart();
+                renderHistory();
+                alert('Checkout complete! Your order has been added to history.');
+            } else {
+                alert('Your cart is empty.');
+            }
+        });
+
+        // Hide cart popup when clicking outside
+        document.addEventListener('click', (event) => {
+            if (!cartIcon.contains(event.target) && !cartPopup.contains(event.target)) {
+                cartPopup.style.display = 'none';
+            }
+        });
+
+        // Filter products based on checkbox selections
+        function filterProducts() {
+            const filterClothing = document.getElementById('filterClothing').checked;
+            const filterPants = document.getElementById('filterPants').checked;
+            const filterMen = document.getElementById('filterMen').checked;
+
+            const filteredProducts = products.filter(product => {
+                const matchesClothing = !filterClothing || product.type === "Clothing";
+                const matchesPants = !filterPants || product.category === "Pants";
+                const matchesMen = !filterMen || product.gender === "Men";
+                return matchesClothing && matchesPants && matchesMen;
+            });
+
+            renderProducts(filteredProducts);
+        }
+
+        // Add event listeners to checkboxes
+        document.getElementById('filterClothing').addEventListener('change', filterProducts);
+        document.getElementById('filterPants').addEventListener('change', filterProducts);
+        document.getElementById('filterMen').addEventListener('change', filterProducts);
+
+        // Autocomplete search functionality
+        const searchInput = document.getElementById('searchInput');
+        const autocompleteSuggestions = document.getElementById('autocompleteSuggestions');
+
+        searchInput.addEventListener('input', () => {
+            const query = searchInput.value.toLowerCase();
+            if (query.length < 2) {
+                autocompleteSuggestions.style.display = 'none';
+                return;
+            }
+
+            const suggestions = products.filter(product => product.name.toLowerCase().includes(query));
+            autocompleteSuggestions.innerHTML = '';
+            suggestions.forEach(suggestion => {
+                const suggestionElement = document.createElement('div');
+                suggestionElement.textContent = suggestion.name;
+                suggestionElement.addEventListener('click', () => {
+                    searchInput.value = suggestion.name;
+                    autocompleteSuggestions.style.display = 'none';
+                    const filteredProducts = products.filter(product => product.name.toLowerCase().includes(suggestion.name.toLowerCase()));
+                    renderProducts(filteredProducts);
+                });
+                autocompleteSuggestions.appendChild(suggestionElement);
+            });
+
+            autocompleteSuggestions.style.display = suggestions.length > 0 ? 'block' : 'none';
+        });
+
+        // Hide autocomplete suggestions when clicking outside
+        document.addEventListener('click', (event) => {
+            if (!searchInput.contains(event.target) && !autocompleteSuggestions.contains(event.target)) {
+                autocompleteSuggestions.style.display = 'none';
+            }
+        });
+
+        // Function to show/hide pages
+        function showPage(pageId) {
+            const pages = ['mainContainer', 'itemPage', 'createItemPage', 'registerPage', 'forgotUsernamePage', 'forgotPasswordPage'];
+            pages.forEach(page => {
+                document.getElementById(page).style.display = page === pageId ? 'block' : 'none';
+            });
+            if (pageId === 'mainContainer') {
+                document.getElementById('mainContainer').style.display = 'flex';
+            }
+        }
+
+        // Home link functionality
+        const homeLink = document.getElementById('homeLink');
+        homeLink.addEventListener('click', (event) => {
+            event.preventDefault();
+            showPage('mainContainer');
+        });
+
+        // Toggle between main page and create item page
+        const createItemLink = document.getElementById('createItemLink');
+        createItemLink.addEventListener('click', (event) => {
+            event.preventDefault();
+            showPage('createItemPage');
+        });
+
+        // Toggle between main page and register page
+        const registerLink = document.getElementById('registerLink');
+        registerLink.addEventListener('click', (event) => {
+            event.preventDefault();
+            showPage('registerPage');
+        });
+
+        // Handle form submission for creating new items
+        const createItemForm = document.getElementById('createItemForm');
+        createItemForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+
+            const newItem = {
+                id: products.length + 1,
+                name: document.getElementById('itemName').value,
+                category: document.getElementById('itemCategory').value,
+                type: document.getElementById('itemCategory').value === "Shoes" ? "Footwear" : "Clothing",
+                gender: "Men", // Assuming new items are for men; can be made dynamic
+                price: parseFloat(document.getElementById('itemPrice').value),
+                colors: document.getElementById('itemColors').value.split(',').map(color => color.trim()),
+                rating: parseInt(document.getElementById('itemRating').value),
+                stock: ""
+            };
+
+            products.push(newItem);
+            filterProducts(); // Reapply filters after adding new item
+
+            // Switch back to main page
+            showPage('mainContainer');
+
+            // Reset form
+            createItemForm.reset();
+        });
+
+        // Handle form submission for registration
+        const registerForm = document.getElementById('registerForm');
+        registerForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            alert(`Registered with email: ${email}`);
+            showPage('mainContainer');
+            registerForm.reset();
+        });
+
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('themeToggle');
+        themeToggle.addEventListener('change', () => {
+            document.body.classList.toggle('dark-mode');
+        });
+
+        // Login popup functionality
+        const loginIcon = document.getElementById('loginIcon');
+        const loginPopup = document.getElementById('loginPopup');
+        const loginForm = document.getElementById('loginForm');
+        const forgotUsernameLink = document.getElementById('forgotUsernameLink');
+        const forgotPasswordLink = document.getElementById('forgotPasswordLink');
+
+        loginIcon.addEventListener('click', () => {
+            loginPopup.style.display = loginPopup.style.display === 'block' ? 'none' : 'block';
+        });
+
+        loginForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            alert(`Logged in as ${username}`);
+            loginPopup.style.display = 'none';
+            loginForm.reset();
+        });
+
+        forgotUsernameLink.addEventListener('click', (event) => {
+            event.preventDefault();
+            loginPopup.style.display = 'none';
+            showPage('forgotUsernamePage');
+        });
+
+        forgotPasswordLink.addEventListener('click', (event) => {
+            event.preventDefault();
+            loginPopup.style.display = 'none';
+            showPage('forgotPasswordPage');
+        });
+
+        // Hide login popup when clicking outside
+        document.addEventListener('click', (event) => {
+            if (!loginIcon.contains(event.target) && !loginPopup.contains(event.target)) {
+                loginPopup.style.display = 'none';
+            }
+        });
+
+        // Initial render of products
+        filterProducts();
+    </script>
 </body>
 </html>

@@ -1,10 +1,648 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        :root {
+            --bg-color: #1C2526;
+            --text-color: #ffffff;
+            --secondary-bg: #2A3537;
+            --accent-color: #FF6B35;
+            --chart-bg: #ffffff;
+            --footer-bg: #F5F5F5;
+            --footer-text: #2A3537;
+        }
+
+        [data-theme="light"] {
+            --bg-color: #F5F5F5;
+            --text-color: #2A3537;
+            --secondary-bg: #E0E0E0;
+            --accent-color: #FF6B35;
+            --chart-bg: #ffffff;
+            --footer-bg: #2A3537;
+            --footer-text: #ffffff;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        nav a {
+            color: var(--text-color);
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 24px;
+            color: var(--text-color);
+        }
+
+        .hero {
+            text-align: center;
+            padding: 50px 0;
+        }
+
+        .hero h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .hero p {
+            font-size: 18px;
+            margin-bottom: 30px;
+            opacity: 0.8;
+        }
+
+        .cta-button {
+            background-color: var(--accent-color);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .tracker-section {
+            background-color: var(--secondary-bg);
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .welcome-message {
+            margin-bottom: 20px;
+            font-size: 24px;
+            text-align: center;
+        }
+
+        .input-form {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .input-group label {
+            font-size: 14px;
+        }
+
+        .input-group input {
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        .submit-button {
+            background-color: var(--accent-color);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            align-self: flex-end;
+        }
+
+        .checkbox-group {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .chart-container {
+            background-color: var(--chart-bg);
+            padding: 20px;
+            border-radius: 10px;
+            height: 400px;
+            position: relative;
+        }
+
+        .chart-controls {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .chart-controls button {
+            background-color: var(--accent-color);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: var(--secondary-bg);
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 400px;
+            position: relative;
+        }
+
+        .close {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-color);
+        }
+
+        .modal-content h2 {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .modal-content form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .modal-content input {
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        .modal-content button {
+            background-color: var(--accent-color);
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px 0;
+            background-color: var(--footer-bg);
+            color: var(--footer-text);
+        }
+
+        footer img {
+            height: 30px;
+            margin: 0 20px;
+            filter: grayscale(100%);
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 32px;
+            }
+
+            .input-form {
+                flex-direction: column;
+            }
+        }
+    </style>
 </head>
 <body>
-$END$
+    <div class="container">
+        <header>
+            <div class="logo">HealthTracker</div>
+            <nav>
+                <a href="#" id="loginButton">Log In</a>
+                <a href="#" id="signupButton" class="cta-button">Sign Up</a>
+                <button class="theme-toggle" id="themeToggle" title="Toggle Theme">☀️</button>
+            </nav>
+        </header>
+
+        <section class="hero">
+            <h1>Science-backed health tracking at your fingertips</h1>
+            <p>Track your steps, calories, heart rate, and exercise minutes to make more informed decisions about your health</p>
+            <a href="#" class="cta-button">Sign Up - It's Free!</a>
+        </section>
+
+        <section class="tracker-section">
+            <div id="welcomeMessage" class="welcome-message" style="display: none;"></div>
+
+            <form id="healthForm" class="input-form">
+                <div class="input-group">
+                    <label for="date">Date</label>
+                    <input type="date" id="date" required>
+                </div>
+                <div class="input-group">
+                    <label for="steps">Steps</label>
+                    <input type="number" id="steps" placeholder="Enter steps">
+                </div>
+                <div class="input-group">
+                    <label for="calories">Calories Burned</label>
+                    <input type="number" id="calories" placeholder="Enter calories">
+                </div>
+                <div class="input-group">
+                    <label for="heartRate">Average Heart Rate</label>
+                    <input type="number" id="heartRate" placeholder="Enter heart rate">
+                </div>
+                <div class="input-group">
+                    <label for="minutes">Minutes Exercised</label>
+                    <input type="number" id="minutes" placeholder="Enter minutes">
+                </div>
+                <button type="submit" class="submit-button">Add Data</button>
+            </form>
+
+            <div class="checkbox-group">
+                <label><input type="checkbox" id="showSteps" checked> Show Steps</label>
+                <label><input type="checkbox" id="showCalories" checked> Show Calories</label>
+                <label><input type="checkbox" id="showHeartRate" checked> Show Heart Rate</label>
+                <label><input type="checkbox" id="showMinutes" checked> Show Minutes Exercised</label>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="healthChart"></canvas>
+            </div>
+            <div class="chart-controls">
+                <button onclick="zoomIn()">Zoom In</button>
+                <button onclick="zoomOut()">Zoom Out</button>
+                <button onclick="resetZoom()">Reset Zoom</button>
+            </div>
+        </section>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Log In</h2>
+            <form id="loginForm">
+                <div class="input-group">
+                    <label for="loginUsername">Username</label>
+                    <input type="text" id="loginUsername" required placeholder="Enter username">
+                </div>
+                <div class="input-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" required placeholder="Enter password">
+                </div>
+                <button type="submit">Log In</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sign Up Modal -->
+    <div id="signupModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Sign Up</h2>
+            <form id="signupForm">
+                <div class="input-group">
+                    <label for="signupUsername">Username</label>
+                    <input type="text" id="signupUsername" required placeholder="Enter username">
+                </div>
+                <div class="input-group">
+                    <label for="signupPassword">Password</label>
+                    <input type="password" id="signupPassword" required placeholder="Enter password">
+                </div>
+                <button type="submit">Sign Up</button>
+            </form>
+        </div>
+    </div>
+
+    <footer>
+        <img src="https://via.placeholder.com/100x30?text=GOOD+HOUSEKEEPING" alt="Good Housekeeping">
+        <img src="https://via.placeholder.com/100x30?text=healthline" alt="Healthline">
+        <img src="https://via.placeholder.com/100x30?text=MEN'S+JOURNAL" alt="Men's Journal">
+        <img src="https://via.placeholder.com/100x30?text=lifehacker" alt="Lifehacker">
+        <img src="https://via.placeholder.com/100x30?text=Women's+Health" alt="Women's Health">
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/dist/chartjs-plugin-zoom.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <script>
+        // Initialize health data
+        let healthData = {
+            labels: [],
+            steps: [],
+            calories: [],
+            heartRate: [],
+            minutes: []
+        };
+
+        // Theme toggle
+        const themeToggle = document.getElementById('themeToggle');
+        let isDarkTheme = true;
+        themeToggle.addEventListener('click', () => {
+            isDarkTheme = !isDarkTheme;
+            document.body.setAttribute('data-theme', isDarkTheme ? 'dark' : 'light');
+            themeToggle.textContent = isDarkTheme ? '☀️' : '🌙';
+            localStorage.setItem('theme', isDarkTheme ? 'dark' : 'light');
+        });
+
+        // Load saved theme
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            isDarkTheme = savedTheme === 'dark';
+            document.body.setAttribute('data-theme', savedTheme);
+            themeToggle.textContent = isDarkTheme ? '☀️' : '🌙';
+        }
+
+        // Check if user is logged in
+        const loggedInUser = localStorage.getItem('username');
+        if (loggedInUser) {
+            document.getElementById('welcomeMessage').style.display = 'block';
+            document.getElementById('welcomeMessage').textContent = `Welcome ${loggedInUser}`;
+        }
+
+        // Initialize Chart
+        const ctx = document.getElementById('healthChart').getContext('2d');
+        const healthChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                datasets: [
+                    {
+                        label: 'Steps',
+                        data: [],
+                        borderColor: '#FF6B35',
+                        hidden: false,
+                        fill: false
+                    },
+                    {
+                        label: 'Calories Burned',
+                        data: [],
+                        borderColor: '#4CAF50',
+                        hidden: false,
+                        fill: false
+                    },
+                    {
+                        label: 'Heart Rate',
+                        data: [],
+                        borderColor: '#2196F3',
+                        hidden: false,
+                        fill: false
+                    },
+                    {
+                        label: 'Minutes Exercised',
+                        data: [],
+                        borderColor: '#FFC107',
+                        hidden: false,
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        type: 'time',
+                        time: {
+                            unit: 'day',
+                            displayFormats: {
+                                day: 'MMM d'
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Date'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Value'
+                        }
+                    }
+                },
+                plugins: {
+                    zoom: {
+                        zoom: {
+                            wheel: {
+                                enabled: true
+                            },
+                            pinch: {
+                                enabled: true
+                            },
+                            mode: 'xy'
+                        },
+                        pan: {
+                            enabled: true,
+                            mode: 'xy'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Function to update chart data
+        function updateChart() {
+            const datasets = [
+                {
+                    label: 'Steps',
+                    data: healthData.labels.map((date, index) => ({
+                        x: date,
+                        y: parseFloat(healthData.steps[index]) || 0
+                    })),
+                    borderColor: '#FF6B35',
+                    hidden: !document.getElementById('showSteps').checked
+                },
+                {
+                    label: 'Calories Burned',
+                    data: healthData.labels.map((date, index) => ({
+                        x: date,
+                        y: parseFloat(healthData.calories[index]) || 0
+                    })),
+                    borderColor: '#4CAF50',
+                    hidden: !document.getElementById('showCalories').checked
+                },
+                {
+                    label: 'Heart Rate',
+                    data: healthData.labels.map((date, index) => ({
+                        x: date,
+                        y: parseFloat(healthData.heartRate[index]) || 0
+                    })),
+                    borderColor: '#2196F3',
+                    hidden: !document.getElementById('showHeartRate').checked
+                },
+                {
+                    label: 'Minutes Exercised',
+                    data: healthData.labels.map((date, index) => ({
+                        x: date,
+                        y: parseFloat(healthData.minutes[index]) || 0
+                    })),
+                    borderColor: '#FFC107',
+                    hidden: !document.getElementById('showMinutes').checked
+                }
+            ];
+
+            healthChart.data.datasets = datasets;
+            healthChart.update();
+        }
+
+        // Form submission
+        document.getElementById('healthForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const date = new Date(document.getElementById('date').value);
+            const steps = document.getElementById('steps').value;
+            const calories = document.getElementById('calories').value;
+            const heartRate = document.getElementById('heartRate').value;
+            const minutes = document.getElementById('minutes').value;
+
+            healthData.labels.push(date);
+            healthData.steps.push(steps);
+            healthData.calories.push(calories);
+            healthData.heartRate.push(heartRate);
+            healthData.minutes.push(minutes);
+
+            // Sort data by date
+            const indices = healthData.labels.map((_, index) => index)
+                .sort((a, b) => healthData.labels[a] - healthData.labels[b]);
+
+            healthData.labels = indices.map(i => healthData.labels[i]);
+            healthData.steps = indices.map(i => healthData.steps[i]);
+            healthData.calories = indices.map(i => healthData.calories[i]);
+            healthData.heartRate = indices.map(i => healthData.heartRate[i]);
+            healthData.minutes = indices.map(i => healthData.minutes[i]);
+
+            updateChart();
+            document.getElementById('healthForm').reset();
+        });
+
+        // Checkbox event listeners
+        document.getElementById('showSteps').addEventListener('change', updateChart);
+        document.getElementById('showCalories').addEventListener('change', updateChart);
+        document.getElementById('showHeartRate').addEventListener('change', updateChart);
+        document.getElementById('showMinutes').addEventListener('change', updateChart);
+
+        // Zoom functions
+        function zoomIn() {
+            healthChart.zoom(1.2);
+        }
+
+        function zoomOut() {
+            healthChart.zoom(0.8);
+        }
+
+        function resetZoom() {
+            healthChart.resetZoom();
+        }
+
+        // Login Modal functionality
+        const loginModal = document.getElementById('loginModal');
+        const loginButton = document.getElementById('loginButton');
+        const loginCloseButton = loginModal.getElementsByClassName('close')[0];
+        const loginForm = document.getElementById('loginForm');
+
+        loginButton.onclick = function() {
+            loginModal.style.display = 'block';
+        }
+
+        loginCloseButton.onclick = function() {
+            loginModal.style.display = 'none';
+        }
+
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = document.getElementById('loginUsername').value;
+            localStorage.setItem('username', username);
+            loginModal.style.display = 'none';
+            location.reload();
+        });
+
+        // Sign Up Modal functionality
+        const signupModal = document.getElementById('signupModal');
+        const signupButton = document.getElementById('signupButton');
+        const signupCloseButton = signupModal.getElementsByClassName('close')[0];
+        const signupForm = document.getElementById('signupForm');
+
+        signupButton.onclick = function() {
+            signupModal.style.display = 'block';
+        }
+
+        signupCloseButton.onclick = function() {
+            signupModal.style.display = 'none';
+        }
+
+        signupForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = document.getElementById('signupUsername').value;
+            localStorage.setItem('username', username);
+            signupModal.style.display = 'none';
+            location.reload();
+        });
+
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            if (event.target == loginModal) {
+                loginModal.style.display = 'none';
+            }
+            if (event.target == signupModal) {
+                signupModal.style.display = 'none';
+            }
+        }
+    </script>
 </body>
 </html>

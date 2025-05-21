@@ -1,10 +1,194 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ShopNow</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f9f9f9;
+      color: #333;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #fff;
+      padding: 1rem 2rem;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    #cart-count {
+      background: red;
+      color: white;
+      border-radius: 50%;
+      padding: 0.2rem 0.6rem;
+      font-size: 0.8rem;
+      margin-left: 5px;
+    }
+
+    .product {
+      border: 1px solid #ccc;
+      padding: 1rem;
+      margin: 1rem;
+      width: 200px;
+      background: white;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .product:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+    }
+
+    .product button {
+      background: #007BFF;
+      color: white;
+      border: none;
+      padding: 0.5rem;
+      cursor: pointer;
+      margin-top: 0.5rem;
+    }
+
+    #product-list {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .cart-popup {
+      position: absolute;
+      top: 60px;
+      right: 20px;
+      width: 300px;
+      background: #fff;
+      border: 1px solid #ccc;
+      padding: 1rem;
+      display: none;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      z-index: 1000;
+    }
+
+    .cart-item {
+      display: flex;
+      justify-content: space-between;
+      margin: 0.5rem 0;
+    }
+
+    .history-tab {
+      margin-top: 1rem;
+      border-top: 1px solid #ccc;
+      padding-top: 1rem;
+    }
+  </style>
 </head>
 <body>
-$END$
+
+<header>
+  <h1>ShopNow</h1>
+  <div>
+    <button onclick="toggleCart()">Cart<span id="cart-count">0</span></button>
+  </div>
+</header>
+
+<div class="cart-popup" id="cart-popup">
+  <h3>Cart</h3>
+  <div id="cart-items"></div>
+  <p>Total: $<span id="cart-total">0.00</span></p>
+  <p>Tax (10%): $<span id="cart-tax">0.00</span></p>
+  <div class="history-tab">
+    <h4>Order History</h4>
+    <div id="order-history"></div>
+  </div>
+</div>
+
+<main>
+  <div id="product-list"></div>
+</main>
+
+<script>
+  const products = [
+    { name: "Nike Joggers", category: "Pants", price: 59.95, colors: ["Black", "Red"], rating: 4.5 },
+    { name: "Columbia Convertible", category: "Pants", price: 52.00, colors: ["Black"], rating: 4.8 },
+  ];
+  const cart = [];
+  const orderHistory = [];
+
+  function renderProducts() {
+    const list = document.getElementById("product-list");
+    list.innerHTML = "";
+    products.forEach((p, index) => {
+      const div = document.createElement("div");
+      div.className = "product";
+      div.innerHTML = `
+        <h4>${p.name}</h4>
+        <p>$${p.price.toFixed(2)}</p>
+        <p>Rating: ${p.rating}</p>
+        <p>Colors: ${p.colors.join(", ")}</p>
+        <button onclick="event.stopPropagation(); addToCart(${index})">Add to Cart</button>
+      `;
+      div.addEventListener("click", () => window.location.href = `${p.name.replace(/\\s+/g, '-').toLowerCase()}.html`);
+      list.appendChild(div);
+    });
+  }
+
+  function addToCart(index) {
+    cart.push(products[index]);
+    document.getElementById("cart-count").textContent = cart.length;
+    renderCart();
+  }
+
+  function removeFromCart(index) {
+    const removed = cart.splice(index, 1)[0];
+    document.getElementById("cart-count").textContent = cart.length;
+    renderCart();
+    if (removed) {
+      orderHistory.push({ ...removed, date: new Date().toLocaleDateString() });
+    }
+  }
+
+  function renderCart() {
+    const container = document.getElementById("cart-items");
+    container.innerHTML = "";
+    let total = 0;
+    cart.forEach((item, i) => {
+      total += item.price;
+      const div = document.createElement("div");
+      div.className = "cart-item";
+      div.innerHTML = `
+        ${item.name} - $${item.price.toFixed(2)}
+        <button onclick="removeFromCart(${i})">Remove</button>
+      `;
+      container.appendChild(div);
+    });
+    document.getElementById("cart-total").textContent = total.toFixed(2);
+    document.getElementById("cart-tax").textContent = (total * 0.10).toFixed(2);
+    renderHistory();
+  }
+
+  function renderHistory() {
+    const container = document.getElementById("order-history");
+    container.innerHTML = "";
+    orderHistory.forEach(item => {
+      const div = document.createElement("div");
+      div.textContent = `${item.name} - $${item.price.toFixed(2)} - ${item.date}`;
+      container.appendChild(div);
+    });
+  }
+
+  function toggleCart() {
+    const popup = document.getElementById("cart-popup");
+    popup.style.display = popup.style.display === "block" ? "none" : "block";
+    renderCart();
+  }
+
+  renderProducts();
+</script>
+
 </body>
 </html>

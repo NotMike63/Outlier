@@ -1,0 +1,18 @@
+Turn 1:
+The response must consist of one file using HTML, CSS, and JavaScript. For example, by using inline CSS and inline JavaScript.
+The response must contain a layout identical to the attached image.
+The response must contain a graph that allows users to select points on.
+The response must contain input boxes on the left where color coded equations can be input.
+
+Turn 2:
+The response must allow the user to scroll in and out with the scroll wheel.
+The response must have a dark/light UI toggle in the top right.
+
+Turn 3:
+The response must accurately represent input functions and equations.
+The response must allow the equation to display infinitely regardless of user's zoom.
+
+Turn 4:
+The response must contain a + button that allows the user's to add new equation input boxes.
+The response must allow the user to reshape the size of the graph.
+The response must have a circle to the left of each equation allowing the user to customize equation color.

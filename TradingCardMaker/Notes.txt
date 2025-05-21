@@ -1,0 +1,22 @@
+Turn 1:
+The response must consist of one file using HTML, CSS, and JavaScript. For example, by using inline CSS and inline JavaScript.
+The response must have a generic player card template like the image centered in the screen. For example,
+The response must have a player card with editable team name, number, player name, and position with changes being made directly on the card. For example,
+The response must have a blank space for the image that users can click on to upload an image. For example,
+
+Turn 2:
+The response must make changes directly on the card. For example,
+The response must have a royal blue header with creator page written in white. For example,
+The response must allow the user to download the card as a png or pdf. For example,
+
+Turn 3:
+The response must have a customizable primary, secondary, and tertiary color picked by a color wheel. For example,
+The response must have a home page where user's can sign in, register, or subscribe to premium membership. For example,
+The response must have a sign in, registration, and subscription popup matching the site's theme. For example,
+
+Turn 4:
+The response must have a creator page link in the header. For example,
+The response must have a way to get back to the home page from the creator page. For example,
+The response must have a club logo that the user can upload. For example,
+
+Turn 5:

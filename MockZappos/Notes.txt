@@ -1,0 +1,25 @@
+Turn 1:
+The response must consist of one file using HTML, CSS, and JavaScript. For example, by using inline CSS and inline JavaScript.
+The response must contain a search bar that autocompletes with items for sale on the site.
+The response must have the same theme/layout as the reference image.
+The response must have a create items page that allows users to specify name, category, price, colors, and rating.
+(I) The response should not have any text or buttons that perform no function. For example, removing items in the HTML without an href or purpose.
+
+Turn 2:
+The response must contain filters that sort the items.
+The response must contain a UI control in the top right of the page.
+The response must contain a login popup to the right of the search bar matching the sites theme.
+
+Turn 3:
+The response must contain items that are dynamic and interact with the user.
+The response must contain a login page with a forgot username and forgot password page.
+The response must contain a registration page where users can create an account with email and password. For example, using HTML input boxes, with JavaScript validation to ensure non null entries.
+
+Turn 4:
+The response must contain items with an add to cart button.
+The response must contain a cart in the top right that when clicked on users can view their cart and total.
+The response must contain a cart page where users can remove items from their cart.
+
+Turn 5:
+The response must contain items that can be clicked on and viewed.
+The response must have an order history where customers can see what item's they have ordered in the past.

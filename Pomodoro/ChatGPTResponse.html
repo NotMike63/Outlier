@@ -1,10 +1,304 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pomodoro Timer</title>
+  <style>
+    :root {
+      --bg-color: #b64b4b;
+      --text-color: #fff;
+      --button-bg: #fff;
+      --button-color: #b64b4b;
+    }
+
+    body.dark {
+      --bg-color: #2e2e2e;
+      --text-color: #ffffff;
+      --button-bg: #444;
+      --button-color: #ffffff;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    .header {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
+
+    .timer-box {
+      text-align: center;
+      background-color: rgba(255, 255, 255, 0.1);
+      padding: 30px;
+      border-radius: 10px;
+      position: relative;
+    }
+
+    .timer-container {
+      position: relative;
+      width: 200px;
+      height: 200px;
+      margin: 20px auto;
+    }
+
+    .circle-bg, .circle-progress {
+      fill: none;
+      stroke-width: 10;
+    }
+
+    .circle-bg {
+      stroke: #eee;
+    }
+
+    .circle-progress {
+      stroke: var(--text-color);
+      stroke-linecap: round;
+      transform: rotate(-90deg);
+      transform-origin: 50% 50%;
+      transition: stroke-dashoffset 1s linear;
+    }
+
+    .timer {
+      font-size: 2em;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .btn {
+      padding: 10px 20px;
+      font-size: 1em;
+      background-color: var(--button-bg);
+      color: var(--button-color);
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 5px;
+    }
+
+    input[type="number"], input[type="text"] {
+      padding: 5px;
+      font-size: 1em;
+      border-radius: 5px;
+      border: none;
+      text-align: center;
+    }
+
+    input[type="number"] {
+      width: 60px;
+    }
+
+    .task-box {
+      margin-top: 20px;
+    }
+
+    .task-box input {
+      width: 200px;
+      margin-bottom: 10px;
+    }
+
+    .task-box input.task-time {
+      width: 60px;
+      margin-left: 10px;
+    }
+
+    .tasks-list {
+      margin-top: 10px;
+      text-align: left;
+    }
+
+    .task-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: rgba(255, 255, 255, 0.1);
+      padding: 5px 10px;
+      border-radius: 5px;
+      margin: 5px 0;
+      cursor: pointer;
+    }
+
+    .task-item.done {
+      text-decoration: line-through;
+      opacity: 0.6;
+    }
+
+    .task-item.active {
+      border: 2px solid var(--text-color);
+    }
+
+    .popup {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: var(--bg-color);
+      border: 2px solid var(--text-color);
+      padding: 20px;
+      border-radius: 10px;
+      z-index: 1000;
+      color: var(--text-color);
+    }
+
+    .overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+    }
+  </style>
 </head>
 <body>
-$END$
+  <div class="header">
+    <button class="btn" onclick="toggleTheme()">Toggle Theme</button>
+    <button class="btn" id="login-btn">Login</button>
+  </div>
+
+  <div id="greeting" style="margin-bottom: 10px;"></div>
+
+  <div class="timer-box">
+    <div>
+      <label for="minutes">Set Minutes:</label>
+      <input type="number" id="minutes" min="1" value="25">
+    </div>
+    <div class="timer-container">
+      <svg width="200" height="200">
+        <circle class="circle-bg" cx="100" cy="100" r="90" />
+        <circle class="circle-progress" id="progress-circle" cx="100" cy="100" r="90" stroke-dasharray="565.48" stroke-dashoffset="0" />
+      </svg>
+      <div class="timer" id="timer-display">25:00</div>
+    </div>
+    <button class="btn" onclick="startTimer()">Start</button>
+    <button class="btn" onclick="resetTimer()">Reset</button>
+    <div class="task-box">
+      <input type="text" placeholder="Task..." id="task-input">
+      <input class="task-time" type="number" placeholder="Min" id="task-time" min="1">
+      <button class="btn" onclick="addTask()">Add Task</button>
+      <div class="tasks-list" id="tasks-list"></div>
+    </div>
+  </div>
+
+  <div class="overlay" id="overlay"></div>
+  <div class="popup" id="login-popup">
+    <h3>Login</h3>
+    <input type="text" id="username" placeholder="Username"><br><br>
+    <button class="btn" onclick="login()">Submit</button>
+  </div>
+
+  <script>
+    let timer;
+    let totalSeconds = 1500;
+    let remainingSeconds = 1500;
+    let isRunning = false;
+    let activeTask = null;
+
+    function updateDisplay() {
+      const minutes = Math.floor(remainingSeconds / 60);
+      const seconds = remainingSeconds % 60;
+      document.getElementById('timer-display').textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+      const circle = document.getElementById('progress-circle');
+      const radius = 90;
+      const circumference = 2 * Math.PI * radius;
+      const offset = circumference - (remainingSeconds / totalSeconds) * circumference;
+      circle.style.strokeDashoffset = offset;
+    }
+
+    function startTimer() {
+      if (isRunning) return;
+      if (activeTask) {
+        totalSeconds = parseInt(activeTask.dataset.time) * 60;
+      } else {
+        const inputMinutes = parseInt(document.getElementById('minutes').value);
+        totalSeconds = inputMinutes * 60;
+      }
+      remainingSeconds = totalSeconds;
+      updateDisplay();
+      isRunning = true;
+      timer = setInterval(() => {
+        if (remainingSeconds > 0) {
+          remainingSeconds--;
+          updateDisplay();
+        } else {
+          clearInterval(timer);
+          isRunning = false;
+        }
+      }, 1000);
+    }
+
+    function resetTimer() {
+      clearInterval(timer);
+      isRunning = false;
+      const inputMinutes = parseInt(document.getElementById('minutes').value);
+      totalSeconds = inputMinutes * 60;
+      remainingSeconds = totalSeconds;
+      updateDisplay();
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle('dark');
+    }
+
+    document.getElementById('login-btn').addEventListener('click', () => {
+      document.getElementById('login-popup').style.display = 'block';
+      document.getElementById('overlay').style.display = 'block';
+    });
+
+    function login() {
+      const username = document.getElementById('username').value;
+      if (username.trim()) {
+        document.getElementById('greeting').textContent = `Hello ${username}!`;
+        document.getElementById('login-popup').style.display = 'none';
+        document.getElementById('overlay').style.display = 'none';
+      }
+    }
+
+    function addTask() {
+      const taskInput = document.getElementById('task-input');
+      const timeInput = document.getElementById('task-time');
+      const taskText = taskInput.value.trim();
+      const taskTime = timeInput.value;
+      if (taskText && taskTime) {
+        const taskList = document.getElementById('tasks-list');
+        const taskItem = document.createElement('div');
+        taskItem.className = 'task-item';
+        taskItem.dataset.time = taskTime;
+        taskItem.innerHTML = `<span>${taskText}</span><span>${taskTime} min</span>`;
+
+        taskItem.addEventListener('click', () => {
+          if (!isRunning) {
+            document.querySelectorAll('.task-item').forEach(t => t.classList.remove('active'));
+            taskItem.classList.add('active');
+            activeTask = taskItem;
+          }
+          taskItem.classList.toggle('done');
+        });
+
+        taskList.appendChild(taskItem);
+        taskInput.value = '';
+        timeInput.value = '';
+      }
+    }
+
+    updateDisplay();
+  </script>
 </body>
 </html>
