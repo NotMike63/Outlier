@@ -20,3 +20,23 @@ The response must have a way to get back to the home page from the creator page.
 The response must have a club logo that the user can upload. For example,
 
 Turn 5:
+
+
+Second Try:
+Turn 1:
+The response must consist of one file using HTML, CSS, and JavaScript. For example, by using inline CSS and inline JavaScript.
+The response must have a generic player card template like the image on the site. For example,
+The response must have a player card with editable team name, number, player name, and position with changes being made directly on the card. For example,
+The response must have a blank space for the image that users can click on to upload an image. For example,
+
+Turn 2:
+The response must make changes directly on the card. For example,
+The response must allow the user to select the primary, secondary, and tertiary colors of the card.
+
+Turn 3:
+The response must allow the user to download the trading card as a png or pdf. For example, making two buttons with HTML then using JavaScript event listeners to upload the file.
+
+Turn 4:
+The response must allow the user to sign in with a sign in button in the top right. For example,
+The response must allow signed in users to use the save card button. For example,
+The response must have a save card button that saves a preview of the trading card on the left allowing it to be accessed later.

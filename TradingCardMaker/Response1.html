@@ -1,10 +1,550 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Sports Trading Card Maker</title>
+    <!-- Include html2canvas and jsPDF libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+        }
+
+        .auth-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+
+        .auth-btn {
+            padding: 10px 20px;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .auth-btn:hover {
+            background: #555;
+        }
+
+        .main-container {
+            display: flex;
+            gap: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+        }
+
+        /* Preview Section */
+        .preview-container {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .preview-container h2 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .preview-card {
+            width: 100%;
+            margin-bottom: 15px;
+            cursor: pointer;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .preview-card img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* Form Styling */
+        .form-container {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            width: 350px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .form-container h2 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .form-group input[type="file"],
+        .form-group input[type="color"] {
+            padding: 3px;
+        }
+
+        /* Card Styling */
+        .card-container {
+            perspective: 1000px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .card {
+            width: 350px;
+            height: 500px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.3s;
+        }
+
+        .card:hover {
+            transform: rotateY(10deg) rotateX(10deg);
+        }
+
+        .card-front {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            background: linear-gradient(45deg, var(--primary-color, #ff6b6b), var(--secondary-color, #feca57));
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-background {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(255,255,255,0.1), rgba(255,255,255,0.3));
+            opacity: 0.5;
+        }
+
+        .card-border {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            border: 2px solid var(--tertiary-color, white);
+            border-radius: 10px;
+        }
+
+        .player-image {
+            position: absolute;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 60%;
+            object-fit: cover;
+            border-radius: 10px;
+            background: #ddd;
+        }
+
+        .card-logo {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            width: 60px;
+            height: 60px;
+            background: white;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--primary-color, #ff6b6b);
+        }
+
+        .card-league {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            color: var(--tertiary-color, white);
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .card-bottom {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 100px;
+            background: linear-gradient(to right, var(--primary-color, #ff6b6b), var(--secondary-color, #feca57));
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--tertiary-color, white);
+            border-top: 2px solid var(--tertiary-color, white);
+        }
+
+        .player-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+
+        .player-number {
+            position: absolute;
+            bottom: 110px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--tertiary-color, white);
+            color: var(--primary-color, #ff6b6b);
+            font-size: 30px;
+            font-weight: bold;
+            padding: 5px 15px;
+            border-radius: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+        }
+
+        .player-nationality,
+        .player-team {
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        /* Buttons */
+        .buttons {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #555;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .preview-container,
+            .form-container,
+            .card-container {
+                width: 100%;
+                max-width: 350px;
+            }
+        }
+    </style>
 </head>
 <body>
-$END$
+    <!-- Authentication Button -->
+    <div class="auth-container">
+        <button class="auth-btn" id="authBtn">Sign In</button>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-container">
+        <!-- Preview Section -->
+        <div class="preview-container">
+            <h2>Saved Cards</h2>
+            <div id="previewList"></div>
+        </div>
+
+        <!-- Form Section -->
+        <div class="form-container">
+            <h2>Create Your Trading Card</h2>
+            <div class="form-group">
+                <label for="playerImage">Player Image</label>
+                <input type="file" id="playerImage" accept="image/*">
+            </div>
+            <div class="form-group">
+                <label for="primaryColor">Primary Color</label>
+                <input type="color" id="primaryColor" value="#ff6b6b">
+            </div>
+            <div class="form-group">
+                <label for="secondaryColor">Secondary Color</label>
+                <input type="color" id="secondaryColor" value="#feca57">
+            </div>
+            <div class="form-group">
+                <label for="tertiaryColor">Tertiary Color</label>
+                <input type="color" id="tertiaryColor" value="#ffffff">
+            </div>
+        </div>
+
+        <!-- Card Section -->
+        <div class="card-container">
+            <div class="card" id="card">
+                <div class="card-front">
+                    <div class="card-background"></div>
+                    <div class="card-border"></div>
+                    <div class="card-logo">Logo</div>
+                    <div class="card-league" id="cardLeague">FIFA</div>
+                    <img src="" alt="Player Image" class="player-image" id="cardImage">
+                    <div class="player-number" id="cardNumber">9</div>
+                    <div class="card-bottom">
+                        <div class="player-name" id="cardName">HARRY KANE</div>
+                        <div class="player-nationality" id="cardNationality">ENGLAND</div>
+                        <div class="player-team" id="cardTeam">TOTTENHAM</div>
+                    </div>
+                </div>
+            </div>
+            <div class="buttons">
+                <button class="btn" id="saveBtn" style="display: none;">Save Card</button>
+                <button class="btn" id="downloadPng">Download as PNG</button>
+                <button class="btn" id="downloadPdf">Download as PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get form elements
+        const playerImageInput = document.getElementById('playerImage');
+        const primaryColorInput = document.getElementById('primaryColor');
+        const secondaryColorInput = document.getElementById('secondaryColor');
+        const tertiaryColorInput = document.getElementById('tertiaryColor');
+
+        // Get card elements
+        const cardName = document.getElementById('cardName');
+        const cardNumber = document.getElementById('cardNumber');
+        const cardNationality = document.getElementById('cardNationality');
+        const cardLeague = document.getElementById('cardLeague');
+        const cardTeam = document.getElementById('cardTeam');
+        const cardImage = document.getElementById('cardImage');
+        const cardFront = document.querySelector('.card-front');
+        const cardBorder = document.querySelector('.card-border');
+        const cardLogo = document.querySelector('.card-logo');
+        const cardLeagueElement = document.querySelector('.card-league');
+        const cardBottom = document.querySelector('.card-bottom');
+        const playerNumberElement = document.querySelector('.player-number');
+        const playerNameElement = document.querySelector('.player-name');
+        const playerNationalityElement = document.querySelector('.player-nationality');
+        const playerTeamElement = document.querySelector('.player-team');
+
+        // Get buttons
+        const authBtn = document.getElementById('authBtn');
+        const saveBtn = document.getElementById('saveBtn');
+        const downloadPngBtn = document.getElementById('downloadPng');
+        const downloadPdfBtn = document.getElementById('downloadPdf');
+        const previewList = document.getElementById('previewList');
+
+        // Authentication state
+        let isSignedIn = false;
+
+        // Load saved cards from local storage
+        let savedCards = JSON.parse(localStorage.getItem('savedCards')) || [];
+
+        // Function to update authentication state
+        function updateAuthState() {
+            authBtn.textContent = isSignedIn ? 'Sign Out' : 'Sign In';
+            saveBtn.style.display = isSignedIn ? 'inline-block' : 'none';
+            previewList.style.display = isSignedIn ? 'block' : 'none';
+            if (isSignedIn) {
+                renderSavedCards();
+            } else {
+                previewList.innerHTML = '';
+            }
+        }
+
+        // Mock sign-in/sign-out
+        authBtn.addEventListener('click', () => {
+            if (isSignedIn) {
+                isSignedIn = false;
+            } else {
+                // Simulate sign-in (in a real app, this would involve a login system)
+                isSignedIn = true;
+                alert('Signed in successfully! (Mock sign-in)');
+            }
+            updateAuthState();
+        });
+
+        // Function to make card elements editable
+        function makeEditable(element, defaultValue, transform = (val) => val) {
+            element.addEventListener('click', () => {
+                const newValue = prompt(`Enter new value for ${element.id.replace('card', '')}:`, element.textContent);
+                if (newValue !== null && newValue.trim() !== '') {
+                    element.textContent = transform(newValue);
+                } else if (newValue === '') {
+                    element.textContent = defaultValue;
+                }
+            });
+        }
+
+        // Make card elements editable
+        makeEditable(cardName, 'HARRY KANE', (val) => val.toUpperCase());
+        makeEditable(cardNumber, '9');
+        makeEditable(cardNationality, 'ENGLAND', (val) => val.toUpperCase());
+        makeEditable(cardLeague, 'FIFA', (val) => val.toUpperCase());
+        makeEditable(cardTeam, 'TOTTENHAM', (val) => val.toUpperCase());
+
+        // Function to update card colors
+        function updateCardColors() {
+            const primaryColor = primaryColorInput.value;
+            const secondaryColor = secondaryColorInput.value;
+            const tertiaryColor = tertiaryColorInput.value;
+
+            cardFront.style.setProperty('--primary-color', primaryColor);
+            cardFront.style.setProperty('--secondary-color', secondaryColor);
+            cardFront.style.setProperty('--tertiary-color', tertiaryColor);
+
+            cardLogo.style.color = primaryColor;
+            cardLeagueElement.style.color = tertiaryColor;
+            cardBottom.style.background = `linear-gradient(to right, ${primaryColor}, ${secondaryColor})`;
+            cardBottom.style.borderTopColor = tertiaryColor;
+            playerNumberElement.style.background = tertiaryColor;
+            playerNumberElement.style.color = primaryColor;
+            playerNameElement.style.color = tertiaryColor;
+            playerNationalityElement.style.color = tertiaryColor;
+            playerTeamElement.style.color = tertiaryColor;
+            cardBorder.style.borderColor = tertiaryColor;
+        }
+
+        // Function to render saved cards
+        function renderSavedCards() {
+            previewList.innerHTML = '';
+            savedCards.forEach((card, index) => {
+                const previewCard = document.createElement('div');
+                previewCard.className = 'preview-card';
+                const img = document.createElement('img');
+                img.src = card.image;
+                img.alt = `Saved Card ${index + 1}`;
+                previewCard.appendChild(img);
+                previewCard.addEventListener('click', () => loadCard(card));
+                previewList.appendChild(previewCard);
+            });
+        }
+
+        // Function to save card
+        saveBtn.addEventListener('click', () => {
+            html2canvas(document.getElementById('card'), { scale: 2 }).then(canvas => {
+                const cardData = {
+                    name: cardName.textContent,
+                    number: cardNumber.textContent,
+                    nationality: cardNationality.textContent,
+                    league: cardLeague.textContent,
+                    team: cardTeam.textContent,
+                    image: cardImage.src,
+                    primaryColor: primaryColorInput.value,
+                    secondaryColor: secondaryColorInput.value,
+                    tertiaryColor: tertiaryColorInput.value,
+                    preview: canvas.toDataURL('image/png')
+                };
+                savedCards.push(cardData);
+                localStorage.setItem('savedCards', JSON.stringify(savedCards));
+                renderSavedCards();
+                alert('Card saved successfully!');
+            });
+        });
+
+        // Function to load a saved card
+        function loadCard(card) {
+            cardName.textContent = card.name;
+            cardNumber.textContent = card.number;
+            cardNationality.textContent = card.nationality;
+            cardLeague.textContent = card.league;
+            cardTeam.textContent = card.team;
+            cardImage.src = card.image;
+            primaryColorInput.value = card.primaryColor;
+            secondaryColorInput.value = card.secondaryColor;
+            tertiaryColorInput.value = card.tertiaryColor;
+            updateCardColors();
+        }
+
+        // Add event listeners for form inputs
+        playerImageInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    cardImage.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        primaryColorInput.addEventListener('input', updateCardColors);
+        secondaryColorInput.addEventListener('input', updateCardColors);
+        tertiaryColorInput.addEventListener('input', updateCardColors);
+
+        // Download as PNG
+        downloadPngBtn.addEventListener('click', () => {
+            html2canvas(document.getElementById('card'), { scale: 2 }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'trading-card.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        });
+
+        // Download as PDF
+        downloadPdfBtn.addEventListener('click', () => {
+            const { jsPDF } = window.jspdf;
+            html2canvas(document.getElementById('card'), { scale: 2 }).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'px',
+                    format: [canvas.width / 2, canvas.height / 2]
+                });
+                pdf.addImage(imgData, 'PNG', 0, 0, canvas.width / 2, canvas.height / 2);
+                pdf.save('trading-card.pdf');
+            });
+        });
+
+        // Initialize
+        updateAuthState();
+        updateCardColors();
+    </script>
 </body>
 </html>
