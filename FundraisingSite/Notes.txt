@@ -10,3 +10,6 @@ The response must allow the user to create their own fundraisers specifying titl
 The response must allow all sites to be visible from the site's home page in a clean format. For example,
 
 Turn 3:
+The response must allow the user to upload a custom photo for the fundraisers image.
+The response must allow the user to input social medias when creating fundraisers.
+The response must allow the user's inputted social medias to be displayed on the fundraiser page as the appropriate social media icons. This could be done by taking input with HTML inputs, then using HTML
