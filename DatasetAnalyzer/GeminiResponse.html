@@ -1,10 +1,1523 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dataset Normalizer & Modifier</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        /* --- Dark Theme Variables (Default) --- */
+        :root {
+            --bg-color: #1A202C;
+            --card-bg-color: #2D3748;
+            --header-bg-color: #2D3748;
+            --text-color-primary: #E2E8F0; /* Lighter text for main content */
+            --text-color-secondary: #CBD5E0; /* Slightly darker text for labels */
+            --border-color: #4A5568;
+            --accent-color: #38A169; /* Green */
+            --accent-hover-color: #2F855A;
+            --warning-color: #E53E3E;
+            --info-color: #3182CE; /* A blue for info messages */
+            --chart-line-color: #63B3ED; /* Light blue for chart lines */
+            --box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+            --button-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --overlay-bg: rgba(0, 0, 0, 0.7); /* Dark overlay for modals */
+        }
+
+        /* --- Light Theme Variables --- */
+        body[data-theme="light"] {
+            --bg-color: #F7FAFC;
+            --card-bg-color: #FFFFFF;
+            --header-bg-color: #EDF2F7;
+            --text-color-primary: #2D3748;
+            --text-color-secondary: #4A5568;
+            --border-color: #E2E8F0;
+            --accent-color: #38A169;
+            --accent-hover-color: #2F855A;
+            --warning-color: #E53E3E;
+            --info-color: #3182CE;
+            --chart-line-color: #4299E1; /* Darker blue for light theme */
+            --box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+            --button-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            --overlay-bg: rgba(255, 255, 255, 0.7); /* Light overlay for modals */
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg-color);
+            color: var(--text-color-secondary);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            min-height: 100vh;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .dashboard-header {
+            background-color: var(--header-bg-color);
+            padding: 15px 25px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--box-shadow);
+            color: var(--text-color-primary);
+            transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+        }
+
+        .dashboard-header h1 {
+            margin: 0;
+            font-size: 1.8em;
+            font-weight: 600;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .theme-toggle-button, .login-button {
+            padding: 10px; /* Adjust padding for square buttons */
+            border: 2px solid var(--border-color);
+            border-radius: 50%; /* Circle for theme toggle */
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: var(--button-shadow);
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+            background-color: var(--card-bg-color); /* Matches card bg */
+            color: var(--text-color-primary);
+            font-weight: 600;
+        }
+        .login-button {
+            border-radius: 8px; /* Slightly rounded rectangle for login */
+            width: auto;
+            min-width: 80px;
+            font-size: 0.9em;
+        }
+
+        .theme-toggle-button:hover, .login-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+        }
+        .theme-toggle-button svg {
+            width: 24px;
+            height: 24px;
+            fill: var(--text-color-primary); /* Icon color */
+            transition: fill 0.3s ease;
+        }
+
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 250px repeat(auto-fit, minmax(300px, 1fr)); /* Added a fixed-width left column */
+            gap: 20px;
+            flex-grow: 1;
+        }
+
+        @media (max-width: 1024px) {
+            .dashboard-container {
+                grid-template-columns: 1fr; /* Stack columns on smaller screens */
+            }
+            .saved-datasets-card {
+                order: -1; /* Move to top on small screens */
+            }
+        }
+
+        .card {
+            background-color: var(--card-bg-color);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: var(--box-shadow);
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card-header {
+            font-size: 1.1em;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--text-color-primary);
+            transition: color 0.3s ease;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+            color: var(--text-color-secondary);
+            transition: color 0.3s ease;
+        }
+
+        .input-group input[type="file"],
+        .input-group select,
+        .input-group input[type="number"],
+        .input-group input[type="text"],
+        .input-group input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-color);
+            color: var(--text-color-primary);
+            font-size: 1em;
+            box-sizing: border-box;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .input-group select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='var(--text-color-secondary)'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 1.2em;
+        }
+
+        .input-group input:focus,
+        .input-group select:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(56, 161, 105, 0.3);
+        }
+
+        button {
+            padding: 12px 20px;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 500;
+            transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+            margin-top: 10px;
+            box-shadow: var(--button-shadow);
+        }
+
+        button:hover:not(:disabled) {
+            background-color: var(--accent-hover-color);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        button:disabled {
+            background-color: var(--border-color);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .chart-container {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 250px;
+        }
+
+        .stats-display, .metric-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            color: var(--text-color-secondary);
+        }
+
+        .stat-item, .metric-input-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.95em;
+            transition: border-color 0.3s ease;
+        }
+
+        .stat-item:last-child, .metric-input-item:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label, .metric-label {
+            font-weight: 500;
+            color: var(--text-color-primary);
+            transition: color 0.3s ease;
+        }
+
+        .stat-value {
+            font-weight: 700;
+            color: var(--accent-color);
+            transition: color 0.3s ease;
+        }
+
+        .metric-input-item input {
+            flex-grow: 1;
+            max-width: 120px;
+            margin-left: 10px;
+        }
+
+        .message {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.9em;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .message.error {
+            background-color: rgba(229, 62, 62, 0.2);
+            color: var(--warning-color);
+            border: 1px solid var(--warning-color);
+        }
+
+        .message.info {
+            background-color: rgba(49, 130, 206, 0.2);
+            color: var(--info-color);
+            border: 1px solid var(--info-color);
+        }
+
+        /* --- Saved Datasets Card Specifics --- */
+        .saved-datasets-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            flex-grow: 1;
+            overflow-y: auto; /* Allow scrolling for many datasets */
+            max-height: 400px; /* Limit height for scrollable area */
+        }
+
+        .saved-datasets-list li {
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            background-color: var(--bg-color); /* Use a slightly different bg for list items */
+            border-radius: 6px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+            transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+            color: var(--text-color-primary);
+            font-size: 0.95em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .saved-datasets-list li:hover {
+            background-color: var(--border-color); /* Slightly lighter on hover */
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+        }
+
+        .saved-datasets-list li .delete-btn {
+            background: none;
+            border: none;
+            color: var(--warning-color);
+            font-size: 1.2em;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.2s ease, transform 0.1s ease;
+            padding: 0 5px;
+            margin: 0;
+            line-height: 1; /* Adjust to fit text */
+            box-shadow: none; /* Override general button shadow */
+        }
+        .saved-datasets-list li .delete-btn:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        /* --- Modal (Popup) Styling --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--overlay-bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .modal-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background-color: var(--card-bg-color);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: var(--box-shadow);
+            width: 90%;
+            max-width: 400px;
+            transform: translateY(-20px);
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            position: relative;
+        }
+
+        .modal-overlay.visible .modal-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .modal-content h2 {
+            color: var(--text-color-primary);
+            margin-top: 0;
+            margin-bottom: 25px;
+            text-align: center;
+            font-size: 1.5em;
+        }
+
+        .modal-content .input-group {
+            margin-bottom: 20px;
+        }
+
+        .modal-content button {
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .modal-close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: var(--text-color-secondary);
+            font-size: 1.8em;
+            cursor: pointer;
+            line-height: 1;
+            transition: color 0.2s ease, transform 0.2s ease;
+            padding: 0;
+            box-shadow: none; /* Override general button shadow */
+        }
+        .modal-close-btn:hover {
+            color: var(--warning-color);
+            transform: rotate(90deg);
+        }
+
+        .user-status {
+            font-size: 0.9em;
+            color: var(--info-color);
+            margin-left: 10px;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+    </style>
 </head>
 <body>
-$END$
+    <div class="modal-overlay" id="loginModalOverlay">
+        <div class="modal-content">
+            <button class="modal-close-btn" id="closeLoginModal">&times;</button>
+            <h2>Simulated Login</h2>
+            <p class="message error" id="loginError" style="display: none;"></p>
+            <div class="input-group">
+                <label for="username">Username:</label>
+                <input type="text" id="username" placeholder="Enter username">
+            </div>
+            <div class="input-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" placeholder="Enter password">
+            </div>
+            <button id="performLoginBtn">Login</button>
+            <p class="message info" style="margin-top:20px; text-align:center;">
+                (This is a simulated login. Any non-empty input works.)
+            </p>
+        </div>
+    </div>
+
+    <div class="dashboard-header">
+        <h1>Dataset Normalizer & Modifier</h1>
+        <div class="header-controls">
+            <span class="user-status" id="userStatus">Not Logged In</span>
+            <button class="login-button" id="loginBtn">Login</button>
+            <div class="current-time" id="currentTime"></div>
+            <button id="themeToggleButton" class="theme-toggle-button" aria-label="Toggle dark/light theme">
+                <svg id="themeIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.37a.75.75 0 01.55-.73c.4-.07.78-.1.78-.1V9a.75.75 0 01-.55-.73c-.4-.07-.78-.1-.78-.1V3.75a.75.75 0 01.75-.75H12z" />
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <div class="dashboard-container">
+        <div class="card saved-datasets-card" style="grid-column: span 1; min-height: 280px;">
+            <div class="card-header">Saved Datasets (Local)</div>
+            <p class="message info" id="savedDatasetsMessage" style="display: none;"></p>
+            <ul class="saved-datasets-list" id="savedDatasetsList">
+                <p>Login to save datasets and view them here.</p>
+            </ul>
+        </div>
+
+        <div class="card" style="grid-column: span 1; min-height: 280px;">
+            <div class="card-header">Data Input</div>
+            <div class="input-group">
+                <label for="fileUpload">Upload Dataset (CSV/JSON, max 10MB):</label>
+                <input type="file" id="fileUpload" accept=".csv,.json">
+                <p class="message error" id="fileError" style="display: none;"></p>
+            </div>
+            <div class="input-group">
+                <label for="columnX">Select X-Axis Column:</label>
+                <select id="columnX" disabled></select>
+            </div>
+            <div class="input-group">
+                <label for="columnY">Select Y-Axis Column (for stats & transformation):</label>
+                <select id="columnY" disabled></select>
+            </div>
+            <button id="generateGraphBtn" disabled>Generate Graph & Stats</button>
+            <p class="message info" id="dataMessage" style="display: none;"></p>
+            <button id="saveDatasetBtn" style="display: none;">Save Current Dataset</button>
+        </div>
+
+        <div class="card" style="grid-column: span 2; min-height: 380px;">
+            <div class="card-header">Data Visualization</div>
+            <div class="chart-container">
+                <canvas id="dataChart"></canvas>
+            </div>
+            <p class="message" id="chartMessage" style="display: none;"></p>
+        </div>
+
+        <div class="card" style="grid-column: span 1; min-height: 280px;">
+            <div class="card-header">Current Descriptive Statistics (Y-Axis)</div>
+            <div class="stats-display" id="statsDisplay">
+                <p>Upload data and select columns to see statistics.</p>
+            </div>
+        </div>
+
+        <div class="card" style="grid-column: span 2;">
+            <div class="card-header">Target Metrics & Dataset Transformation</div>
+            <p class="message error" id="modificationError" style="display: none;"></p>
+            <div class="metric-inputs">
+                <div class="metric-input-item">
+                    <span class="metric-label">Target Mean (Y):</span>
+                    <input type="number" id="targetMean" step="0.01" placeholder="e.g., 0">
+                </div>
+                <div class="metric-input-item">
+                    <span class="metric-label">Target Median (Y):</span>
+                    <input type="number" id="targetMedian" step="0.01" placeholder="e.g., 0" disabled>
+                </div>
+                <div class="metric-input-item">
+                    <span class="metric-label">Target Mode (Y):</span>
+                    <input type="number" id="targetMode" step="0.01" placeholder="e.g., N/A" disabled>
+                </div>
+                <div class="metric-input-item">
+                    <span class="metric-label">Target Std Dev (Y):</span>
+                    <input type="number" id="targetStdDev" step="0.01" placeholder="e.g., 1">
+                </div>
+            </div>
+            <button id="modifyDatasetBtn" disabled>Apply Transformation (Mean & Std Dev)</button>
+            <p class="message info" id="modifyMessage" style="display: none;"></p>
+            <button id="downloadDatasetBtn" disabled>Download Transformed Dataset</button>
+        </div>
+    </div>
+
+    <script>
+        const fileUpload = document.getElementById('fileUpload');
+        const columnXSelect = document.getElementById('columnX');
+        const columnYSelect = document.getElementById('columnY');
+        const generateGraphBtn = document.getElementById('generateGraphBtn');
+        const dataChartCanvas = document.getElementById('dataChart');
+        const statsDisplay = document.getElementById('statsDisplay');
+        const fileError = document.getElementById('fileError');
+        const dataMessage = document.getElementById('dataMessage');
+        const chartMessage = document.getElementById('chartMessage');
+        const currentTimeElement = document.getElementById('currentTime');
+
+        const targetMeanInput = document.getElementById('targetMean');
+        const targetMedianInput = document.getElementById('targetMedian');
+        const targetModeInput = document.getElementById('targetMode');
+        const targetStdDevInput = document.getElementById('targetStdDev');
+        const modifyDatasetBtn = document.getElementById('modifyDatasetBtn');
+        const downloadDatasetBtn = document.getElementById('downloadDatasetBtn');
+        const modificationError = document.getElementById('modificationError');
+        const modifyMessage = document.getElementById('modifyMessage');
+
+        const themeToggleButton = document.getElementById('themeToggleButton');
+        const themeIcon = document.getElementById('themeIcon');
+        const body = document.body;
+
+        // Login/Save/Preview Elements
+        const loginBtn = document.getElementById('loginBtn');
+        const userStatus = document.getElementById('userStatus');
+        const saveDatasetBtn = document.getElementById('saveDatasetBtn');
+        const savedDatasetsList = document.getElementById('savedDatasetsList');
+        const savedDatasetsMessage = document.getElementById('savedDatasetsMessage');
+
+        // Modal Elements
+        const loginModalOverlay = document.getElementById('loginModalOverlay');
+        const closeLoginModal = document.getElementById('closeLoginModal');
+        const performLoginBtn = document.getElementById('performLoginBtn');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const loginError = document.getElementById('loginError');
+
+        let uploadedData = null; // Stores original parsed data {headers: [], data: []}
+        let modifiedData = null; // Stores modified data {headers: [], data: []}
+        let chartInstance = null; // To hold the Chart.js instance
+        let isLoggedIn = false; // Simulated login state
+
+        // --- Theme Toggling Logic ---
+        const moonIconPath = "M12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.37a.75.75 0 01.55-.73c.4-.07.78-.1.78-.1V9a.75.75 0 01-.55-.73c-.4-.07-.78-.1-.78-.1V3.75a.75.75 0 01.75-.75H12z";
+        const sunIconPath = "M12 2.25a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 7.5a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5H8.25a.75.75 0 01-.75-.75zM12 18a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0V18a.75.75 0 01.75-.75zM16.5 7.5a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5a.75.75 0 01-.75-.75zM16.5 16.5a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5a.75.75 0 01-.75-.75zM7.5 16.5a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5H8.25a.75.75 0 01-.75-.75zM3 12a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5H3.75A.75.75 0 013 12zm18 0a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5a.75.75 0 01.75.75zM6 6h2V4H6v2zm8 0h2V4h-2v2zm-4 12h2v-2h-2v2zm4 0h2v-2h-2v2zM6.343 5.657l-1.06-1.06a.75.75 0 00-1.06 1.06l1.06 1.06a.75.75 0 001.06-1.06zm11.314 11.314l-1.06 1.06a.75.75 0 001.06 1.06l1.06-1.06a.75.75 0 00-1.06-1.06zM17.657 5.657a.75.75 0 001.06 1.06l1.06-1.06a.75.75 0 00-1.06-1.06l-1.06 1.06zM6.343 17.657a.75.75 0 001.06-1.06l-1.06-1.06a.75.75 0 00-1.06 1.06l1.06 1.06z";
+
+        function setTheme(theme) {
+            body.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            // Update icon
+            if (theme === 'dark') {
+                themeIcon.innerHTML = `<path d="${moonIconPath}"/>`;
+            } else {
+                themeIcon.innerHTML = `<path d="${sunIconPath}"/>`;
+            }
+            // Update chart colors to match new theme if chart exists
+            if (chartInstance) {
+                const newChartLineColor = getComputedStyle(document.documentElement).getPropertyValue('--chart-line-color').trim();
+                const newAccentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim();
+                const newTextColor = getComputedStyle(document.documentElement).getPropertyValue('--text-color-primary').trim();
+                const newGridColor = getComputedStyle(document.documentElement).getPropertyValue('--border-color').trim();
+                const newCardBgColor = getComputedStyle(document.documentElement).getPropertyValue('--card-bg-color').trim();
+
+                chartInstance.data.datasets.forEach(dataset => {
+                    dataset.backgroundColor = dataset.label.includes('(Transformed)') ? newAccentColor : newChartLineColor;
+                    dataset.borderColor = dataset.label.includes('(Transformed)') ? newAccentColor : newChartLineColor;
+                    dataset.pointBackgroundColor = dataset.label.includes('(Transformed)') ? newAccentColor : newChartLineColor;
+                });
+                chartInstance.options.plugins.legend.labels.color = newTextColor;
+                chartInstance.options.plugins.tooltip.backgroundColor = newCardBgColor; // Tooltip matches card background
+                chartInstance.options.plugins.tooltip.titleColor = newTextColor;
+                chartInstance.options.plugins.tooltip.bodyColor = newTextColor;
+                chartInstance.options.plugins.tooltip.borderColor = newAccentColor;
+                chartInstance.options.scales.x.title.color = newTextColor;
+                chartInstance.options.scales.x.ticks.color = newTextColor;
+                chartInstance.options.scales.x.grid.color = newGridColor;
+                chartInstance.options.scales.y.title.color = newTextColor;
+                chartInstance.options.scales.y.ticks.color = newTextColor;
+                chartInstance.options.scales.y.grid.color = newGridColor;
+                chartInstance.update();
+            }
+        }
+
+        themeToggleButton.addEventListener('click', () => {
+            const currentTheme = body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            setTheme(newTheme);
+        });
+
+        // Initialize theme based on user's preference or system preference
+        const storedTheme = localStorage.getItem('theme');
+        if (storedTheme) {
+            setTheme(storedTheme);
+        } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+            setTheme('light'); // System is light
+        } else {
+            setTheme('dark'); // Default to dark if no preference or system is dark
+        }
+
+
+        // --- Utility Functions for Data Processing ---
+
+        function parseCSV(text) {
+            const lines = text.trim().split('\n');
+            if (lines.length === 0) return { headers: [], data: [] };
+
+            const headers = lines[0].split(',').map(h => h.trim());
+            const data = lines.slice(1).map(line => {
+                const values = line.split(',').map(v => v.trim());
+                let row = {};
+                headers.forEach((header, i) => {
+                    row[header] = values[i] !== undefined ? values[i] : null;
+                });
+                return row;
+            });
+            return { headers, data };
+        }
+
+        function parseJSON(text) {
+            try {
+                const json = JSON.parse(text);
+                if (!Array.isArray(json) || json.length === 0) {
+                    return { headers: [], data: [] };
+                }
+                const headers = Object.keys(json[0]);
+                return { headers, data: json };
+            } catch (e) {
+                console.error("Error parsing JSON:", e);
+                return { headers: [], data: [] };
+            }
+        }
+
+        function getNumericalValues(data, column) {
+            return data.map(row => parseFloat(row[column])).filter(val => !isNaN(val));
+        }
+
+        function calculateMean(arr) {
+            if (arr.length === 0) return 0;
+            return arr.reduce((sum, val) => sum + val, 0) / arr.length;
+        }
+
+        function calculateMedian(arr) {
+            if (arr.length === 0) return 0;
+            const sortedArr = [...arr].sort((a, b) => a - b);
+            const mid = Math.floor(sortedArr.length / 2);
+            if (sortedArr.length % 2 === 0) {
+                return (sortedArr[mid - 1] + sortedArr[mid]) / 2;
+            } else {
+                return sortedArr[mid];
+            }
+        }
+
+        function calculateMode(arr) {
+            if (arr.length === 0) return 'N/A';
+            const counts = {};
+            arr.forEach(val => {
+                counts[val] = (counts[val] || 0) + 1;
+            });
+
+            let mode = [];
+            let maxCount = 0;
+            for (const val in counts) {
+                if (counts[val] > maxCount) {
+                    maxCount = counts[val];
+                    mode = [val];
+                } else if (counts[val] === maxCount) {
+                    mode.push(val);
+                }
+            }
+            return mode.length === arr.length ? 'No distinct mode' : mode.join(', ');
+        }
+
+        function calculateStdDev(arr) {
+            if (arr.length < 2) return 0; // Need at least 2 data points for std dev
+            const mean = calculateMean(arr);
+            const squaredDifferences = arr.map(val => Math.pow(val - mean, 2));
+            const variance = squaredDifferences.reduce((sum, val) => sum + val, 0) / (arr.length - 1); // Sample standard deviation
+            return Math.sqrt(variance);
+        }
+
+        /**
+         * A simplified data transformation function.
+         * This function demonstrates how to adjust mean and standard deviation.
+         * It DOES NOT guarantee hitting all target metrics (mean, median, mode, std dev) simultaneously
+         * due to the complexity of such a problem.
+         *
+         * It performs a simple standardization (z-score) followed by scaling
+         * and shifting to achieve the target mean and standard deviation for the Y-axis column.
+         *
+         * @param {Array<Object>} originalData - The original dataset.
+         * @param {string} columnToModify - The name of the column to modify.
+         * @param {number} targetMean - The desired mean for the column.
+         * @param {number} targetStdDev - The desired standard deviation for the column.
+         * @returns {Array<Object>} A new dataset with the specified column modified.
+         */
+        function modifyDatasetToMetrics(originalData, columnToModify, targetMean, targetStdDev) {
+            const currentNumericValues = getNumericalValues(originalData, columnToModify);
+            if (currentNumericValues.length === 0) {
+                displayMessage(modificationError, "Cannot transform: Selected Y-axis column contains no numerical data.", 'error');
+                return null;
+            }
+
+            const currentMean = calculateMean(currentNumericValues);
+            const currentStdDev = calculateStdDev(currentNumericValues);
+
+            if (currentStdDev === 0 && targetStdDev !== 0) {
+                displayMessage(modificationError, "Cannot transform: Current Standard Deviation is zero, and target is non-zero. Cannot scale.", 'error');
+                return null;
+            }
+
+            if (currentStdDev === 0 && targetStdDev === 0) {
+                 // If both are 0, we can just shift to target mean
+                const newTransformedData = originalData.map(row => {
+                    const newRow = { ...row };
+                    if (!isNaN(parseFloat(newRow[columnToModify]))) {
+                        newRow[columnToModify] = targetMean; // Set all numerical values to the target mean
+                    }
+                    return newRow;
+                });
+                return newTransformedData;
+            }
+
+
+            const newTransformedData = originalData.map(row => {
+                const newRow = { ...row };
+                const originalValue = parseFloat(newRow[columnToModify]);
+
+                if (!isNaN(originalValue)) {
+                    // Step 1: Standardize (z-score)
+                    const standardizedValue = (originalValue - currentMean) / currentStdDev;
+                    // Step 2: Scale and shift to new target mean and std dev
+                    newRow[columnToModify] = (standardizedValue * targetStdDev) + targetMean;
+                }
+                return newRow;
+            });
+            return newTransformedData;
+        }
+
+
+        // --- UI Update Functions ---
+
+        function displayMessage(element, message, type = 'info') {
+            element.textContent = message;
+            element.className = `message ${type}`;
+            element.style.display = 'block';
+        }
+
+        function hideMessage(element) {
+            element.style.display = 'none';
+        }
+
+        function populateColumnSelects(headers) {
+            columnXSelect.innerHTML = '<option value="">Select a column</option>';
+            columnYSelect.innerHTML = '<option value="">Select a column</option>';
+            headers.forEach(header => {
+                const optionX = document.createElement('option');
+                optionX.value = header;
+                optionX.textContent = header;
+                columnXSelect.appendChild(optionX);
+
+                const optionY = document.createElement('option');
+                optionY.value = header;
+                optionY.textContent = header;
+                columnYSelect.appendChild(optionY);
+            });
+            columnXSelect.disabled = false;
+            columnYSelect.disabled = false;
+            generateGraphBtn.disabled = true;
+            modifyDatasetBtn.disabled = true;
+            downloadDatasetBtn.disabled = true;
+            saveDatasetBtn.disabled = true; // Disable save until dataset is loaded
+            saveDatasetBtn.style.display = isLoggedIn ? 'block' : 'none'; // Only show if logged in
+            statsDisplay.innerHTML = '<p>Select columns to see statistics.</p>';
+            hideMessage(modificationError);
+            hideMessage(modifyMessage);
+        }
+
+        function clearChart() {
+            if (chartInstance) {
+                chartInstance.destroy();
+                chartInstance = null;
+            }
+            hideMessage(chartMessage);
+        }
+
+        function updateStatisticsDisplay(mean, median, mode, stdDev) {
+            statsDisplay.innerHTML = `
+                <div class="stat-item">
+                    <span class="stat-label">Mean:</span>
+                    <span class="stat-value">${mean.toFixed(2)}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Median:</span>
+                    <span class="stat-value">${median.toFixed(2)}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Mode:</span>
+                    <span class="stat-value">${mode}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Standard Deviation:</span>
+                    <span class="stat-value">${stdDev.toFixed(2)}</span>
+                </div>
+            `;
+        }
+
+        function updateCurrentTime() {
+            const now = new Date();
+            currentTimeElement.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function arrayToCSV(data, headers) {
+            const csvRows = [];
+            csvRows.push(headers.join(',')); // Add headers
+            for (const row of data) {
+                const values = headers.map(header => {
+                    let value = row[header];
+                    if (typeof value === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n'))) {
+                        value = `"${value.replace(/"/g, '""')}"`; // Escape double quotes and enclose if contains comma, quote, or newline
+                    }
+                    return value;
+                });
+                csvRows.push(values.join(','));
+            }
+            return csvRows.join('\n');
+        }
+
+        function arrayToJSON(data) {
+            return JSON.stringify(data, null, 2); // Pretty print JSON
+        }
+
+        // --- Simulated Login/Logout ---
+        function setLoggedInState(loggedIn) {
+            isLoggedIn = loggedIn;
+            if (isLoggedIn) {
+                userStatus.textContent = "Logged In";
+                userStatus.style.color = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim();
+                loginBtn.textContent = "Logout";
+                saveDatasetBtn.style.display = 'block'; // Show save button
+                loadSavedDatasets(); // Load datasets for the "logged in" user
+            } else {
+                userStatus.textContent = "Not Logged In";
+                userStatus.style.color = getComputedStyle(document.documentElement).getPropertyValue('--warning-color').trim();
+                loginBtn.textContent = "Login";
+                saveDatasetBtn.style.display = 'none'; // Hide save button
+                savedDatasetsList.innerHTML = '<p>Login to save datasets and view them here.</p>'; // Clear preview
+            }
+            saveDatasetBtn.disabled = !uploadedData; // Enable if data is loaded
+        }
+
+        // --- Save/Load Datasets to/from localStorage ---
+        function saveDatasetToLocal(datasetName, data, headers) {
+            try {
+                let savedDatasets = JSON.parse(localStorage.getItem('savedDatasets')) || {};
+                savedDatasets[datasetName] = { data: data, headers: headers };
+                localStorage.setItem('savedDatasets', JSON.stringify(savedDatasets));
+                displayMessage(savedDatasetsMessage, `Dataset "${datasetName}" saved!`, 'info');
+                loadSavedDatasets(); // Refresh the list
+            } catch (e) {
+                console.error("Error saving dataset to local storage:", e);
+                displayMessage(savedDatasetsMessage, `Error saving dataset: ${e.message}`, 'error');
+            }
+        }
+
+        function loadSavedDatasets() {
+            savedDatasetsList.innerHTML = ''; // Clear current list
+            try {
+                const savedDatasets = JSON.parse(localStorage.getItem('savedDatasets')) || {};
+                const datasetNames = Object.keys(savedDatasets);
+
+                if (datasetNames.length === 0) {
+                    savedDatasetsList.innerHTML = '<p>No datasets saved yet.</p>';
+                    return;
+                }
+
+                hideMessage(savedDatasetsMessage);
+                datasetNames.forEach(name => {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = name;
+                    listItem.dataset.datasetName = name; // Store name for click event
+                    listItem.addEventListener('click', (e) => {
+                        if (!e.target.classList.contains('delete-btn')) { // Don't load if delete button clicked
+                            loadDatasetFromLocal(name);
+                        }
+                    });
+
+                    const deleteButton = document.createElement('button');
+                    deleteButton.textContent = '×'; // Times symbol for close/delete
+                    deleteButton.classList.add('delete-btn');
+                    deleteButton.title = `Delete "${name}"`;
+                    deleteButton.addEventListener('click', () => {
+                        deleteDatasetFromLocal(name);
+                    });
+
+                    listItem.appendChild(deleteButton);
+                    savedDatasetsList.appendChild(listItem);
+                });
+            } catch (e) {
+                console.error("Error loading saved datasets:", e);
+                savedDatasetsList.innerHTML = `<p class="message error">Error loading saved datasets: ${e.message}</p>`;
+            }
+        }
+
+        function loadDatasetFromLocal(name) {
+            try {
+                const savedDatasets = JSON.parse(localStorage.getItem('savedDatasets'));
+                const datasetToLoad = savedDatasets[name];
+
+                if (datasetToLoad) {
+                    uploadedData = { // Load into uploadedData to simulate new file upload
+                        headers: datasetToLoad.headers,
+                        data: datasetToLoad.data
+                    };
+                    modifiedData = null; // Clear any previous modification state
+                    populateColumnSelects(uploadedData.headers);
+
+                    // Pre-select columns if they exist and data is available
+                    if (uploadedData.headers.length >= 2) {
+                        columnXSelect.value = uploadedData.headers[0];
+                        columnYSelect.value = uploadedData.headers[1];
+                        generateGraphBtn.disabled = false; // Enable graph button as columns are set
+                        modifyDatasetBtn.disabled = false;
+                    } else if (uploadedData.headers.length === 1) {
+                         columnXSelect.value = uploadedData.headers[0];
+                         columnYSelect.value = uploadedData.headers[0]; // If only one column, use it for both
+                         generateGraphBtn.disabled = false;
+                         modifyDatasetBtn.disabled = false;
+                    } else {
+                        generateGraphBtn.disabled = true;
+                        modifyDatasetBtn.disabled = true;
+                    }
+
+                    displayMessage(dataMessage, `Dataset "${name}" loaded from preview.`, 'info');
+                    downloadDatasetBtn.disabled = true; // Disable download until new transform
+                    saveDatasetBtn.disabled = false; // Allow saving this loaded data
+
+                    // Automatically generate graph and stats after loading
+                    if (!generateGraphBtn.disabled) {
+                        generateGraphBtn.click();
+                    } else {
+                        clearChart();
+                        statsDisplay.innerHTML = '<p>No valid columns selected for graph/stats.</p>';
+                    }
+
+                } else {
+                    displayMessage(savedDatasetsMessage, `Dataset "${name}" not found in local storage.`, 'error');
+                }
+            } catch (e) {
+                console.error("Error loading dataset from local storage:", e);
+                displayMessage(savedDatasetsMessage, `Error loading dataset: ${e.message}`, 'error');
+            }
+        }
+
+        function deleteDatasetFromLocal(name) {
+            if (confirm(`Are you sure you want to delete "${name}"?`)) {
+                try {
+                    let savedDatasets = JSON.parse(localStorage.getItem('savedDatasets')) || {};
+                    delete savedDatasets[name];
+                    localStorage.setItem('savedDatasets', JSON.stringify(savedDatasets));
+                    displayMessage(savedDatasetsMessage, `Dataset "${name}" deleted.`, 'info');
+                    loadSavedDatasets(); // Refresh the list
+                    // Clear current dashboard if the deleted dataset was active
+                    if (uploadedData && uploadedData.name === name) { // If you store filename in uploadedData
+                        uploadedData = null;
+                        modifiedData = null;
+                        populateColumnSelects([]);
+                        clearChart();
+                        statsDisplay.innerHTML = '<p>Upload data and select columns to see statistics.</p>';
+                        saveDatasetBtn.disabled = true;
+                    }
+                } catch (e) {
+                    console.error("Error deleting dataset:", e);
+                    displayMessage(savedDatasetsMessage, `Error deleting dataset: ${e.message}`, 'error');
+                }
+            }
+        }
+
+
+        // --- Event Listeners ---
+
+        fileUpload.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (!file) {
+                uploadedData = null;
+                modifiedData = null;
+                populateColumnSelects([]);
+                generateGraphBtn.disabled = true;
+                modifyDatasetBtn.disabled = true;
+                downloadDatasetBtn.disabled = true;
+                saveDatasetBtn.disabled = true;
+                hideMessage(fileError);
+                hideMessage(dataMessage);
+                clearChart();
+                statsDisplay.innerHTML = '<p>Upload data and select columns to see statistics.</p>';
+                return;
+            }
+
+            if (file.size > 10 * 1024 * 1024) { // 10 MB limit
+                displayMessage(fileError, 'File size exceeds 10MB limit.', 'error');
+                uploadedData = null;
+                modifiedData = null;
+                populateColumnSelects([]);
+                generateGraphBtn.disabled = true;
+                modifyDatasetBtn.disabled = true;
+                downloadDatasetBtn.disabled = true;
+                saveDatasetBtn.disabled = true;
+                hideMessage(dataMessage);
+                clearChart();
+                statsDisplay.innerHTML = '<p>Upload data and select columns to see statistics.</p>';
+                return;
+            } else {
+                hideMessage(fileError);
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const text = e.target.result;
+                let parsed;
+                if (file.name.endsWith('.csv')) {
+                    parsed = parseCSV(text);
+                } else if (file.name.endsWith('.json')) {
+                    parsed = parseJSON(text);
+                } else {
+                    displayMessage(fileError, 'Unsupported file type. Please upload a CSV or JSON file.', 'error');
+                    uploadedData = null;
+                    modifiedData = null;
+                    populateColumnSelects([]);
+                    generateGraphBtn.disabled = true;
+                    modifyDatasetBtn.disabled = true;
+                    downloadDatasetBtn.disabled = true;
+                    saveDatasetBtn.disabled = true;
+                    hideMessage(dataMessage);
+                    clearChart();
+                    statsDisplay.innerHTML = '<p>Upload data and select columns to see statistics.</p>';
+                    return;
+                }
+
+                if (parsed.data.length > 0 && parsed.headers.length > 0) {
+                    uploadedData = { ...parsed, name: file.name }; // Store original filename for saving
+                    modifiedData = null; // Reset modified data on new upload
+                    populateColumnSelects(parsed.headers);
+                    displayMessage(dataMessage, `File "${file.name}" loaded successfully. ${parsed.data.length} rows found.`, 'info');
+                    downloadDatasetBtn.disabled = true; // Disable download until transformed
+                    saveDatasetBtn.disabled = false; // Enable save button once data is loaded
+                } else {
+                    displayMessage(fileError, 'Could not parse data or file is empty.', 'error');
+                    uploadedData = null;
+                    modifiedData = null;
+                    populateColumnSelects([]);
+                    generateGraphBtn.disabled = true;
+                    modifyDatasetBtn.disabled = true;
+                    downloadDatasetBtn.disabled = true;
+                    saveDatasetBtn.disabled = true;
+                    hideMessage(dataMessage);
+                    clearChart();
+                    statsDisplay.innerHTML = '<p>Upload data and select columns to see statistics.</p>';
+                }
+            };
+            reader.onerror = () => {
+                displayMessage(fileError, 'Error reading file.', 'error');
+                uploadedData = null;
+                modifiedData = null;
+                populateColumnSelects([]);
+                generateGraphBtn.disabled = true;
+                modifyDatasetBtn.disabled = true;
+                downloadDatasetBtn.disabled = true;
+                saveDatasetBtn.disabled = true;
+                hideMessage(dataMessage);
+                clearChart();
+                statsDisplay.innerHTML = '<p>Upload data and select columns to see statistics.</p>';
+            };
+            reader.readAsText(file);
+        });
+
+        columnXSelect.addEventListener('change', () => {
+            const canGenerate = (columnXSelect.value && columnYSelect.value && uploadedData);
+            generateGraphBtn.disabled = !canGenerate;
+            modifyDatasetBtn.disabled = !canGenerate;
+            saveDatasetBtn.disabled = !uploadedData; // Can always save uploaded data
+            hideMessage(chartMessage);
+            hideMessage(modificationError);
+            hideMessage(modifyMessage);
+            downloadDatasetBtn.disabled = true;
+        });
+
+        columnYSelect.addEventListener('change', () => {
+            const canGenerate = (columnXSelect.value && columnYSelect.value && uploadedData);
+            generateGraphBtn.disabled = !canGenerate;
+            modifyDatasetBtn.disabled = !canGenerate;
+            saveDatasetBtn.disabled = !uploadedData; // Can always save uploaded data
+            hideMessage(chartMessage);
+            hideMessage(modificationError);
+            hideMessage(modifyMessage);
+            downloadDatasetBtn.disabled = true;
+        });
+
+        generateGraphBtn.addEventListener('click', () => {
+            clearChart(); // Clear previous chart if any
+            modifiedData = null; // Reset modified data if user regenerates graph with original
+            downloadDatasetBtn.disabled = true;
+            hideMessage(modificationError);
+            hideMessage(modifyMessage);
+
+
+            const colX = columnXSelect.value;
+            const colY = columnYSelect.value;
+
+            if (!uploadedData || !colX || !colY) {
+                displayMessage(chartMessage, 'Please upload a dataset and select both X and Y columns.', 'error');
+                return;
+            }
+
+            // Use original data for initial graph and stats
+            const dataToGraph = uploadedData.data;
+
+            const xValues = dataToGraph.map(row => row[colX]);
+            const yValues = dataToGraph.map(row => row[colY]);
+
+            // Filter out rows where either X or Y value is null/undefined for calculation purposes
+            const filteredDataForStats = dataToGraph.filter(row => row[colX] !== undefined && row[colY] !== undefined && row[colX] !== null && row[colY] !== null);
+
+            if (filteredDataForStats.length === 0) {
+                displayMessage(chartMessage, 'No valid data points found for the selected columns for graphing/stats.', 'error');
+                statsDisplay.innerHTML = '<p>No valid data for statistics.</p>';
+                return;
+            }
+
+            const numericalYValues = getNumericalValues(filteredDataForStats, colY);
+
+            // Calculate statistics for the Y-axis column
+            const meanY = calculateMean(numericalYValues);
+            const medianY = calculateMedian(numericalYValues);
+            const modeY = calculateMode(numericalYValues);
+            const stdDevY = calculateStdDev(numericalYValues);
+
+            updateStatisticsDisplay(meanY, medianY, modeY, stdDevY);
+
+            // Set current stats as default values in target inputs
+            targetMeanInput.value = meanY.toFixed(2);
+            targetMedianInput.value = medianY.toFixed(2);
+            targetModeInput.value = (modeY === 'N/A' || modeY === 'No distinct mode') ? '' : String(modeY).split(',')[0].trim();
+            targetStdDevInput.value = stdDevY.toFixed(2);
+
+
+            // Get current theme's chart line color
+            const currentChartLineColor = getComputedStyle(document.documentElement).getPropertyValue('--chart-line-color').trim();
+            const currentTextColor = getComputedStyle(document.documentElement).getPropertyValue('--text-color-primary').trim();
+            const currentGridColor = getComputedStyle(document.documentElement).getPropertyValue('--border-color').trim();
+            const currentCardBgColor = getComputedStyle(document.documentElement).getPropertyValue('--card-bg-color').trim();
+            const currentAccentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim();
+
+
+            // Prepare data for Chart.js
+            const chartData = {
+                labels: xValues,
+                datasets: [{
+                    label: `${colY} vs ${colX} (Original)`,
+                    data: yValues,
+                    backgroundColor: currentChartLineColor,
+                    borderColor: currentChartLineColor,
+                    borderWidth: 2,
+                    pointRadius: 3,
+                    pointBackgroundColor: currentChartLineColor,
+                    tension: 0.3,
+                    fill: false
+                }]
+            };
+
+            const chartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: currentTextColor,
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: currentCardBgColor,
+                        titleColor: currentTextColor,
+                        bodyColor: currentTextColor,
+                        borderColor: currentAccentColor,
+                        borderWidth: 1,
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: colX,
+                            color: currentTextColor,
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        },
+                        ticks: {
+                            color: currentTextColor
+                        },
+                        grid: {
+                            color: currentGridColor,
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: colY,
+                            color: currentTextColor,
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        },
+                        ticks: {
+                            color: currentTextColor
+                        },
+                        grid: {
+                            color: currentGridColor,
+                        }
+                    }
+                }
+            };
+
+            const ctx = dataChartCanvas.getContext('2d');
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: chartData,
+                options: chartOptions,
+            });
+
+            displayMessage(chartMessage, `Graph generated for ${colY} vs ${colX} (Original Data).`, 'info');
+        });
+
+        modifyDatasetBtn.addEventListener('click', () => {
+            hideMessage(modificationError);
+            hideMessage(modifyMessage);
+            downloadDatasetBtn.disabled = true;
+
+            if (!uploadedData) {
+                displayMessage(modificationError, "Please upload a dataset first.", 'error');
+                return;
+            }
+
+            const colY = columnYSelect.value;
+            if (!colY) {
+                displayMessage(modificationError, "Please select the Y-axis column to transform.", 'error');
+                return;
+            }
+
+            const targetMean = parseFloat(targetMeanInput.value);
+            const targetStdDev = parseFloat(targetStdDevInput.value);
+
+
+            if (isNaN(targetMean) || isNaN(targetStdDev)) {
+                 displayMessage(modificationError, "Please enter valid numerical values for Target Mean and Target Std Dev.", 'error');
+                 return;
+            }
+            if (targetStdDev < 0) {
+                 displayMessage(modificationError, "Target Standard Deviation cannot be negative.", 'error');
+                 return;
+            }
+
+
+            // Call the transformation function
+            const newDatasetData = modifyDatasetToMetrics(uploadedData.data, colY, targetMean, targetStdDev);
+
+            if (newDatasetData) {
+                modifiedData = {
+                    headers: uploadedData.headers,
+                    data: newDatasetData
+                };
+
+                // Update the chart to show the modified data
+                clearChart();
+                const colX = columnXSelect.value;
+                const modifiedXValues = modifiedData.data.map(row => row[colX]);
+                const modifiedYValues = modifiedData.data.map(row => row[colY]);
+
+                // Get current theme's chart line color for modified data
+                const currentAccentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim();
+                const currentTextColor = getComputedStyle(document.documentElement).getPropertyValue('--text-color-primary').trim();
+                const currentGridColor = getComputedStyle(document.documentElement).getPropertyValue('--border-color').trim();
+                const currentCardBgColor = getComputedStyle(document.documentElement).getPropertyValue('--card-bg-color').trim();
+
+
+                const chartData = {
+                    labels: modifiedXValues,
+                    datasets: [{
+                        label: `${colY} vs ${colX} (Transformed)`,
+                        data: modifiedYValues,
+                        backgroundColor: currentAccentColor,
+                        borderColor: currentAccentColor,
+                        borderWidth: 2,
+                        pointRadius: 3,
+                        pointBackgroundColor: currentAccentColor,
+                        tension: 0.3,
+                        fill: false
+                    }]
+                };
+
+                const ctx = dataChartCanvas.getContext('2d');
+                chartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: chartData,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: currentTextColor,
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: currentCardBgColor,
+                                titleColor: currentTextColor,
+                                bodyColor: currentTextColor,
+                                borderColor: currentAccentColor,
+                                borderWidth: 1,
+                            }
+                        },
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: colX,
+                                    color: currentTextColor,
+                                    font: {
+                                        size: 14,
+                                        weight: 'bold'
+                                    }
+                                },
+                                ticks: {
+                                    color: currentTextColor
+                                },
+                                grid: {
+                                    color: currentGridColor,
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: colY,
+                                    color: currentTextColor,
+                                    font: {
+                                        size: 14,
+                                        weight: 'bold'
+                                    }
+                                },
+                                ticks: {
+                                    color: currentTextColor
+                                },
+                                grid: {
+                                    color: currentGridColor,
+                                }
+                            }
+                        }
+                    },
+                });
+
+                // Recalculate and display statistics for the modified data
+                const numericalModifiedYValues = getNumericalValues(modifiedData.data, colY);
+                const modifiedMean = calculateMean(numericalModifiedYValues);
+                const modifiedMedian = calculateMedian(numericalModifiedYValues);
+                const modifiedMode = calculateMode(numericalModifiedYValues);
+                const modifiedStdDev = calculateStdDev(numericalModifiedYValues);
+                updateStatisticsDisplay(modifiedMean, modifiedMedian, modifiedMode, modifiedStdDev);
+
+
+                displayMessage(modifyMessage, `Dataset transformed to target Mean: ${targetMean} and Std Dev: ${targetStdDev}.`, 'info');
+                downloadDatasetBtn.disabled = false;
+            }
+        });
+
+        downloadDatasetBtn.addEventListener('click', () => {
+            if (!modifiedData) {
+                displayMessage(modificationError, "No transformed dataset to download. Please apply transformation first.", 'error');
+                return;
+            }
+
+            const originalFile = fileUpload.files[0];
+            let fileName = 'transformed_dataset';
+            let fileExtension = 'csv'; // Default to CSV
+
+            if (originalFile) {
+                fileName = originalFile.name.split('.').slice(0, -1).join('.') || 'transformed_dataset';
+                fileExtension = originalFile.name.split('.').pop().toLowerCase();
+            }
+
+            let content;
+            let mimeType;
+
+            if (fileExtension === 'csv') {
+                content = arrayToCSV(modifiedData.data, modifiedData.headers);
+                mimeType = 'text/csv';
+            } else if (fileExtension === 'json') {
+                content = arrayToJSON(modifiedData.data);
+                mimeType = 'application/json';
+            } else {
+                // Fallback to CSV if original extension is unknown or not CSV/JSON
+                content = arrayToCSV(modifiedData.data, modifiedData.headers);
+                mimeType = 'text/csv';
+                fileExtension = 'csv'; // Ensure correct extension for download
+            }
+
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${fileName}_transformed.${fileExtension}`; // Consistent naming
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            displayMessage(modifyMessage, `Transformed dataset downloaded as '${fileName}_transformed.${fileExtension}'.`, 'info');
+        });
+
+        // --- Login Modal Event Listeners ---
+        loginBtn.addEventListener('click', () => {
+            if (isLoggedIn) {
+                setLoggedInState(false); // Logout
+            } else {
+                loginModalOverlay.classList.add('visible'); // Show modal
+                usernameInput.value = '';
+                passwordInput.value = '';
+                hideMessage(loginError);
+                usernameInput.focus();
+            }
+        });
+
+        closeLoginModal.addEventListener('click', () => {
+            loginModalOverlay.classList.remove('visible'); // Hide modal
+        });
+
+        loginModalOverlay.addEventListener('click', (e) => {
+            if (e.target === loginModalOverlay) { // Close when clicking outside modal content
+                loginModalOverlay.classList.remove('visible');
+            }
+        });
+
+        performLoginBtn.addEventListener('click', () => {
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value.trim();
+
+            if (username && password) { // Simple check: any non-empty username/password
+                setLoggedInState(true);
+                loginModalOverlay.classList.remove('visible');
+                displayMessage(userStatus, "Logged in!", 'info');
+                // You could store the username in local storage here if you want
+                // localStorage.setItem('loggedInUser', username);
+            } else {
+                displayMessage(loginError, "Please enter both username and password.", 'error');
+            }
+        });
+
+        // --- Save Dataset Button Event Listener ---
+        saveDatasetBtn.addEventListener('click', () => {
+            if (!uploadedData) {
+                displayMessage(dataMessage, "No dataset loaded to save.", 'error');
+                return;
+            }
+            if (!isLoggedIn) {
+                displayMessage(dataMessage, "Please log in to save datasets.", 'error');
+                return;
+            }
+
+            // Prompt for a name, default to original filename
+            const defaultName = uploadedData.name || 'new_dataset';
+            const datasetName = prompt("Enter a name for this dataset:", defaultName);
+
+            if (datasetName) {
+                // Determine which dataset to save: modified if available, otherwise original
+                const dataToSave = modifiedData ? modifiedData.data : uploadedData.data;
+                const headersToSave = modifiedData ? modifiedData.headers : uploadedData.headers;
+                saveDatasetToLocal(datasetName, dataToSave, headersToSave);
+            } else {
+                displayMessage(dataMessage, "Dataset save cancelled.", 'info');
+            }
+        });
+
+        // Initial setup
+        updateCurrentTime();
+        setInterval(updateCurrentTime, 60000); // Update time every minute
+        setLoggedInState(false); // Start as logged out
+        loadSavedDatasets(); // Load any previously saved datasets on page load
+    </script>
 </body>
 </html>

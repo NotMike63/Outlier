@@ -1,0 +1,20 @@
+Turn 1:
+The response must create a dataset normalizer using one file of HTML, CSS, and JavaScript. For example, using an HTML file to determine the layout, then using inline CSS for styling and inline JavaScript for functionality.
+The response must contain a layout identical to the attached image. For example, using HTML to determine large portions of the site's color, then using CSS for fine grain coloring.
+The response must allow the user to select columns of data from the uploaded dataset. For example, parsing the data with JavaScript, then sending the column names to the HTML element.
+The response must allow the user to upload a dataset no larger than 10mb. For example, using HTML file upload placed below the graph and styled with CSS.
+The response must elegantly display the std, mean, median, and mode. For example,
+The response must look modern like the attached image. For example,
+
+Turn 2:
+The response must allow the user to specify requested metrics, after confirming the dataset should be updated. For example, using JavaScript to figure out what the average is off by and increase each item.
+The response must create a button that allows the user to download the newly created dataset. For example, once the JavaScript completes to create the new dataset, a new HTML element is made that has a file preview of the new dataset.
+
+Turn 3:
+The response must have a UI dark/light button in the top right corner. For example, implementing the button then adding a JavaScript listener to see the status and use the appropriately colored HTML.
+The response must have a sleek UI. For example, using CSS shadows, smooth hover effects, and clean typography.
+
+Turn 4:
+The response must contain a log-in button that allows users to sign in.
+The response must allow logged-in users the ability to save datasets in a preview on the left.
+The response must allow datasets in preview to be selected and displayed in focus again.

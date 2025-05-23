@@ -1,10 +1,309 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+  <meta charset="UTF-8" />
+  <title>Advanced Interest Calculator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.11/clipboard.min.js"></script>
+  <style>
+    :root {
+      --green: #007e3e;
+      --light-bg: #fff;
+      --dark-bg: #1e1e1e;
+      --light-box: #f0f0f0;
+      --dark-box: #333;
+      --light-text: #000;
+      --dark-text: #fff;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--light-bg);
+      color: var(--light-text);
+      transition: background 0.3s, color 0.3s;
+    }
+
+    body.dark {
+      background: var(--dark-bg);
+      color: var(--dark-text);
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: auto;
+      padding: 2rem;
+    }
+
+    .box {
+      background: var(--light-box);
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      transition: background 0.3s;
+    }
+
+    body.dark .box {
+      background: var(--dark-box);
+    }
+
+    h1, h2 {
+      color: var(--green);
+      text-align: center;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.25rem;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 0.5rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+
+    .row {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .row > div {
+      flex: 1;
+    }
+
+    .toggle-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    canvas {
+      margin-top: 2rem;
+      background: #fff;
+      border-radius: 8px;
+    }
+
+    .btns {
+      margin-top: 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 8px;
+      background: var(--green);
+      color: white;
+      cursor: pointer;
+    }
+
+    /* Floating theme toggle */
+    .theme-toggle {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--green);
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      color: white;
+      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    /* Map styles */
+    .map-container {
+      margin-top: 3rem;
+      text-align: center;
+    }
+
+    svg {
+      width: 100%;
+      max-width: 800px;
+      height: auto;
+    }
+
+    path {
+      fill: none;
+      stroke: #007e3e;
+      stroke-width: 1;
+      cursor: pointer;
+    }
+
+    path:hover {
+      stroke-width: 2;
+    }
+
+    .tooltip {
+      position: absolute;
+      padding: 5px 10px;
+      background: #222;
+      color: #fff;
+      border-radius: 5px;
+      font-size: 0.9rem;
+      display: none;
+      pointer-events: none;
+    }
+  </style>
 </head>
 <body>
-$END$
+  <div class="container">
+    <div class="box">
+      <h1>Interest Calculator</h1>
+      <div class="row">
+        <div class="form-group">
+          <label>Principal ($)</label>
+          <input type="number" id="principal" value="1000" />
+        </div>
+        <div class="form-group">
+          <label>Rate (%)</label>
+          <input type="number" id="rate" value="5" />
+        </div>
+      </div>
+      <div class="row">
+        <div class="form-group">
+          <label>Years</label>
+          <input type="number" id="years" value="2" />
+        </div>
+        <div class="form-group">
+          <label>Months</label>
+          <input type="number" id="months" value="6" />
+        </div>
+      </div>
+      <div class="form-group toggle-group">
+        <label for="isCompound">Compound Interest</label>
+        <input type="checkbox" id="isCompound" checked />
+      </div>
+      <button onclick="calculate()">Calculate</button>
+      <div class="btns">
+        <button onclick="downloadPNG()">Download PNG</button>
+        <button onclick="downloadPDF()">Download PDF</button>
+        <button id="copyBtn" data-clipboard-text="">Copy Graph</button>
+      </div>
+      <canvas id="chart" height="100"></canvas>
+    </div>
+
+    <div class="map-container">
+      <h2>Estimated Interest Rates by State</h2>
+      <svg viewBox="0 0 959 593">
+        <path d="M100,100 L150,100 L150,150 L100,150 Z" data-state="CA" data-rate="5.2%"></path>
+        <path d="M200,100 L250,100 L250,150 L200,150 Z" data-state="TX" data-rate="4.7%"></path>
+        <path d="M300,100 L350,100 L350,150 L300,150 Z" data-state="NY" data-rate="4.9%"></path>
+        <path d="M400,100 L450,100 L450,150 L400,150 Z" data-state="FL" data-rate="5.1%"></path>
+        <path d="M500,100 L550,100 L550,150 L500,150 Z" data-state="IL" data-rate="4.8%"></path>
+      </svg>
+      <div class="tooltip" id="tooltip"></div>
+    </div>
+  </div>
+
+  <div class="theme-toggle" onclick="toggleTheme()">🌓</div>
+
+  <script>
+    let chart;
+    const ctx = document.getElementById('chart').getContext('2d');
+
+    function calculate() {
+      const P = parseFloat(document.getElementById('principal').value);
+      const rate = parseFloat(document.getElementById('rate').value) / 100;
+      const years = parseInt(document.getElementById('years').value) || 0;
+      const months = parseInt(document.getElementById('months').value) || 0;
+      const isCompound = document.getElementById('isCompound').checked;
+      const totalYears = years + months / 12;
+      let data = [], labels = [];
+
+      for (let i = 0; i <= totalYears * 12; i++) {
+        let t = i / 12;
+        let A = isCompound
+          ? P * Math.pow(1 + rate, t)
+          : P + P * rate * t;
+
+        data.push(A.toFixed(2));
+        labels.push(`Month ${i}`);
+      }
+
+      if (chart) {
+        chart.data.labels = labels;
+        chart.data.datasets[0].data = data;
+        chart.update();
+      } else {
+        chart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Balance Over Time',
+              data: data,
+              borderColor: '#007e3e',
+              backgroundColor: 'rgba(0,126,62,0.1)',
+              tension: 0.4,
+              fill: true,
+              pointRadius: 0,
+            }]
+          },
+          options: {
+            responsive: true,
+            animation: false,
+            scales: {
+              y: { beginAtZero: false }
+            }
+          }
+        });
+      }
+
+      document.getElementById('copyBtn').setAttribute('data-clipboard-text', chart.toBase64Image());
+    }
+
+    function downloadPNG() {
+      const link = document.createElement('a');
+      link.download = 'interest-graph.png';
+      link.href = chart.toBase64Image();
+      link.click();
+    }
+
+    function downloadPDF() {
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF();
+      pdf.addImage(chart.toBase64Image(), 'PNG', 15, 40, 180, 100);
+      pdf.save('interest-graph.pdf');
+    }
+
+    new ClipboardJS('#copyBtn');
+
+    function toggleTheme() {
+      document.body.classList.toggle('dark');
+    }
+
+    // Tooltip for map
+    const tooltip = document.getElementById('tooltip');
+    document.querySelectorAll('svg path').forEach(path => {
+      path.addEventListener('mousemove', e => {
+        const rate = path.getAttribute('data-rate');
+        const state = path.getAttribute('data-state');
+        tooltip.style.display = 'block';
+        tooltip.style.left = `${e.pageX + 10}px`;
+        tooltip.style.top = `${e.pageY + 10}px`;
+        tooltip.textContent = `${state}: ${rate}`;
+      });
+      path.addEventListener('mouseleave', () => {
+        tooltip.style.display = 'none';
+      });
+    });
+
+    window.onload = calculate;
+  </script>
 </body>
 </html>

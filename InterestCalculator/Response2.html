@@ -1,10 +1,914 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compound Interest Calculator</title>
+    <!-- Include Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Include html2canvas for PNG/PDF download -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Include jsPDF for PDF download -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Include Clipboard.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.11/clipboard.min.js"></script>
+    <style>
+        :root {
+            --primary-bg: #ffffff;
+            --text-color: #1a1a1a;
+            --input-bg: #f5f5f5;
+            --border-color: #e0e0e0;
+            --accent-color: #00a862;
+            --chart-bg: #e6f0fa;
+            --secondary-text: #666666;
+        }
+
+        .dark-theme {
+            --primary-bg: #1a1a1a;
+            --text-color: #ffffff;
+            --input-bg: #2a2a2a;
+            --border-color: #404040;
+            --chart-bg: #2a4060;
+            --secondary-text: #cccccc;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+
+        body {
+            background-color: var(--primary-bg);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px 40px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .logo {
+            color: var(--accent-color);
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-links a {
+            color: var(--text-color);
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .auth-buttons button {
+            padding: 8px 16px;
+            border: 1px solid var(--border-color);
+            background: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .auth-buttons .signup {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+        }
+
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: var(--secondary-text);
+            font-size: 14px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .calculator-container {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 40px;
+        }
+
+        .input-section {
+            background-color: var(--input-bg);
+            padding: 30px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .input-group input,
+        .input-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--primary-bg);
+            color: var(--text-color);
+            font-size: 16px;
+        }
+
+        .time-inputs {
+            display: flex;
+            gap: 10px;
+        }
+
+        .time-inputs input {
+            flex: 1;
+        }
+
+        .input-group .percent-symbol {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--secondary-text);
+            pointer-events: none;
+        }
+
+        .frequency-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .frequency-buttons button {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            background: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .frequency-buttons button.active {
+            background-color: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+        }
+
+        .result-section {
+            padding: 30px;
+        }
+
+        .total-balance {
+            font-size: 36px;
+            color: var(--accent-color);
+            margin-bottom: 20px;
+        }
+
+        .chart {
+            width: 100%;
+            height: 300px;
+            background-color: var(--chart-bg);
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        /* Toggle Switch */
+        .toggle-container {
+            margin-bottom: 20px;
+        }
+
+        .toggle-container label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--accent-color);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .toggle-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        /* Chart Controls */
+        .chart-controls {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .chart-controls button {
+            padding: 8px 16px;
+            border: 1px solid var(--border-color);
+            background: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .chart-controls button:hover {
+            background-color: var(--input-bg);
+        }
+
+        .theme-switch {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background-color: var(--accent-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .theme-switch::before {
+            content: '🌙';
+            font-size: 24px;
+        }
+
+        .dark-theme .theme-switch::before {
+            content: '☀️';
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: var(--primary-bg);
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 30px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        .modal-content h2 {
+            margin-bottom: 20px;
+        }
+
+        .modal-content .close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--secondary-text);
+        }
+
+        .modal-content .form-group {
+            margin-bottom: 15px;
+        }
+
+        .modal-content .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .modal-content .form-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+        }
+
+        .modal-content button[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        /* Map Styles */
+        .map-section {
+            margin-top: 60px;
+            text-align: center;
+        }
+
+        .map-section h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .map-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        #usMap {
+            width: 100%;
+            height: auto;
+        }
+
+        #usMap path {
+            fill: var(--chart-bg);
+            stroke: var(--border-color);
+            stroke-width: 1;
+            transition: fill 0.3s;
+        }
+
+        #usMap path:hover {
+            fill: var(--accent-color);
+            cursor: pointer;
+        }
+
+        .tooltip {
+            position: absolute;
+            background-color: var(--primary-bg);
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            pointer-events: none;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+    </style>
 </head>
 <body>
-$END$
+    <nav class="navbar">
+        <div class="logo">NERDWALLET</div>
+        <div class="nav-links">
+            <a href="#">CREDIT CARDS</a>
+            <a href="#">BANKING</a>
+            <a href="#">HOME LOANS</a>
+            <a href="#">INSURANCE</a>
+            <a href="#">PERSONAL FINANCE</a>
+            <a href="#">SMALL BUSINESS</a>
+            <a href="#">TAXES</a>
+        </div>
+        <div class="auth-buttons">
+            <button id="signInBtn">SIGN IN</button>
+            <button id="signUpBtn" class="signup">SIGN UP</button>
+        </div>
+    </nav>
+
+    <!-- Sign In Modal -->
+    <div id="signInModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('signInModal')">&times;</span>
+            <h2>Sign In</h2>
+            <form>
+                <div class="form-group">
+                    <label for="signInEmail">Email</label>
+                    <input type="email" id="signInEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="signInPassword">Password</label>
+                    <input type="password" id="signInPassword" required>
+                </div>
+                <button type="submit">Sign In</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sign Up Modal -->
+    <div id="signUpModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('signUpModal')">&times;</span>
+            <h2>Sign Up</h2>
+            <form>
+                <div class="form-group">
+                    <label for="signUpEmail">Email</label>
+                    <input type="email" id="signUpEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="signUpPassword">Password</label>
+                    <input type="password" id="signUpPassword" required>
+                </div>
+                <div class="form-group">
+                    <label for="signUpConfirmPassword">Confirm Password</label>
+                    <input type="password" id="signUpConfirmPassword" required>
+                </div>
+                <button type="submit">Sign Up</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <h1>Compound Interest Calculator</h1>
+            <p>See how your savings and investment account balances can grow with the magic of compound interest</p>
+        </div>
+
+        <div class="calculator-container">
+            <div class="input-section">
+                <h3>Investment Details</h3>
+                <div class="input-group">
+                    <label>Initial Deposit</label>
+                    <input type="number" id="initialDeposit" value="5000">
+                </div>
+                <div class="input-group">
+                    <label>Time Period</label>
+                    <div class="time-inputs">
+                        <input type="number" id="years" value="5" placeholder="Years" min="0">
+                        <input type="number" id="months" value="0" placeholder="Months" min="0" max="11">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Estimated Rate of Return (%)</label>
+                    <div style="position: relative;">
+                        <input type="number" id="rate" value="5" step="0.1">
+                        <span class="percent-symbol">%</span>
+                    </div>
+                </div>
+                <div class="toggle-container">
+                    <label>Interest Type</label>
+                    <label class="switch">
+                        <input type="checkbox" id="interestType">
+                        <span class="slider"></span>
+                    </label>
+                    <div class="toggle-labels">
+                        <span>Simple</span>
+                        <span>Compound</span>
+                    </div>
+                </div>
+                <div class="input-group" id="compoundFrequencyGroup">
+                    <label>Compound Frequency</label>
+                    <select id="compoundFrequency">
+                        <option value="monthly">Monthly</option>
+                        <option value="quarterly">Quarterly</option>
+                        <option value="yearly">Yearly</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Contribution Amount</label>
+                    <input type="number" id="contribution" value="100">
+                </div>
+                <div class="input-group">
+                    <label>Contribution Frequency</label>
+                    <div class="frequency-buttons">
+                        <button class="active" data-frequency="monthly">Monthly</button>
+                        <button data-frequency="yearly">Annually</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="result-section">
+                <div class="total-balance" id="totalBalance">$10,000.00</div>
+                <div class="chart" id="chartContainer">
+                    <canvas id="interestChart"></canvas>
+                </div>
+                <div class="chart-controls">
+                    <button id="downloadPngBtn">Download PNG</button>
+                    <button id="downloadPdfBtn">Download PDF</button>
+                    <button id="copyClipboardBtn">Copy to Clipboard</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Map Section -->
+        <div class="map-section">
+            <h2>Estimated Interest Rates by State</h2>
+            <div class="map-container">
+                <svg id="usMap" viewBox="0 0 959 593">
+                    <!-- Simplified paths for each state (for demonstration purposes) -->
+                    <!-- In a real application, you'd use a more detailed SVG map -->
+                    <path id="AL" d="M653 404v-75l-7-3-14 17-5 18 1 24 2 15z"></path>
+                    <path id="AK" d="M150 500l-20 20 10 20 30-10-10-30z"></path>
+                    <path id="AZ" d="M300 350l-50 0 0 50 50 0z"></path>
+                    <path id="AR" d="M620 350l-20 0 0 40 20 0z"></path>
+                    <path id="CA" d="M200 200l-50 0 0 100 50 0z"></path>
+                    <path id="CO" d="M400 300l-50 0 0 50 50 0z"></path>
+                    <path id="CT" d="M850 150l-10 0 0 10 10 0z"></path>
+                    <path id="DE" d="M850 200l-10 0 0 10 10 0z"></path>
+                    <path id="FL" d="M750 450l-20 0 0 40 20 0z"></path>
+                    <path id="GA" d="M700 400l-20 0 0 40 20 0z"></path>
+                    <path id="HI" d="M250 500l-10 0 0 10 10 0z"></path>
+                    <path id="ID" d="M300 200l-20 0 0 50 20 0z"></path>
+                    <path id="IL" d="M600 250l-20 0 0 50 20 0z"></path>
+                    <path id="IN" d="M650 250l-20 0 0 50 20 0z"></path>
+                    <path id="IA" d="M550 200l-20 0 0 50 20 0z"></path>
+                    <path id="KS" d="M500 300l-50 0 0 50 50 0z"></path>
+                    <path id="KY" d="M650 300l-20 0 0 50 20 0z"></path>
+                    <path id="LA" d="M600 400l-20 0 0 40 20 0z"></path>
+                    <path id="ME" d="M900 50l-20 0 0 50 20 0z"></path>
+                    <path id="MD" d="M800 200l-20 0 0 30 20 0z"></path>
+                    <path id="MA" d="M880 100l-20 0 0 20 20 0z"></path>
+                    <path id="MI" d="M650 150l-20 0 0 50 20 0z"></path>
+                    <path id="MN" d="M550 100l-20 0 0 50 20 0z"></path>
+                    <path id="MS" d="M620 400l-20 0 0 40 20 0z"></path>
+                    <path id="MO" d="M550 300l-20 0 0 50 20 0z"></path>
+                    <path id="MT" d="M400 100l-50 0 0 50 50 0z"></path>
+                    <path id="NE" d="M500 250l-50 0 0 50 50 0z"></path>
+                    <path id="NV" d="M250 250l-50 0 0 50 50 0z"></path>
+                    <path id="NH" d="M880 50l-10 0 0 30 10 0z"></path>
+                    <path id="NJ" d="M850 180l-20 0 0 20 20 0z"></path>
+                    <path id="NM" d="M350 350l-50 0 0 50 50 0z"></path>
+                    <path id="NY" d="M800 100l-50 0 0 50 50 0z"></path>
+                    <path id="NC" d="M750 350l-50 0 0 50 50 0z"></path>
+                    <path id="ND" d="M450 100l-50 0 0 50 50 0z"></path>
+                    <path id="OH" d="M700 200l-20 0 0 50 20 0z"></path>
+                    <path id="OK" d="M500 350l-50 0 0 50 50 0z"></path>
+                    <path id="OR" d="M250 150l-50 0 0 50 50 0z"></path>
+                    <path id="PA" d="M750 150l-50 0 0 50 50 0z"></path>
+                    <path id="RI" d="M870 120l-10 0 0 10 10 0z"></path>
+                    <path id="SC" d="M750 400l-20 0 0 40 20 0z"></path>
+                    <path id="SD" d="M450 150l-50 0 0 50 50 0z"></path>
+                    <path id="TN" d="M650 350l-50 0 0 50 50 0z"></path>
+                    <path id="TX" d="M500 400l-50 0 0 50 50 0z"></path>
+                    <path id="UT" d="M350 300l-50 0 0 50 50 0z"></path>
+                    <path id="VT" d="M850 50l-10 0 0 30 10 0z"></path>
+                    <path id="VA" d="M750 300l-50 0 0 50 50 0z"></path>
+                    <path id="WA" d="M200 100l-50 0 0 50 50 0z"></path>
+                    <path id="WV" d="M700 250l-20 0 0 50 20 0z"></path>
+                    <path id="WI" d="M600 150l-20 0 0 50 20 0z"></path>
+                    <path id="WY" d="M400 150l-50 0 0 50 50 0z"></path>
+                </svg>
+                <div class="tooltip" id="mapTooltip"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="theme-switch"></div>
+
+    <script>
+        // Theme Switcher
+        const themeSwitch = document.querySelector('.theme-switch');
+        themeSwitch.addEventListener('click', () => {
+            document.body.classList.toggle('dark-theme');
+        });
+
+        // Modal Handlers
+        const signInBtn = document.getElementById('signInBtn');
+        const signUpBtn = document.getElementById('signUpBtn');
+        const signInModal = document.getElementById('signInModal');
+        const signUpModal = document.getElementById('signUpModal');
+
+        signInBtn.addEventListener('click', () => {
+            signInModal.style.display = 'block';
+        });
+
+        signUpBtn.addEventListener('click', () => {
+            signUpModal.style.display = 'block';
+        });
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        window.addEventListener('click', (event) => {
+            if (event.target === signInModal) {
+                signInModal.style.display = 'none';
+            }
+            if (event.target === signUpModal) {
+                signUpModal.style.display = 'none';
+            }
+        });
+
+        // Initialize Chart
+        const ctx = document.getElementById('interestChart').getContext('2d');
+        const interestChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                    {
+                        label: 'Total Principal',
+                        data: [],
+                        borderColor: '#1a73e8',
+                        backgroundColor: 'rgba(26, 115, 232, 0.1)',
+                        fill: true,
+                    },
+                    {
+                        label: 'Total Interest',
+                        data: [],
+                        borderColor: '#00a862',
+                        backgroundColor: 'rgba(0, 168, 98, 0.1)',
+                        fill: true,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Amount ($)'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value.toLocaleString();
+                            }
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Year'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                label += '$' + context.parsed.y.toLocaleString();
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Toggle Compound Frequency visibility
+        const interestTypeToggle = document.getElementById('interestType');
+        const compoundFrequencyGroup = document.getElementById('compoundFrequencyGroup');
+        interestTypeToggle.addEventListener('change', () => {
+            compoundFrequencyGroup.style.display = interestTypeToggle.checked ? 'block' : 'none';
+            calculateInterest();
+        });
+
+        // Calculator Logic
+        function calculateInterest() {
+            const initialDeposit = parseFloat(document.getElementById('initialDeposit').value) || 0;
+            const years = parseInt(document.getElementById('years').value) || 0;
+            const months = parseInt(document.getElementById('months').value) || 0;
+            const rate = (parseFloat(document.getElementById('rate').value) || 0) / 100;
+            const compoundFrequency = document.getElementById('compoundFrequency').value;
+            const contribution = parseFloat(document.getElementById('contribution').value) || 0;
+            const contributionFreqButtons = document.querySelectorAll('.frequency-buttons button');
+            const isCompound = interestTypeToggle.checked;
+
+            let contributionFrequency = 'monthly';
+            contributionFreqButtons.forEach(button => {
+                if (button.classList.contains('active')) {
+                    contributionFrequency = button.dataset.frequency;
+                }
+            });
+
+            const totalTime = years + (months / 12);
+            const totalYears = Math.ceil(totalTime);
+
+            let compoundsPerYear;
+            switch(compoundFrequency) {
+                case 'monthly':
+                    compoundsPerYear = 12;
+                    break;
+                case 'quarterly':
+                    compoundsPerYear = 4;
+                    break;
+                case 'yearly':
+                    compoundsPerYear = 1;
+                    break;
+            }
+
+            let contributionsPerYear = contributionFrequency === 'monthly' ? 12 : 1;
+            let total = initialDeposit;
+            let principal = initialDeposit;
+            let yearlyData = [];
+            let principalData = [];
+            let interestData = [];
+            let labels = [];
+
+            const currentYear = new Date().getFullYear();
+
+            for (let year = 0; year <= totalYears; year++) {
+                labels.push(year === 0 ? 'Now' : (currentYear + year).toString());
+
+                if (year > 0) {
+                    let yearFraction = year <= totalTime ? 1 : (totalTime % 1);
+                    if (year > totalTime) yearFraction = 0;
+
+                    if (yearFraction > 0) {
+                        let periodContributions = contributionsPerYear * yearFraction;
+                        for (let i = 0; i < periodContributions; i++) {
+                            principal += contribution * (1 / contributionsPerYear);
+                            total += contribution * (1 / contributionsPerYear);
+
+                            if (isCompound) {
+                                for (let j = 0; j < (compoundsPerYear / contributionsPerYear); j++) {
+                                    total *= (1 + rate / compoundsPerYear);
+                                }
+                            }
+                        }
+
+                        if (!isCompound) {
+                            let interest = principal * rate * yearFraction;
+                            total = principal + interest;
+                        }
+                    }
+                }
+
+                yearlyData.push(total);
+                principalData.push(principal);
+                interestData.push(total - principal);
+            }
+
+            document.getElementById('totalBalance').textContent =
+                `$${yearlyData[totalYears].toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')}`;
+
+            interestChart.data.labels = labels;
+            interestChart.data.datasets[0].data = principalData;
+            interestChart.data.datasets[1].data = interestData;
+            interestChart.update();
+        }
+
+        // Download as PNG
+        const downloadPngBtn = document.getElementById('downloadPngBtn');
+        downloadPngBtn.addEventListener('click', () => {
+            html2canvas(document.getElementById('chartContainer')).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'interest-chart.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        });
+
+        // Download as PDF
+        const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+        downloadPdfBtn.addEventListener('click', () => {
+            html2canvas(document.getElementById('chartContainer')).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF();
+                const imgProps = pdf.getImageProperties(imgData);
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                pdf.save('interest-chart.pdf');
+            });
+        });
+
+        // Copy to Clipboard
+        const clipboard = new ClipboardJS('#copyClipboardBtn', {
+            text: function() {
+                return new Promise((resolve) => {
+                    html2canvas(document.getElementById('chartContainer')).then(canvas => {
+                        canvas.toBlob(blob => {
+                            const item = new ClipboardItem({ 'image/png': blob });
+                            navigator.clipboard.write([item]).then(() => {
+                                alert('Chart copied to clipboard!');
+                                resolve('');
+                            });
+                        });
+                    });
+                });
+            }
+        });
+
+        // Event Listeners
+        document.querySelectorAll('.input-section input, .input-section select').forEach(input => {
+            input.addEventListener('input', calculateInterest);
+        });
+
+        document.querySelectorAll('.frequency-buttons button').forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelectorAll('.frequency-buttons button').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                button.classList.add('active');
+                calculateInterest();
+            });
+        });
+
+        // Map Data and Tooltips
+        const interestRates = {
+            AL: 3.5, AK: 2.8, AZ: 4.0, AR: 3.2, CA: 4.5,
+            CO: 3.8, CT: 3.9, DE: 3.7, FL: 4.1, GA: 3.6,
+            HI: 2.9, ID: 3.3, IL: 3.8, IN: 3.7, IA: 3.4,
+            KS: 3.5, KY: 3.6, LA: 3.2, ME: 3.9, MD: 4.0,
+            MA: 4.2, MI: 3.7, MN: 3.8, MS: 3.3, MO: 3.5,
+            MT: 3.1, NE: 3.4, NV: 3.9, NH: 4.0, NJ: 4.1,
+            NM: 3.6, NY: 4.3, NC: 3.7, ND: 3.2, OH: 3.8,
+            OK: 3.4, OR: 3.9, PA: 3.8, RI: 4.0, SC: 3.6,
+            SD: 3.3, TN: 3.5, TX: 3.7, UT: 3.8, VT: 3.9,
+            VA: 3.8, WA: 4.0, WV: 3.6, WI: 3.7, WY: 3.2
+        };
+
+        const map = document.getElementById('usMap');
+        const tooltip = document.getElementById('mapTooltip');
+
+        map.addEventListener('mousemove', (e) => {
+            const state = e.target.id;
+            if (interestRates[state]) {
+                tooltip.style.display = 'block';
+                tooltip.innerHTML = `${state}: ${interestRates[state]}%`;
+                tooltip.style.left = `${e.pageX + 10}px`;
+                tooltip.style.top = `${e.pageY + 10}px`;
+            }
+        });
+
+        map.addEventListener('mouseout', (e) => {
+            if (e.target.tagName === 'path') {
+                tooltip.style.display = 'none';
+            }
+        });
+
+        // Initial calculation
+        calculateInterest();
+    </script>
 </body>
 </html>

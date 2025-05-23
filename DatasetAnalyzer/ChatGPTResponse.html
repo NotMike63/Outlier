@@ -1,10 +1,236 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
-  <title>$Title$</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dataset Normalizer</title>
+  <style>
+    :root {
+      --bg-color: #0f1123;
+      --card-color: #1e1f3b;
+      --text-color: #ffffff;
+      --input-bg: #1e1f3b;
+      --input-border: #444;
+      --button-bg: #3f82e0;
+      --stat-bg: #292b46;
+    }
+
+    [data-theme="light"] {
+      --bg-color: #f4f4f9;
+      --card-color: #ffffff;
+      --text-color: #000000;
+      --input-bg: #ffffff;
+      --input-border: #ccc;
+      --button-bg: #007bff;
+      --stat-bg: #f0f0f0;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 2rem;
+      transition: background-color 0.3s, color 0.3s;
+      display: flex;
+    }
+    .sidebar {
+      width: 250px;
+      background-color: var(--card-color);
+      padding: 1rem;
+      border-radius: 10px;
+      margin-right: 1rem;
+      height: fit-content;
+    }
+    .preview-entry {
+      padding: 0.5rem;
+      background: var(--stat-bg);
+      border-radius: 5px;
+      margin: 0.25rem 0;
+      cursor: pointer;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+      transition: background-color 0.2s;
+    }
+    .preview-entry:hover {
+      background-color: var(--button-bg);
+      color: white;
+    }
+    .dashboard {
+      flex-grow: 1;
+      max-width: 1000px;
+      position: relative;
+    }
+    .theme-toggle, .login-toggle {
+      position: absolute;
+      top: 0;
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 0 8px rgba(0,0,0,0.2);
+    }
+    .theme-toggle {
+      right: 45px;
+      background-color: var(--button-bg);
+    }
+    .login-toggle {
+      right: 0;
+      background-color: #ff6f61;
+    }
+    .card {
+      background-color: var(--card-color);
+      border-radius: 10px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      transition: background-color 0.3s;
+    }
+    label, select, input {
+      display: block;
+      margin: 0.5rem 0;
+    }
+    select, input[type="number"] {
+      background-color: var(--input-bg);
+      border: 1px solid var(--input-border);
+      color: var(--text-color);
+      border-radius: 5px;
+      padding: 0.4rem;
+    }
+    canvas {
+      background-color: #fff;
+      border-radius: 8px;
+      padding: 1rem;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    .stat {
+      background-color: var(--stat-bg);
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      transition: background-color 0.3s;
+    }
+    .stat input {
+      width: 80%;
+      margin-top: 0.5rem;
+      text-align: center;
+    }
+    button {
+      margin-top: 1rem;
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 5px;
+      background-color: var(--button-bg);
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+      transition: transform 0.2s, background-color 0.3s;
+    }
+    button:hover {
+      transform: scale(1.05);
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--card-color);
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+    }
+  </style>
 </head>
 <body>
-$END$
+  <div class="sidebar" id="previewList">
+    <h3>Saved Datasets</h3>
+  </div>
+  <div class="dashboard">
+    <button class="theme-toggle" id="themeBtn" title="Toggle theme"></button>
+    <button class="login-toggle" id="loginBtn" title="Log in"></button>
+
+    <div class="modal" id="loginModal">
+      <h2>Login</h2>
+      <label>Username</label>
+      <input type="text" id="username" />
+      <label>Password</label>
+      <input type="password" id="password" />
+      <button onclick="authenticate()">Login</button>
+    </div>
+
+    <div class="card">
+      <h2>Upload CSV Dataset</h2>
+      <input type="file" id="fileInput" accept=".csv" />
+    </div>
+    <div class="card">
+      <h2>Select Columns</h2>
+      <label for="xSelect">X-Axis:</label>
+      <select id="xSelect"></select>
+      <label for="ySelect">Y-Axis:</label>
+      <select id="ySelect"></select>
+    </div>
+    <div class="card">
+      <canvas id="chart" width="800" height="400"></canvas>
+    </div>
+    <div class="card stats">
+      <div class="stat">Mean<input id="mean" type="number"></div>
+      <div class="stat">Median<input id="median" type="number"></div>
+      <div class="stat">Mode<input id="mode" type="number"></div>
+      <div class="stat">Std Dev<input id="std" type="number"></div>
+    </div>
+    <div class="card">
+      <button id="applyStats">Apply Stats</button>
+      <button id="downloadBtn" style="display:none">Download Modified Dataset</button>
+      <button id="saveBtn" style="display:none">Save Dataset</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    let loggedIn = false;
+    const loginBtn = document.getElementById('loginBtn');
+    const loginModal = document.getElementById('loginModal');
+    const saveBtn = document.getElementById('saveBtn');
+    const previewList = document.getElementById('previewList');
+    const themeBtn = document.getElementById('themeBtn');
+    let savedDatasets = [];
+
+    themeBtn.addEventListener('click', () => {
+      const html = document.documentElement;
+      html.setAttribute('data-theme', html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    });
+
+    loginBtn.addEventListener('click', () => {
+      loginModal.style.display = 'block';
+    });
+
+    function authenticate() {
+      loggedIn = true;
+      loginModal.style.display = 'none';
+      saveBtn.style.display = 'inline-block';
+    }
+
+    saveBtn.addEventListener('click', () => {
+      const name = `Dataset ${savedDatasets.length + 1}`;
+      const yKey = document.getElementById('ySelect').value;
+      const yIdx = headers.indexOf(yKey);
+      const dataset = dataRows.map(r => r[yIdx]);
+      savedDatasets.push({ name, dataset });
+      const div = document.createElement('div');
+      div.className = 'preview-entry';
+      div.textContent = name;
+      div.onclick = () => {
+        renderChart([...Array(dataset.length).keys()], dataset.map(parseFloat));
+        displayStats(dataset.map(parseFloat));
+      };
+      previewList.appendChild(div);
+    });
+  </script>
 </body>
 </html>

@@ -1,0 +1,12 @@
+Turn 1:
+The response must use HTML, CSS, and JavaScript. HTML could be used for the layout, while CSS is used for the styling, and JavaScript can be used to add functionality.
+The response must contain a fundraising goal bar that updates whenever a user donates. This could be done with
+The response must have a UI dark/light mode toggle.
+The response must look modern like the attached image.
+(I) The response should allow the user to donate towards the fundraising goal. For example,
+
+Turn 2:
+The response must allow the user to create their own fundraisers specifying title, name, goal, description, and deadline. For example, using HTML input to take information then creating a new HTML page with this information.
+The response must allow all sites to be visible from the site's home page in a clean format. For example,
+
+Turn 3:

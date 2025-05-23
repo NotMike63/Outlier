@@ -1,0 +1,23 @@
+Turn 1:
+The response must contain an interest calculator using one file of HTML, CSS, and JavaScript. For example, using an HTML file to determine the layout, then using inline CSS for styling and inline JavaScript for functionality.
+The response must contain a color scheme identical to the attached image. For example, using HTML to determine large portions of the site's color, then using CSS for fine grain coloring.
+The response must contain a UI switch in the bottom right. For example,
+The response must have a modern layout like the attached image. For example, using HTML for a minimalist design then adding bounding boxes with CSS.
+(I)
+
+Turn 2:
+The response must contain a graph that is updated based on the interest calculation. For example, using HTML to take the user's input then displaying the graph with Chart.js by creating a dataset and initializing the chart with it.
+
+Turn 3:
+The response must display growth rate as a percent. For example, using HTML have a preset percent sign in the input box, then when the user inputs only allow decimals with 1 place in JavaScript.
+The response must have a sign in and sign up modal matching the sites theme. For example, using JavaScript event listeners on the buttons to load pre-saved HTML modals.
+
+Turn 4:
+The response must allow the user to input time in terms of years and months. For example, using HTML input, then in the JavaScript backend converting all the years to months and summing.
+The response must allow the user to toggle between calculating simple and compound interest. For example, adding an HTML element to toggle between the two, then depending on the state in JavaScript call different calculation methods.
+The response must allow the user to download the graph as a PNG or PDF. For example, creating two buttons with HTML, then using JavaScript event listeners to download the file when clicked.
+The response must allow the user to copy the graph to their clipboard. For example, creating a new Clipboard.js button which will automatically copy the attached element when selected.
+
+Turn 5:
+The response must contain a map of America with estimated interest rates. For example, creating the states with HTML, turning the borders into lines with CSS.
+The response must have tool tips for each state on the map of America representing interest level. For example, creating the states with HTML, then CSS to style, then JavaScript to add in interest rates in the tool tips.

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cat Spotting - Crowdfunding</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body.dark-mode {
+            background-color: #1a1a1a;
+            color: #ffffff;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .logo {
+            color: #00c4b4;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        nav a {
+            margin: 0 10px;
+            text-decoration: none;
+            color: #666;
+        }
+
+        .mode-toggle {
+            cursor: pointer;
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .hero {
+            display: flex;
+            justify-content: space-between;
+            margin: 30px 0;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .hero-image {
+            width: 60%;
+            height: 300px;
+            background: url('https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba') center/cover;
+            border-radius: 10px;
+        }
+
+        .hero-content {
+            width: 35%;
+            padding: 20px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background-color: #ddd;
+            border-radius: 5px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background-color: #00c4b4;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin: 15px 0;
+        }
+
+        .back-btn {
+            background-color: #00c4b4;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .donate-section {
+            background-color: #fafafa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .donate-input {
+            padding: 10px;
+            width: 100%;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin: 20px 0;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab.active {
+            border-bottom: 2px solid #00c4b4;
+        }
+
+        @media (max-width: 768px) {
+            .hero {
+                flex-direction: column;
+            }
+
+            .hero-image, .hero-content {
+                width: 100%;
+            }
+
+            .stats {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">KICKSTARTER</div>
+            <nav>
+                <a href="#">Discover</a>
+                <a href="#">For creators</a>
+                <a href="#">Log in</a>
+            </nav>
+            <button class="mode-toggle" onclick="toggleMode()">☀️</button>
+        </header>
+
+        <div class="hero">
+            <div class="hero-image"></div>
+            <div class="hero-content">
+                <h1>Cat Spotting</h1>
+                <p>A card game of speed, observation and cats! Spot over 100 unique hand-drawn cats hiding in the crowd!</p>
+                <div class="progress-bar">
+                    <div class="progress" id="progressBar"></div>
+                </div>
+                <div class="stats">
+                    <div>
+                        <h3 id="raisedAmount">$5,034</h3>
+                        <p>pledged of $6,543 goal</p>
+                    </div>
+                    <div>
+                        <h3 id="backers">244</h3>
+                        <p>backers</p>
+                    </div>
+                    <div>
+                        <h3 id="daysLeft">26</h3>
+                        <p>days to go</p>
+                    </div>
+                </div>
+                <button class="back-btn">Back this project</button>
+                <p>All or nothing. This project will only be funded if it reaches its goal by Wed, June 18 2025 6:00 PM EDT.</p>
+            </div>
+        </div>
+
+        <div class="donate-section">
+            <h3>Donate to the Project</h3>
+            <input type="number" class="donate-input" id="donateAmount" placeholder="Enter amount to donate">
+            <button class="back-btn" onclick="donate()">Donate Now</button>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active">Campaign</div>
+            <div class="tab">Rewards</div>
+            <div class="tab">Creator</div>
+            <div class="tab">FAQ</div>
+            <div class="tab">Updates</div>
+            <div class="tab">Comments</div>
+            <div class="tab">Community</div>
+        </div>
+    </div>
+
+    <script>
+        // Initial values
+        let goal = 6543;
+        let raised = 5034;
+        let backers = 244;
+        let daysLeft = 26;
+
+        // Update progress bar on page load
+        updateProgressBar();
+
+        function updateProgressBar() {
+            const progress = (raised / goal) * 100;
+            document.getElementById('progressBar').style.width = `${progress}%`;
+            document.getElementById('raisedAmount').textContent = `$${raised.toLocaleString()}`;
+            document.getElementById('backers').textContent = backers;
+            document.getElementById('daysLeft').textContent = daysLeft;
+        }
+
+        function donate() {
+            const amount = parseInt(document.getElementById('donateAmount').value);
+            if (amount > 0) {
+                raised += amount;
+                backers++;
+                updateProgressBar();
+                document.getElementById('donateAmount').value = '';
+                alert(`Thank you for donating $${amount}!`);
+            } else {
+                alert('Please enter a valid amount');
+            }
+        }
+
+        function toggleMode() {
+            document.body.classList.toggle('dark-mode');
+            const toggleButton = document.querySelector('.mode-toggle');
+            toggleButton.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
+        }
+
+        // Tab functionality
+        const tabs = document.querySelectorAll('.tab');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>
