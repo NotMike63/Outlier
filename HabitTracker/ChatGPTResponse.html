@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Habit Tracker</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* Existing styles preserved */
+    :root {
+      --bg-color: #f5f5f5;
+      --text-color: #333;
+      --cell-bg: white;
+      --header-bg: #eee;
+      --completed-bg: #90ee90;
+    }
+    .dark-theme {
+      --bg-color: #1a1a1a;
+      --text-color: #fff;
+      --cell-bg: #2a2a2a;
+      --header-bg: #333;
+      --completed-bg: #4CAF50;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 20px;
+    }
+    h1, h2 {
+      text-align: center;
+    }
+    .month-navigation, .controls, .analytics-controls {
+      text-align: center;
+      margin: 10px 0;
+    }
+    .month-navigation button, .controls button {
+      margin: 0 5px;
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+    .tracker {
+      display: grid;
+      grid-template-columns: minmax(120px, 1fr) repeat(auto-fill, minmax(25px, 1fr));
+      gap: 2px;
+      align-items: center;
+      overflow-x: auto;
+    }
+    .tracker div {
+      padding: 5px;
+      text-align: center;
+      border: 1px solid #ddd;
+      background-color: var(--cell-bg);
+    }
+    .habit-name {
+      font-weight: bold;
+      background-color: var(--header-bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .day-cell {
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .day-cell:hover {
+      background-color: #e0e0e0;
+    }
+    .completed {
+      background-color: var(--completed-bg) !important;
+    }
+    .confetti {
+      position: absolute;
+      pointer-events: none;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      top: 0;
+      left: 0;
+      z-index: 1000;
+    }
+    .confetti-piece {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      background-color: #FFD700;
+      animation: fall 1s ease-out forwards;
+    }
+    @keyframes fall {
+      0% { transform: translateY(0); opacity: 1; }
+      100% { transform: translateY(50px); opacity: 0; }
+    }
+    .streak {
+      margin-top: 4px;
+      position: relative;
+      width: 24px;
+      height: 24px;
+    }
+    .fire {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      background: url('https://i.imgur.com/FkSQkDK.gif') no-repeat center center;
+      background-size: contain;
+    }
+    .streak-count {
+      position: absolute;
+      width: 100%;
+      text-align: center;
+      font-size: 10px;
+      font-weight: bold;
+      top: 4px;
+      color: white;
+    }
+    @media (max-width: 768px) {
+      .tracker {
+        grid-template-columns: minmax(80px, 1fr) repeat(auto-fill, minmax(20px, 1fr));
+      }
+      .habit-name {
+        font-size: 12px;
+      }
+    }
+    .analytics-section {
+      max-width: 900px;
+      margin: 40px auto;
+    }
+    canvas {
+      max-width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <h1>Habit Tracker</h1>
+  <div class="month-navigation">
+    <button onclick="changeMonth(-1)">&larr; Prev</button>
+    <span id="monthYear"></span>
+    <button onclick="changeMonth(1)">Next &rarr;</button>
+  </div>
+  <div class="controls">
+    <input type="text" id="habitInput" placeholder="New Habit">
+    <button onclick="addHabit()">+ Add Habit</button>
+    <button id="themeToggle" onclick="toggleTheme()">Toggle Theme</button>
+    <button onclick="showAnalytics()">View Progress Analytics</button>
+  </div>
+  <div id="tracker" class="tracker"></div>
+  <div id="confetti-container" class="confetti"></div>
+
+  <div class="analytics-section" id="analytics" style="display:none;">
+    <h2>Progress Analytics</h2>
+    <canvas id="habitTrendChart"></canvas>
+    <h3>Top Habits by Consistency</h3>
+    <ul id="topHabits"></ul>
+    <h3>Habits to Work On</h3>
+    <ul id="weakHabits"></ul>
+  </div>
+
+  <script>
+    let habits = ["Journal", "Exercise", "Sleep 7.5 hrs"];
+    let currentDate = new Date();
+    let habitStreaks = {};
+    let completionData = {}; // For charting purposes
+
+    const tracker = document.getElementById('tracker');
+    const monthYear = document.getElementById('monthYear');
+
+    function renderTracker() {
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      monthYear.textContent = currentDate.toLocaleDateString('default', { month: 'long', year: 'numeric' });
+
+      tracker.innerHTML = '';
+
+      const emptyStart = document.createElement('div');
+      emptyStart.className = 'habit-name';
+      tracker.appendChild(emptyStart);
+
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dayCell = document.createElement('div');
+        dayCell.textContent = d;
+        dayCell.className = 'habit-name';
+        tracker.appendChild(dayCell);
+      }
+
+      habits.forEach((habit, habitIndex) => {
+        const habitName = document.createElement('div');
+        habitName.className = 'habit-name';
+
+        const title = document.createElement('div');
+        title.textContent = habit;
+        habitName.appendChild(title);
+
+        const streakEl = document.createElement('div');
+        streakEl.className = 'streak';
+        const fire = document.createElement('div');
+        fire.className = 'fire';
+        const count = document.createElement('div');
+        count.className = 'streak-count';
+        count.textContent = habitStreaks[habit] || 0;
+
+        streakEl.appendChild(fire);
+        streakEl.appendChild(count);
+        habitName.appendChild(streakEl);
+        tracker.appendChild(habitName);
+
+        for (let d = 1; d <= daysInMonth; d++) {
+          const cell = document.createElement('div');
+          cell.className = 'day-cell';
+          cell.dataset.habit = habit;
+          cell.dataset.day = d;
+          cell.onclick = () => toggleCompletion(cell, habit);
+          tracker.appendChild(cell);
+        }
+      });
+    }
+
+    function toggleCompletion(cell, habit) {
+      const isCompleted = cell.classList.toggle('completed');
+      if (!completionData[habit]) completionData[habit] = 0;
+      if (isCompleted) {
+        habitStreaks[habit] = (habitStreaks[habit] || 0) + 1;
+        completionData[habit]++;
+      } else {
+        habitStreaks[habit] = Math.max(0, (habitStreaks[habit] || 1) - 1);
+        completionData[habit] = Math.max(0, completionData[habit] - 1);
+      }
+      renderTracker();
+      triggerConfetti(cell);
+    }
+
+    function addHabit() {
+      const habitInput = document.getElementById('habitInput');
+      const newHabit = habitInput.value.trim();
+      if (newHabit) {
+        habits.push(newHabit);
+        habitStreaks[newHabit] = 0;
+        habitInput.value = '';
+        renderTracker();
+      }
+    }
+
+    function triggerConfetti(cell) {
+      const rect = cell.getBoundingClientRect();
+      const confettiContainer = document.getElementById('confetti-container');
+      for (let i = 0; i < 10; i++) {
+        const piece = document.createElement('div');
+        piece.className = 'confetti-piece';
+        piece.style.left = `${rect.left + Math.random() * rect.width}px`;
+        piece.style.top = `${rect.top + Math.random() * rect.height}px`;
+        confettiContainer.appendChild(piece);
+
+        setTimeout(() => {
+          confettiContainer.removeChild(piece);
+        }, 1000);
+      }
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle('dark-theme');
+    }
+
+    function changeMonth(offset) {
+      currentDate.setMonth(currentDate.getMonth() + offset);
+      renderTracker();
+    }
+
+    function showAnalytics() {
+      document.getElementById('analytics').style.display = 'block';
+
+      const labels = habits;
+      const data = habits.map(h => completionData[h] || 0);
+
+      new Chart(document.getElementById('habitTrendChart').getContext('2d'), {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Habit Completion This Month',
+            data: data,
+            borderColor: 'blue',
+            fill: false,
+            tension: 0.3
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      });
+
+      const sorted = [...habits].sort((a, b) => (completionData[b] || 0) - (completionData[a] || 0));
+      const topHabitsList = document.getElementById('topHabits');
+      const weakHabitsList = document.getElementById('weakHabits');
+      topHabitsList.innerHTML = '';
+      weakHabitsList.innerHTML = '';
+      sorted.slice(0, 3).forEach(h => {
+        topHabitsList.innerHTML += `<li>${h}: ${completionData[h] || 0} days</li>`;
+      });
+      sorted.slice(-3).forEach(h => {
+        weakHabitsList.innerHTML += `<li>${h}: ${completionData[h] || 0} days</li>`;
+      });
+    }
+
+    renderTracker();
+  </script>
+</body>
+</html>

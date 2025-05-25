@@ -7,3 +7,17 @@ The response must display a small confetti cloud to users around the completed t
 
 Turn 2:
 The response must contain a light/dark UI control
+
+Turn 3:
+The response must allow the user to view past and future months with arrow toggles by
+The response must contain a calendar with hover effects on the days by
+
+Turn 4:
+The response must scale across different devices by
+The response must display a streak of how long the user consistently completed the habit
+The response must present the user's streak using the number of days surrounded by a fire with moving flames.
+
+Turn 5:
+The response must contain a 'Progress Analytics' page where users can view their monthly habit trends, most consistent habits, and areas for improvement.
+The response must have a dynamic line chart to represent monthly habit trends
+The response should have a completely dynamic and interactive 'Progress Analytics' page by

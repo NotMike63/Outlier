@@ -46,15 +46,15 @@
             margin: 0 auto;
         }
 
-        .nav {
+        .nav-bar {
             display: flex;
             gap: 10px;
-            margin-bottom: 10px;
+            margin-bottom: 20px;
             justify-content: center;
         }
 
         .nav-button {
-            padding: 5px 10px;
+            padding: 8px 16px;
             cursor: pointer;
             border: none;
             border-radius: 5px;
@@ -253,45 +253,6 @@
             pointer-events: none;
         }
 
-        .analytics-section {
-            margin-top: 20px;
-        }
-
-        .analytics-section h3 {
-            margin-bottom: 10px;
-        }
-
-        .chart-container {
-            position: relative;
-            margin: 20px 0;
-            height: 300px;
-            width: 100%;
-        }
-
-        .stats-container {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-
-        .stats-box {
-            flex: 1;
-            min-width: 300px;
-            background-color: var(--note-bg);
-            padding: 15px;
-            border-radius: 5px;
-            box-shadow: 0 1px 3px var(--shadow);
-        }
-
-        .stats-box ul {
-            list-style: none;
-            padding: 0;
-        }
-
-        .stats-box li {
-            margin: 5px 0;
-        }
-
         @keyframes confetti-fall {
             0% {
                 opacity: 1;
@@ -301,6 +262,42 @@
                 opacity: 0;
                 transform: translateY(100px) rotate(360deg);
             }
+        }
+
+        .analytics-section {
+            margin: 20px 0;
+        }
+
+        .analytics-section h3 {
+            margin-bottom: 10px;
+        }
+
+        .chart-container {
+            max-width: 800px;
+            margin: 20px auto;
+        }
+
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .analytics-card {
+            background-color: var(--note-bg);
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px var(--shadow);
+        }
+
+        .analytics-card ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .analytics-card li {
+            margin: 5px 0;
         }
 
         @media (max-width: 768px) {
@@ -356,8 +353,8 @@
                 font-size: 10px;
             }
 
-            .stats-box {
-                min-width: 100%;
+            .analytics-grid {
+                grid-template-columns: 1fr;
             }
         }
 
@@ -409,12 +406,12 @@
 </head>
 <body>
     <div class="container">
-        <div class="nav">
-            <button class="nav-button" onclick="showTracker()">Tracker</button>
-            <button class="nav-button" onclick="showAnalytics()">Progress Analytics</button>
+        <div class="nav-bar">
+            <button class="nav-button" onclick="showPage('tracker')">Tracker</button>
+            <button class="nav-button" onclick="showPage('analytics')">Progress Analytics</button>
         </div>
 
-        <div id="trackerPage">
+        <div id="tracker-page">
             <div class="header">
                 <div class="month-navigation">
                     <button class="month-nav-button" onclick="previousMonth()">←</button>
@@ -446,26 +443,23 @@
             </div>
         </div>
 
-        <div id="analyticsPage" style="display: none;">
+        <div id="analytics-page" style="display: none;">
             <div class="header">
                 <h2>Progress Analytics</h2>
-                <button class="theme-toggle" onclick="toggleTheme()">Toggle Theme</button>
             </div>
-
             <div class="analytics-section">
                 <h3>Monthly Habit Trends</h3>
                 <div class="chart-container">
                     <canvas id="habitTrendsChart"></canvas>
                 </div>
-
-                <div class="stats-container">
-                    <div class="stats-box">
+                <div class="analytics-grid">
+                    <div class="analytics-card">
                         <h3>Top Habits by Consistency</h3>
                         <ul id="topHabits"></ul>
                     </div>
-                    <div class="stats-box">
+                    <div class="analytics-card">
                         <h3>Areas for Improvement</h3>
-                        <ul id="areasForImprovement"></ul>
+                        <ul id="improvementAreas"></ul>
                     </div>
                 </div>
             </div>
@@ -485,7 +479,7 @@
 
         let completions = {};
         let currentDate = new Date(2021, 2, 1); // Start with March 2021
-        let chart;
+        let chartInstance = null;
 
         function getDaysInMonth(year, month) {
             return new Date(year, month + 1, 0).getDate();
@@ -626,6 +620,108 @@
             });
         }
 
+        function initializeAnalytics() {
+            // Monthly Habit Trends
+            const months = [];
+            const habitData = {};
+            habits.forEach(habit => {
+                habitData[habit.name] = [];
+            });
+
+            // Generate data for the last 6 months
+            const endDate = new Date(currentDate);
+            const startDate = new Date(currentDate);
+            startDate.setMonth(startDate.getMonth() - 5);
+
+            for (let d = new Date(startDate); d <= endDate; d.setMonth(d.getMonth() + 1)) {
+                const month = d.getMonth();
+                const year = d.getFullYear();
+                months.push(d.toLocaleString('default', { month: 'short', year: 'numeric' }));
+
+                habits.forEach((habit, habitIndex) => {
+                    const daysInMonth = getDaysInMonth(year, month);
+                    let completedDays = 0;
+                    for (let day = 1; day <= daysInMonth; day++) {
+                        if (completions[`${habitIndex}-${year}-${month}-${day}`]) {
+                            completedDays++;
+                        }
+                    }
+                    habitData[habit.name].push((completedDays / daysInMonth) * 100);
+                });
+            }
+
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            const ctx = document.getElementById('habitTrendsChart').getContext('2d');
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: habits.map((habit, index) => ({
+                        label: habit.name,
+                        data: habitData[habit.name],
+                        borderColor: `hsl(${index * 60}, 70%, 50%)`,
+                        fill: false,
+                        tension: 0.3
+                    }))
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: {
+                                display: true,
+                                text: 'Completion Rate (%)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // Top Habits by Consistency
+            const topHabitsList = document.getElementById('topHabits');
+            topHabitsList.innerHTML = '';
+            const consistency = habits.map((habit, index) => ({
+                name: habit.name,
+                rate: (habit.achieved / habit.goal) * 100
+            })).sort((a, b) => b.rate - a.rate).slice(0, 3);
+
+            consistency.forEach(habit => {
+                const li = document.createElement('li');
+                li.textContent = `${habit.name}: ${habit.rate.toFixed(1)}% consistency`;
+                topHabitsList.appendChild(li);
+            });
+
+            // Areas for Improvement
+            const improvementList = document.getElementById('improvementAreas');
+            improvementList.innerHTML = '';
+            const lowPerformers = habits.map((habit, index) => ({
+                name: habit.name,
+                rate: (habit.achieved / habit.goal) * 100
+            })).filter(habit => habit.rate < 80).sort((a, b) => a.rate - b.rate).slice(0, 3);
+
+            if (lowPerformers.length === 0) {
+                const li = document.createElement('li');
+                li.textContent = 'Great job! All habits are performing well!';
+                improvementList.appendChild(li);
+            } else {
+                lowPerformers.forEach(habit => {
+                    const li = document.createElement('li');
+                    li.textContent = `${habit.name}: ${habit.rate.toFixed(1)}% consistency`;
+                    improvementList.appendChild(li);
+                });
+            }
+        }
+
         function previousMonth() {
             currentDate.setMonth(currentDate.getMonth() - 1);
             initializeCalendar();
@@ -660,6 +756,7 @@
             }
 
             initializeCalendar();
+            initializeAnalytics();
         }
 
         function showConfetti(cell) {
@@ -682,6 +779,7 @@
                 if (!isNaN(goal)) {
                     habits.push({ name, goal, achieved: 0 });
                     initializeCalendar();
+                    initializeAnalytics();
                 }
             }
         }
@@ -700,167 +798,15 @@
         function toggleTheme() {
             document.body.classList.toggle('dark-theme');
             localStorage.setItem('theme', document.body.classList.contains('dark-theme') ? 'dark' : 'light');
-            updateChartColors();
+            initializeAnalytics(); // Update chart colors
         }
 
-        function showTracker() {
-            document.getElementById('trackerPage').style.display = 'block';
-            document.getElementById('analyticsPage').style.display = 'none';
-        }
-
-        function showAnalytics() {
-            document.getElementById('trackerPage').style.display = 'none';
-            document.getElementById('analyticsPage').style.display = 'block';
-            updateAnalytics();
-        }
-
-        function calculateMonthlyTrends() {
-            const trends = {};
-            habits.forEach((habit, habitIndex) => {
-                trends[habit.name] = [];
-            });
-
-            const allDates = Object.keys(completions);
-            if (allDates.length === 0) {
-                return trends;
+        function showPage(page) {
+            document.getElementById('tracker-page').style.display = page === 'tracker' ? 'block' : 'none';
+            document.getElementById('analytics-page').style.display = page === 'analytics' ? 'block' : 'none';
+            if (page === 'analytics') {
+                initializeAnalytics();
             }
-
-            const dates = allDates.map(date => {
-                const [_, year, month] = date.split('-').map(Number);
-                return new Date(year, month);
-            });
-
-            const minDate = new Date(Math.min(...dates));
-            const maxDate = new Date(Math.max(...dates));
-
-            let current = new Date(minDate.getFullYear(), minDate.getMonth());
-            while (current <= maxDate) {
-                const year = current.getFullYear();
-                const month = current.getMonth();
-                const daysInMonth = getDaysInMonth(year, month);
-
-                habits.forEach((habit, habitIndex) => {
-                    let completedDays = 0;
-                    for (let day = 1; day <= daysInMonth; day++) {
-                        const key = `${habitIndex}-${year}-${month}-${day}`;
-                        if (completions[key]) {
-                            completedDays++;
-                        }
-                    }
-                    const completionRate = (completedDays / daysInMonth) * 100;
-                    trends[habit.name].push(completionRate);
-                });
-
-                current.setMonth(current.getMonth() + 1);
-            }
-
-            return { trends, labels: Array.from({ length: (maxDate.getFullYear() - minDate.getFullYear()) * 12 + maxDate.getMonth() - minDate.getMonth() + 1 }, (_, i) => {
-                const date = new Date(minDate.getFullYear(), minDate.getMonth() + i);
-                return date.toLocaleString('default', { month: 'short', year: 'numeric' });
-            })};
-        }
-
-        function calculateConsistency() {
-            return habits.map((habit, index) => {
-                const totalDays = Object.keys(completions).filter(key => key.startsWith(`${index}-`)).length;
-                const totalPossibleDays = Object.keys(completions).reduce((acc, key) => {
-                    const [_, year, month] = key.split('-').map(Number);
-                    return Math.max(acc, getDaysInMonth(year, month));
-                }, 0);
-                const consistency = totalPossibleDays > 0 ? (totalDays / totalPossibleDays) * 100 : 0;
-                return { name: habit.name, consistency };
-            }).sort((a, b) => b.consistency - a.consistency);
-        }
-
-        function updateChartColors() {
-            if (chart) {
-                chart.options.scales.x.title.color = document.body.classList.contains('dark-theme') ? '#fff' : '#333';
-                chart.options.scales.y.title.color = document.body.classList.contains('dark-theme') ? '#fff' : '#333';
-                chart.options.scales.x.grid.color = document.body.classList.contains('dark-theme') ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
-                chart.options.scales.y.grid.color = document.body.classList.contains('dark-theme') ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
-                chart.options.scales.x.ticks.color = document.body.classList.contains('dark-theme') ? '#fff' : '#333';
-                chart.options.scales.y.ticks.color = document.body.classList.contains('dark-theme') ? '#fff' : '#333';
-                chart.update();
-            }
-        }
-
-        function updateAnalytics() {
-            // Monthly Trends Chart
-            const { trends, labels } = calculateMonthlyTrends();
-            const ctx = document.getElementById('habitTrendsChart').getContext('2d');
-
-            if (chart) {
-                chart.destroy();
-            }
-
-            const datasets = Object.keys(trends).map(habitName => ({
-                label: habitName,
-                data: trends[habitName],
-                borderColor: `hsl(${Math.random() * 360}, 70%, 50%)`,
-                fill: false,
-                tension: 0.1
-            }));
-
-            chart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels.length > 0 ? labels : ['No Data'],
-                    datasets: datasets.length > 0 ? datasets : [{ label: 'No Data', data: [0] }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 100,
-                            title: {
-                                display: true,
-                                text: 'Completion Rate (%)',
-                                color: document.body.classList.contains('dark-theme') ? '#fff' : '#333'
-                            },
-                            grid: {
-                                color: document.body.classList.contains('dark-theme') ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
-                            },
-                            ticks: {
-                                color: document.body.classList.contains('dark-theme') ? '#fff' : '#333'
-                            }
-                        },
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Month',
-                                color: document.body.classList.contains('dark-theme') ? '#fff' : '#333'
-                            },
-                            grid: {
-                                color: document.body.classList.contains('dark-theme') ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
-                            },
-                            ticks: {
-                                color: document.body.classList.contains('dark-theme') ? '#fff' : '#333'
-                            }
-                        }
-                    }
-                }
-            });
-
-            // Top Habits
-            const consistency = calculateConsistency();
-            const topHabits = document.getElementById('topHabits');
-            topHabits.innerHTML = '';
-            consistency.slice(0, 3).forEach(habit => {
-                const li = document.createElement('li');
-                li.textContent = `${habit.name}: ${habit.consistency.toFixed(1)}% consistency`;
-                topHabits.appendChild(li);
-            });
-
-            // Areas for Improvement
-            const areasForImprovement = document.getElementById('areasForImprovement');
-            areasForImprovement.innerHTML = '';
-            consistency.slice(-3).reverse().forEach(habit => {
-                const li = document.createElement('li');
-                li.textContent = `${habit.name}: ${habit.consistency.toFixed(1)}% consistency`;
-                areasForImprovement.appendChild(li);
-            });
         }
 
         if (localStorage.getItem('theme') === 'dark') {
@@ -869,7 +815,7 @@
 
         window.onload = () => {
             initializeCalendar();
-            updateAnalytics();
+            showPage('tracker');
         };
     </script>
 </body>
