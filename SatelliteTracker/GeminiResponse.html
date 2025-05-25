@@ -1,10 +1,1050 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Satellite Tracker</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: sans-serif;
+            color: white;
+            background-color: black;
+        }
+
+        /* Tab Navigation */
+        .tabs {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            padding: 10px 0;
+            z-index: 1000; /* Ensure tabs are on top */
+        }
+
+        .tab-button {
+            background-color: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: color 0.2s, background-color 0.2s;
+            border-radius: 5px;
+        }
+
+        .tab-button:hover {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .tab-button.active {
+            color: white;
+            background-color: rgba(0, 123, 255, 0.6); /* Highlight active tab */
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+            width: 100vw;
+            height: 100vh;
+            padding-top: 60px; /* Space for the tabs */
+            box-sizing: border-box;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .tracker-container {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* UI Panels (existing) */
+        .ui-panel {
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-sizing: border-box;
+            z-index: 999; /* Below tabs, above 3D scene */
+        }
+
+        .top-left {
+            top: 80px; /* Adjusted for tabs */
+            left: 20px;
+        }
+
+        .top-right {
+            top: 80px; /* Adjusted for tabs */
+            right: 20px;
+        }
+
+        .bottom-left {
+            bottom: 20px;
+            left: 20px;
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 15px;
+            min-width: 200px;
+        }
+
+        .bottom-right {
+            bottom: 20px;
+            right: 20px;
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 15px;
+        }
+
+        /* Moon UI panel specific adjustments if needed */
+        .moon-ui-panel {
+            top: 80px;
+            left: 20px;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .ui-button {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: none;
+            padding: 8px;
+            border-radius: 3px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+            color: white;
+        }
+
+        .ui-button:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .material-icons {
+            font-size: 24px;
+            color: white;
+        }
+
+        .search-input,
+        .time-controls input[type="date"],
+        .time-controls input[type="time"] {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 10px;
+            border-radius: 3px;
+            color: white;
+            font-size: 16px;
+            outline: none;
+            width: 180px;
+        }
+
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .time-controls label {
+            margin-top: 5px;
+            margin-bottom: 2px;
+        }
+
+        .time-controls input[type="date"]::-webkit-calendar-picker-indicator,
+        .time-controls input[type="time"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+        }
+
+        #satellite-info-panel .info-header {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        #satellite-info-panel h3 {
+            margin: 0;
+        }
+
+        #satellite-info-panel p {
+            margin: 5px 0;
+            width: 100%;
+        }
+
+        .close-button {
+            cursor: pointer;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .time-playback {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .time-playback input[type="range"] {
+            flex-grow: 1;
+            -webkit-appearance: none;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            outline: none;
+        }
+
+        .time-playback input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #007bff;
+            cursor: grab;
+            margin-top: -5px;
+        }
+
+        .time-playback input[type="range"]::-moz-range-thumb {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #007bff;
+            cursor: grab;
+        }
+
+        #speedValue {
+            width: 40px;
+            text-align: right;
+        }
+
+
+        /* Add Satellite Form */
+        .add-satellite-form {
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 500px;
+            margin: 50px auto 0;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+            box-sizing: border-box;
+        }
+
+        .add-satellite-form h2 {
+            margin-top: 0;
+            color: white;
+            text-align: center;
+        }
+
+        .add-satellite-form .form-group {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .add-satellite-form label {
+            font-size: 0.95em;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .add-satellite-form input[type="text"],
+        .add-satellite-form input[type="number"] {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 10px;
+            border-radius: 4px;
+            color: white;
+            font-size: 1em;
+            outline: none;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .add-satellite-form input[type="text"]::placeholder,
+        .add-satellite-form input[type="number"]::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .add-satellite-form small {
+            font-size: 0.8em;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: -5px;
+        }
+
+        .add-satellite-form .ui-button[type="submit"] {
+            width: 100%;
+            padding: 12px;
+            font-size: 1.1em;
+            background-color: #007bff;
+        }
+
+        .add-satellite-form .ui-button[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+
+        .message-box {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .message-box.success {
+            background-color: rgba(40, 167, 69, 0.8);
+            color: white;
+        }
+
+        .message-box.error {
+            background-color: rgba(220, 53, 69, 0.8);
+            color: white;
+        }
+    </style>
 </head>
 <body>
-$END$
+    <div class="tabs">
+        <button class="tab-button active" onclick="showTab('earth-tracker')">Earth Tracker</button>
+        <button class="tab-button" onclick="showTab('moon-tracker')">Moon Tracker</button>
+        <button class="tab-button" onclick="showTab('add-satellite')">Add Satellite</button>
+    </div>
+
+    <div id="earth-tracker" class="tab-content active">
+        <div id="earth-container" class="tracker-container"></div>
+
+        <div class="ui-panel top-left">
+            <div class="ui-button">
+                <span class="material-icons">search</span>
+            </div>
+            <div class="ui-button">
+                <span class="material-icons">settings</span>
+            </div>
+            <div class="ui-button">
+                <span class="material-icons">info</span>
+            </div>
+        </div>
+
+        <div class="ui-panel top-right">
+            <input type="text" placeholder="Name or NORAD ID" class="search-input">
+            <div class="ui-button search-button">
+                <span class="material-icons">search</span>
+            </div>
+        </div>
+
+        <div class="ui-panel bottom-right time-controls">
+            <label for="simulationDate">Date:</label>
+            <input type="date" id="simulationDate">
+            <label for="simulationTime">Time:</label>
+            <input type="time" id="simulationTime">
+            <button id="resetTimeButton" class="ui-button">Reset to Now</button>
+            <div class="time-playback">
+                <button id="playPauseButton" class="ui-button"><span class="material-icons" id="playPauseIcon">pause</span></button>
+                <input type="range" id="timeSpeedSlider" min="0.1" max="100" value="1" step="0.1">
+                <span id="speedValue">1x</span>
+            </div>
+        </div>
+
+        <div class="ui-panel bottom-left" id="satellite-info-panel" style="display: none;">
+            <div class="info-header">
+                <h3 id="satellite-name"></h3>
+                <span class="close-button" onclick="hideEarthSatelliteInfo()">x</span>
+            </div>
+            <p>Speed: <span id="satellite-speed"></span> km/h</p>
+            <p>Height: <span id="satellite-height"></span> km</p>
+            <p>Latitude: <span id="satellite-latitude"></span>°</p>
+            <p>Longitude: <span id="satellite-longitude"></span>°</p>
+            <p>Type: <span id="satellite-type"></span></p>
+        </div>
+    </div>
+
+    <div id="moon-tracker" class="tab-content">
+        <div id="moon-container" class="tracker-container"></div>
+        <div class="ui-panel top-left moon-ui-panel">
+            <h3>Moon Tracker</h3>
+            <p>Satellites orbiting the Moon.</p>
+        </div>
+        <div class="ui-panel bottom-left" id="moon-satellite-info-panel" style="display: none;">
+            <div class="info-header">
+                <h3 id="moon-satellite-name"></h3>
+                <span class="close-button" onclick="hideMoonSatelliteInfo()">x</span>
+            </div>
+            <p>Speed: <span id="moon-satellite-speed"></span> km/h</p>
+            <p>Height: <span id="moon-satellite-height"></span> km</p>
+            <p>Latitude: <span id="moon-satellite-latitude"></span>°</p>
+            <p>Longitude: <span id="moon-satellite-longitude"></span>°</p>
+            <p>Type: <span id="moon-satellite-type"></span></p>
+        </div>
+    </div>
+
+    <div id="add-satellite" class="tab-content">
+        <div class="add-satellite-form">
+            <h2>Add New Satellite (Synthetic)</h2>
+            <p>Enter parameters for your custom satellite. Orbit type will be inferred.</p>
+            <form id="newSatelliteForm">
+                <div class="form-group">
+                    <label for="newSatName">Satellite Name:</label>
+                    <input type="text" id="newSatName" required placeholder="My Awesome Satellite">
+                </div>
+                <div class="form-group">
+                    <label for="newSatAltitude">Altitude (km above surface):</label>
+                    <input type="number" id="newSatAltitude" required min="100" max="40000" value="500">
+                </div>
+                <div class="form-group">
+                    <label for="newSatOrbitalPeriod">Orbital Period (hours):</label>
+                    <input type="number" id="newSatOrbitalPeriod" required min="1" max="24" step="0.1" value="1.5">
+                    <small>Approx. LEO: 1.5-2 hrs, GEO: ~24 hrs.</small>
+                </div>
+                <div class="form-group">
+                    <label for="newSatInclination">Inclination (degrees):</label>
+                    <input type="number" id="newSatInclination" required min="0" max="90" step="1" value="45">
+                </div>
+                <button type="submit" class="ui-button">Add Satellite to Earth Tracker</button>
+            </form>
+            <div id="addSatMessage" class="message-box"></div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.165.0/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.165.0/examples/jsm/controls/OrbitControls.js"></script>
+
+    <script>
+        // --- Global State & Configuration ---
+        const earthRadius = 6371; // Earth's radius in km
+        const moonRadius = 1737.4; // Moon's radius in km
+        const kmToThreeUnit = 1; // 1 km = 1 Three.js unit for simplicity. Adjust if needed.
+
+        // --- Earth Tracker Globals ---
+        let earthScene, earthCamera, earthRenderer, earthControls;
+        const earthSatellites = [];
+        let earthSelectedSatellite = null;
+        let earthSatelliteOrbitLine = { line: null }; // Use an object to pass by reference
+
+        // --- Moon Tracker Globals ---
+        let moonScene, moonCamera, moonRenderer, moonControls;
+        const moonSatellites = []; // Satellites orbiting the Moon
+        let moonSelectedSatellite = null; // Currently selected moon satellite
+        let moonSatelliteOrbitLine = { line: null }; // Use an object to pass by reference
+
+        // --- Time Simulation Variables (Shared) ---
+        let simulationTime = new Date(); // Current date and time for simulation
+        let isPlaying = true; // Playback state
+        let timeSpeed = 1.0; // Playback speed multiplier (1.0 = real time)
+        let lastFrameTime = performance.now(); // For delta time calculation
+        const REFERENCE_TIME = new Date(); // Fixed epoch for all satellite calculations
+
+        // --- UI Elements (Earth Tracker) ---
+        const earthContainer = document.getElementById('earth-container');
+        const satelliteInfoPanel = document.getElementById('satellite-info-panel');
+        const satelliteName = document.getElementById('satellite-name');
+        const satelliteSpeed = document.getElementById('satellite-speed');
+        const satelliteHeight = document.getElementById('satellite-height');
+        const satelliteLatitude = document.getElementById('satellite-latitude');
+        const satelliteLongitude = document.getElementById('satellite-longitude');
+        const satelliteType = document.getElementById('satellite-type');
+
+        const simulationDateInput = document.getElementById('simulationDate');
+        const simulationTimeInput = document.getElementById('simulationTime');
+        const resetTimeButton = document.getElementById('resetTimeButton');
+        const playPauseButton = document.getElementById('playPauseButton');
+        const playPauseIcon = document.getElementById('playPauseIcon');
+        const timeSpeedSlider = document.getElementById('timeSpeedSlider');
+        const speedValueSpan = document.getElementById('speedValue');
+
+        // --- UI Elements (Moon Tracker) ---
+        const moonSatelliteInfoPanel = document.getElementById('moon-satellite-info-panel');
+        const moonSatelliteName = document.getElementById('moon-satellite-name');
+        const moonSatelliteSpeed = document.getElementById('moon-satellite-speed');
+        const moonSatelliteHeight = document.getElementById('moon-satellite-height');
+        const moonSatelliteLatitude = document.getElementById('moon-satellite-latitude');
+        const moonSatelliteLongitude = document.getElementById('moon-satellite-longitude');
+        const moonSatelliteType = document.getElementById('moon-satellite-type');
+
+
+        // --- UI Elements (Add Satellite) ---
+        const newSatelliteForm = document.getElementById('newSatelliteForm');
+        const newSatNameInput = document.getElementById('newSatName');
+        const newSatAltitudeInput = document.getElementById('newSatAltitude');
+        const newSatOrbitalPeriodInput = document.getElementById('newSatOrbitalPeriod');
+        const newSatInclinationInput = document.getElementById('newSatInclination');
+        const addSatMessage = document.getElementById('addSatMessage');
+
+
+        // --- Helper Functions ---
+
+        // Converts degrees to radians
+        function toRadians(degrees) {
+            return degrees * Math.PI / 180;
+        }
+
+        // Converts radians to degrees
+        function toDegrees(radians) {
+            return radians * 180 / Math.PI;
+        }
+
+        // Calculates a random point on a sphere at a given radius
+        function getRandomPointOnSphere(radius) {
+            const u = Math.random();
+            const v = Math.random();
+            const theta = 2 * Math.PI * u;
+            const phi = Math.acos(2 * v - 1);
+            const x = radius * Math.sin(phi) * Math.cos(theta);
+            const y = radius * Math.sin(phi) * Math.sin(theta);
+            const z = radius * Math.cos(phi);
+            return new THREE.Vector3(x, y, z);
+        }
+
+        // Generates base synthetic satellite data
+        function generateSatelliteData(centerRadius, orbitRadius, orbitalPeriodSeconds, orbitType, customName = null, customInclination = null) {
+            const speed = (2 * Math.PI * orbitRadius) / orbitalPeriodSeconds * 3.6; // km/h
+            const height = orbitRadius - centerRadius;
+            const initialAngleAtReference = Math.random() * Math.PI * 2;
+            const inclination = customInclination !== null ? toRadians(customInclination) : Math.random() * Math.PI / 2; // up to 90 deg
+            const raan = Math.random() * Math.PI * 2; // Right Ascension of the Ascending Node
+            const argPerigee = Math.random() * Math.PI * 2; // Argument of Perigee
+
+            return {
+                name: customName || `${orbitType}-${Math.floor(Math.random() * 100000)}`,
+                noradId: Math.floor(Math.random() * 99999),
+                centerRadius: centerRadius, // The radius of the central body
+                orbitRadius: orbitRadius,
+                speed: speed, // km/h
+                height: height, // km
+                orbitalPeriod: orbitalPeriodSeconds, // seconds
+                initialAngleAtReference: initialAngleAtReference,
+                inclination: inclination,
+                raan: raan,
+                argPerigee: argPerigee,
+                orbitType: orbitType,
+                referenceTime: REFERENCE_TIME // All satellites reference this fixed point in time
+            };
+        }
+
+        // Adds a satellite mesh to a given scene
+        function addSatelliteMesh(scene, satellitesArray, data) {
+            const geometry = new THREE.SphereGeometry(100 * kmToThreeUnit, 8, 8); // Scaled for visibility
+            const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            const satelliteMesh = new THREE.Mesh(geometry, material);
+
+            satelliteMesh.userData = data; // Store data on the mesh
+            scene.add(satelliteMesh);
+            satellitesArray.push(satelliteMesh);
+        }
+
+        // Updates satellite positions based on current simulation time
+        function updateSatellitePositions(satellitesArray) {
+            const timeElapsedSinceReference = (simulationTime.getTime() - REFERENCE_TIME.getTime()) / 1000; // In seconds
+
+            satellitesArray.forEach(satellite => {
+                const data = satellite.userData;
+
+                // Calculate current angle based on simulation time
+                const angle = data.initialAngleAtReference + (timeElapsedSinceReference * (2 * Math.PI / data.orbitalPeriod));
+
+                // Update position using spherical coordinates and inclination/RAAN for visual effect
+                const x = data.orbitRadius * Math.cos(angle);
+                const z = data.orbitRadius * Math.sin(angle);
+                const y = data.orbitRadius * Math.sin(data.inclination) * Math.sin(angle + data.raan);
+
+                satellite.position.set(x * kmToThreeUnit, y * kmToThreeUnit, z * kmToThreeUnit);
+
+                // Update latitude and longitude (relative to its own central body)
+                const distanceToEquatorPlane = Math.sqrt(satellite.position.x * satellite.position.x + satellite.position.z * satellite.position.z);
+                data.latitude = toDegrees(Math.atan2(satellite.position.y, distanceToEquatorPlane));
+                data.longitude = toDegrees(Math.atan2(satellite.position.z, satellite.position.x));
+            });
+        }
+
+        // Draws the orbit path for a selected satellite
+        function drawOrbit(scene, satelliteData, currentOrbitLineVar) {
+            if (currentOrbitLineVar.line) { // Check for line property
+                scene.remove(currentOrbitLineVar.line);
+                currentOrbitLineVar.line.geometry.dispose();
+                currentOrbitLineVar.line.material.dispose();
+            }
+
+            const points = [];
+            const segments = 360; // Number of segments to draw the circle
+            const orbitRadius = satelliteData.orbitRadius;
+            const inclination = satelliteData.inclination;
+            const raan = satelliteData.raan;
+
+            for (let i = 0; i <= segments; i++) {
+                const angle = (i / segments) * Math.PI * 2;
+
+                const x_flat = orbitRadius * Math.cos(angle);
+                const y_flat = orbitRadius * Math.sin(angle);
+                const z_flat = 0;
+
+                const y_inclined = y_flat * Math.cos(inclination) - z_flat * Math.sin(inclination);
+                const z_inclined = y_flat * Math.sin(inclination) + z_flat * Math.cos(inclination);
+
+                const x_final = x_flat * Math.cos(raan) + z_inclined * Math.sin(raan);
+                const z_final = -x_flat * Math.sin(raan) + z_inclined * Math.cos(raan);
+                const y_final = y_inclined;
+
+                points.push(new THREE.Vector3(x_final * kmToThreeUnit, y_final * kmToThreeUnit, z_final * kmToThreeUnit));
+            }
+
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+            const material = new THREE.LineBasicMaterial({ color: 0x00ff00, linewidth: 2 }); // Green line
+            currentOrbitLineVar.line = new THREE.Line(geometry, material); // Store line in object
+            scene.add(currentOrbitLineVar.line);
+        }
+
+        // --- Earth Tracker Functions ---
+        function initEarthTracker() {
+            earthScene = new THREE.Scene();
+            earthScene.background = new THREE.Color(0x000000);
+
+            earthCamera = new THREE.PerspectiveCamera(75, earthContainer.clientWidth / earthContainer.clientHeight, 0.1, 100000 * kmToThreeUnit);
+            earthCamera.position.z = earthRadius * 3 * kmToThreeUnit;
+
+            earthRenderer = new THREE.WebGLRenderer({ antialias: true });
+            earthRenderer.setSize(earthContainer.clientWidth, earthContainer.clientHeight);
+            earthContainer.appendChild(earthRenderer.domElement);
+
+            earthControls = new THREE.OrbitControls(earthCamera, earthRenderer.domElement);
+            earthControls.enableDamping = true;
+            earthControls.dampingFactor = 0.05;
+            earthControls.minDistance = earthRadius * 1.1 * kmToThreeUnit;
+            earthControls.maxDistance = earthRadius * 10 * kmToThreeUnit;
+
+            // Earth Mesh
+            const earthGeometry = new THREE.SphereGeometry(earthRadius * kmToThreeUnit, 64, 64);
+            // const textureLoader = new THREE.TextureLoader();
+            // const earthTexture = textureLoader.load('path/to/earth_texture.jpg');
+            // const earthMaterial = new THREE.MeshBasicMaterial({ map: earthTexture });
+            const earthMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff, wireframe: false });
+            const earth = new THREE.Mesh(earthGeometry, earthMaterial);
+            earthScene.add(earth);
+
+            // Stars
+            const starCount = 5000;
+            const starGeometry = new THREE.BufferGeometry();
+            const starVertices = [];
+            for (let i = 0; i < starCount; i++) {
+                const p = getRandomPointOnSphere(earthRadius * 15 * kmToThreeUnit);
+                starVertices.push(p.x, p.y, p.z);
+            }
+            starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+            const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 5 * kmToThreeUnit });
+            const stars = new THREE.Points(starGeometry, starMaterial);
+            earthScene.add(stars);
+
+            // Add initial synthetic satellites (GEO and LEO)
+            const geostationaryAltitude = 35786;
+            const geoOrbitRadius = earthRadius + geostationaryAltitude;
+            const geoOrbitalPeriodSeconds = 23 * 3600 + 56 * 60 + 4;
+
+            for (let i = 0; i < 100; i++) {
+                addSatelliteMesh(earthScene, earthSatellites, generateSatelliteData(earthRadius, geoOrbitRadius, geoOrbitalPeriodSeconds, 'GEO'));
+            }
+
+            const leoMinAltitude = 400;
+            const leoMaxAltitude = 1200;
+            const leoMinOrbitalPeriodSeconds = 90 * 60;
+            const leoMaxOrbitalPeriodSeconds = 120 * 60;
+
+            for (let i = 0; i < 300; i++) {
+                const altitude = Math.random() * (leoMaxAltitude - leoMinAltitude) + leoMinAltitude;
+                const orbitRadius = earthRadius + altitude;
+                const orbitalPeriod = Math.random() * (leoMaxOrbitalPeriodSeconds - leoMinOrbitalPeriodSeconds) + leoMinOrbitalPeriodSeconds;
+                addSatelliteMesh(earthScene, earthSatellites, generateSatelliteData(earthRadius, orbitRadius, orbitalPeriod, 'LEO'));
+            }
+
+            // Load user-added satellites from localStorage
+            loadUserSatellites();
+
+            // Setup UI controls for Earth Tracker
+            setupTimeControls();
+            window.addEventListener('resize', onWindowResizeEarth, false);
+            earthContainer.addEventListener('mousedown', onDocumentMouseDownEarth, false);
+        }
+
+        function onWindowResizeEarth() {
+            if (!earthCamera || !earthRenderer || !earthContainer) return;
+            earthCamera.aspect = earthContainer.clientWidth / earthContainer.clientHeight;
+            earthCamera.updateProjectionMatrix();
+            earthRenderer.setSize(earthContainer.clientWidth, earthContainer.clientHeight);
+        }
+
+        function onDocumentMouseDownEarth(event) {
+            event.preventDefault();
+            if (event.target.closest('.ui-panel')) { return; }
+
+            const rect = earthContainer.getBoundingClientRect();
+            const mouse = new THREE.Vector2();
+            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+            const raycaster = new THREE.Raycaster();
+            raycaster.setFromCamera(mouse, earthCamera);
+
+            const intersects = raycaster.intersectObjects(earthSatellites);
+
+            if (intersects.length > 0) {
+                showEarthSatelliteInfo(intersects[0].object);
+            } else {
+                hideEarthSatelliteInfo();
+            }
+        }
+
+        function showEarthSatelliteInfo(satellite) {
+            earthSelectedSatellite = satellite;
+            updateEarthSatelliteInfoPanel(satellite.userData);
+            drawOrbit(earthScene, satellite.userData, earthSatelliteOrbitLine);
+        }
+
+        function hideEarthSatelliteInfo() {
+            earthSelectedSatellite = null;
+            satelliteInfoPanel.style.display = 'none';
+            if (earthSatelliteOrbitLine.line) {
+                earthScene.remove(earthSatelliteOrbitLine.line);
+                earthSatelliteOrbitLine.line.geometry.dispose();
+                earthSatelliteOrbitLine.line.material.dispose();
+                earthSatelliteOrbitLine.line = null;
+            }
+        }
+
+        function updateEarthSatelliteInfoPanel(data) {
+            satelliteName.textContent = data.name;
+            satelliteSpeed.textContent = data.speed.toFixed(2);
+            satelliteHeight.textContent = data.height.toFixed(2);
+            satelliteLatitude.textContent = data.latitude.toFixed(2);
+            satelliteLongitude.textContent = data.longitude.toFixed(2);
+            satelliteType.textContent = data.orbitType;
+            satelliteInfoPanel.style.display = 'flex';
+        }
+
+        // --- Moon Tracker Functions ---
+        function initMoonTracker() {
+            const moonContainer = document.getElementById('moon-container');
+
+            moonScene = new THREE.Scene();
+            moonScene.background = new THREE.Color(0x000000);
+
+            moonCamera = new THREE.PerspectiveCamera(75, moonContainer.clientWidth / moonContainer.clientHeight, 0.1, 10000 * kmToThreeUnit);
+            moonCamera.position.z = moonRadius * 4 * kmToThreeUnit; // Closer for Moon
+
+            moonRenderer = new THREE.WebGLRenderer({ antialias: true });
+            moonRenderer.setSize(moonContainer.clientWidth, moonContainer.clientHeight);
+            moonContainer.appendChild(moonRenderer.domElement);
+
+            moonControls = new THREE.OrbitControls(moonCamera, moonRenderer.domElement);
+            moonControls.enableDamping = true;
+            moonControls.dampingFactor = 0.05;
+            moonControls.minDistance = moonRadius * 1.1 * kmToThreeUnit;
+            moonControls.maxDistance = moonRadius * 10 * kmToThreeUnit;
+
+            // Moon Mesh
+            const moonGeometry = new THREE.SphereGeometry(moonRadius * kmToThreeUnit, 64, 64);
+            // const moonTexture = textureLoader.load('path/to/moon_texture.jpg');
+            // const moonMaterial = new THREE.MeshBasicMaterial({ map: moonTexture });
+            const moonMaterial = new THREE.MeshBasicMaterial({ color: 0xcccccc, wireframe: false }); // Gray sphere for simplicity
+            const moon = new THREE.Mesh(moonGeometry, moonMaterial);
+            moonScene.add(moon);
+
+            // Stars (separate set for Moon scene)
+            const starCountMoon = 2000;
+            const starGeometryMoon = new THREE.BufferGeometry();
+            const starVerticesMoon = [];
+            for (let i = 0; i < starCountMoon; i++) {
+                const p = getRandomPointOnSphere(moonRadius * 15 * kmToThreeUnit);
+                starVerticesMoon.push(p.x, p.y, p.z);
+            }
+            starGeometryMoon.setAttribute('position', new THREE.Float32BufferAttribute(starVerticesMoon, 3));
+            const starMaterialMoon = new THREE.PointsMaterial({ color: 0xffffff, size: 5 * kmToThreeUnit });
+            const starsMoon = new THREE.Points(starGeometryMoon, starMaterialMoon);
+            moonScene.add(starsMoon);
+
+            // Add synthetic Moon satellites (e.g., Lunar Reconnaissance Orbiter type)
+            // LRO altitude is ~50 km. Period ~113 minutes.
+            const moonSatAltitude = 100; // Example altitude for moon satellites
+            const moonOrbitRadius = moonRadius + moonSatAltitude;
+            const moonOrbitalPeriodSeconds = 120 * 60; // 120 minutes
+
+            for (let i = 0; i < 50; i++) {
+                addSatelliteMesh(moonScene, moonSatellites, generateSatelliteData(moonRadius, moonOrbitRadius, moonOrbitalPeriodSeconds, 'Lunar Orbit'));
+            }
+
+            window.addEventListener('resize', onWindowResizeMoon, false);
+            moonContainer.addEventListener('mousedown', onDocumentMouseDownMoon, false);
+        }
+
+        function onWindowResizeMoon() {
+            const moonContainer = document.getElementById('moon-container');
+            if (!moonCamera || !moonRenderer || !moonContainer) return;
+            moonCamera.aspect = moonContainer.clientWidth / moonContainer.clientHeight;
+            moonCamera.updateProjectionMatrix();
+            moonRenderer.setSize(moonContainer.clientWidth, moonContainer.clientHeight);
+        }
+
+        function onDocumentMouseDownMoon(event) {
+            event.preventDefault();
+            const rect = document.getElementById('moon-container').getBoundingClientRect();
+            const mouse = new THREE.Vector2();
+            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+            const raycaster = new THREE.Raycaster();
+            raycaster.setFromCamera(mouse, moonCamera);
+
+            const intersects = raycaster.intersectObjects(moonSatellites);
+
+            if (intersects.length > 0) {
+                showMoonSatelliteInfo(intersects[0].object);
+            } else {
+                hideMoonSatelliteInfo();
+            }
+        }
+
+        function showMoonSatelliteInfo(satellite) {
+            moonSelectedSatellite = satellite;
+            updateMoonSatelliteInfoPanel(satellite.userData);
+            drawOrbit(moonScene, satellite.userData, moonSatelliteOrbitLine);
+        }
+
+        function hideMoonSatelliteInfo() {
+            moonSelectedSatellite = null;
+            moonSatelliteInfoPanel.style.display = 'none';
+            if (moonSatelliteOrbitLine.line) {
+                moonScene.remove(moonSatelliteOrbitLine.line);
+                moonSatelliteOrbitLine.line.geometry.dispose();
+                moonSatelliteOrbitLine.line.material.dispose();
+                moonSatelliteOrbitLine.line = null;
+            }
+        }
+
+        function updateMoonSatelliteInfoPanel(data) {
+            moonSatelliteName.textContent = data.name;
+            moonSatelliteSpeed.textContent = data.speed.toFixed(2);
+            moonSatelliteHeight.textContent = data.height.toFixed(2);
+            moonSatelliteLatitude.textContent = data.latitude.toFixed(2);
+            moonSatelliteLongitude.textContent = data.longitude.toFixed(2);
+            moonSatelliteType.textContent = data.orbitType;
+            moonSatelliteInfoPanel.style.display = 'flex';
+        }
+
+
+        // --- Tab Switching Logic ---
+        let activeTab = 'earth-tracker'; // Initial active tab
+
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.getElementById(tabId).classList.add('active');
+
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            document.querySelector(`.tab-button[onclick="showTab('${tabId}')"]`).classList.add('active');
+
+            activeTab = tabId;
+
+            // Resize renderer if switching to a tracker tab
+            if (tabId === 'earth-tracker' && earthRenderer) {
+                onWindowResizeEarth();
+                hideMoonSatelliteInfo(); // Hide moon info if switching to earth
+            } else if (tabId === 'moon-tracker' && moonRenderer) {
+                onWindowResizeMoon();
+                hideEarthSatelliteInfo(); // Hide earth info if switching to moon
+            } else {
+                // If switching to add-satellite tab, hide any active info panels
+                hideEarthSatelliteInfo();
+                hideMoonSatelliteInfo();
+            }
+        }
+
+
+        // --- Animation Loop ---
+        function animate(currentTime) {
+            requestAnimationFrame(animate);
+
+            const deltaTime = (currentTime - lastFrameTime) / 1000;
+            lastFrameTime = currentTime;
+
+            if (isPlaying) {
+                simulationTime.setTime(simulationTime.getTime() + deltaTime * timeSpeed * 1000);
+                updateDateTimeInputs();
+            }
+
+            // Render active scene
+            if (activeTab === 'earth-tracker' && earthRenderer) {
+                updateSatellitePositions(earthSatellites);
+                earthControls.update();
+                earthRenderer.render(earthScene, earthCamera);
+                if (earthSelectedSatellite && earthSatelliteOrbitLine.line) {
+                    // No need to redraw orbit every frame as its shape is static
+                    // but ensure its presence if selected.
+                }
+            } else if (activeTab === 'moon-tracker' && moonRenderer) {
+                updateSatellitePositions(moonSatellites);
+                moonControls.update();
+                moonRenderer.render(moonScene, moonCamera);
+                if (moonSelectedSatellite && moonSatelliteOrbitLine.line) {
+                    // Same as Earth
+                }
+            }
+        }
+
+        // --- Time Control Functions ---
+        function setupTimeControls() {
+            updateDateTimeInputs();
+
+            simulationDateInput.addEventListener('change', (event) => {
+                const newDate = new Date(event.target.value + 'T' + simulationTimeInput.value);
+                if (!isNaN(newDate.getTime())) {
+                    simulationTime = newDate;
+                }
+            });
+
+            simulationTimeInput.addEventListener('change', (event) => {
+                const newTime = event.target.value;
+                const [hours, minutes] = newTime.split(':').map(Number);
+                if (!isNaN(hours) && !isNaN(minutes)) {
+                    simulationTime.setHours(hours);
+                    simulationTime.setMinutes(minutes);
+                    simulationTime.setSeconds(0);
+                    simulationTime.setMilliseconds(0);
+                }
+            });
+
+            resetTimeButton.addEventListener('click', () => {
+                simulationTime = new Date();
+                updateDateTimeInputs();
+                isPlaying = true;
+                playPauseIcon.textContent = 'pause';
+            });
+
+            playPauseButton.addEventListener('click', () => {
+                isPlaying = !isPlaying;
+                playPauseIcon.textContent = isPlaying ? 'pause' : 'play_arrow';
+            });
+
+            timeSpeedSlider.addEventListener('input', (event) => {
+                timeSpeed = parseFloat(event.target.value);
+                speedValueSpan.textContent = `${timeSpeed}x`;
+            });
+        }
+
+        function updateDateTimeInputs() {
+            const year = simulationTime.getFullYear();
+            const month = (simulationTime.getMonth() + 1).toString().padStart(2, '0');
+            const day = simulationTime.getDate().toString().padStart(2, '0');
+            const hours = simulationTime.getHours().toString().padStart(2, '0');
+            const minutes = simulationTime.getMinutes().toString().padStart(2, '0');
+
+            simulationDateInput.value = `${year}-${month}-${day}`;
+            simulationTimeInput.value = `${hours}:${minutes}`;
+        }
+
+
+        // --- User-Added Satellite Functions ---
+        function saveUserSatellites() {
+            const userSatellitesData = earthSatellites
+                .filter(s => s.userData.isUserAdded) // Filter only user-added ones
+                .map(s => {
+                    const data = { ...s.userData }; // Create a copy
+                    // Remove the Three.js specific line object and referenceTime if present
+                    delete data.line;
+                    delete data.referenceTime;
+                    return data;
+                });
+            localStorage.setItem('userSatellites', JSON.stringify(userSatellitesData));
+            console.log("User satellites saved:", userSatellitesData);
+        }
+
+        function loadUserSatellites() {
+            const storedSatellites = localStorage.getItem('userSatellites');
+            if (storedSatellites) {
+                const userSatellitesData = JSON.parse(storedSatellites);
+                userSatellitesData.forEach(data => {
+                    // Re-assign referenceTime and isUserAdded when loading
+                    data.referenceTime = REFERENCE_TIME;
+                    data.isUserAdded = true;
+                    addSatelliteMesh(earthScene, earthSatellites, data);
+                    console.log("Loaded user satellite:", data.name);
+                });
+            }
+        }
+
+        newSatelliteForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+
+            const name = newSatNameInput.value.trim();
+            const altitude = parseFloat(newSatAltitudeInput.value);
+            const orbitalPeriodHours = parseFloat(newSatOrbitalPeriodInput.value);
+            const inclinationDegrees = parseFloat(newSatInclinationInput.value);
+
+            if (!name || isNaN(altitude) || isNaN(orbitalPeriodHours) || isNaN(inclinationDegrees)) {
+                displayMessage(addSatMessage, "Please fill all fields correctly.", "error");
+                return;
+            }
+
+            const orbitRadius = earthRadius + altitude;
+            const orbitalPeriodSeconds = orbitalPeriodHours * 3600;
+
+            let orbitType = 'Custom';
+            if (altitude >= 35000 && altitude <= 36000 && orbitalPeriodHours >= 23.9 && orbitalPeriodHours <= 24.1) {
+                orbitType = 'GEO';
+            } else if (altitude >= 160 && altitude <= 2000 && orbitalPeriodHours >= 1.5 && orbitalPeriodHours <= 2) {
+                orbitType = 'LEO';
+            }
+
+            const newSatelliteData = generateSatelliteData(
+                earthRadius,
+                orbitRadius,
+                orbitalPeriodSeconds,
+                orbitType,
+                name,
+                inclinationDegrees
+            );
+            newSatelliteData.isUserAdded = true; // Mark as user-added
+
+            addSatelliteMesh(earthScene, earthSatellites, newSatelliteData);
+            saveUserSatellites(); // Save to localStorage
+
+            displayMessage(addSatMessage, `Satellite "${name}" added successfully!`, "success");
+            newSatelliteForm.reset(); // Clear the form
+        });
+
+        function displayMessage(element, message, type) {
+            element.textContent = message;
+            element.className = `message-box ${type}`;
+            element.style.display = 'block';
+            setTimeout(() => {
+                element.style.display = 'none';
+                element.textContent = '';
+                element.className = 'message-box';
+            }, 5000);
+        }
+
+
+        // --- Initialization Callbacks ---
+        // Call init functions after DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            initEarthTracker();
+            initMoonTracker(); // Initialize Moon tracker too
+            animate(performance.now()); // Start the animation loop
+
+            // Show Earth Tracker by default after initialization
+            showTab('earth-tracker');
+        });
+    </script>
 </body>
 </html>

@@ -8,8 +8,13 @@ The response must look modern like the attached image.
 Turn 2:
 The response must allow the user to create their own fundraisers specifying title, name, goal, description, and deadline. For example, using HTML input to take information then creating a new HTML page with this information.
 The response must allow all sites to be visible from the site's home page in a clean format. For example,
+(I) The response must
 
 Turn 3:
 The response must allow the user to upload a custom photo for the fundraisers image.
 The response must allow the user to input social medias when creating fundraisers.
 The response must allow the user's inputted social medias to be displayed on the fundraiser page as the appropriate social media icons. This could be done by taking input with HTML inputs, then using HTML
+
+Turn 4:
+The response must have a dynamic fundraiser progress bar, for example
+The response must allow user's to download their Fundraiser page as a PDF.

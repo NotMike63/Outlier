@@ -1,0 +1,17 @@
+Turn 1:
+The response must allow the user's dynamic traversal of the globe.
+The response should allow user's to zoom in and out on the globe.
+The response must present satellite information to user's with a slide in modal.
+The response must implement a UI that updates satellite positions 'live'.
+
+Turn 2:
+The response must contain satellites that move at realistic speeds.
+The response must show users a satellite's orbital path when selected.
+
+Turn 3:
+The response must allow the user to dynamically adjust the date and time of the satellites positions.
+The response should implement a date and time slider that allows the user to see the changing in positions of satellites live.
+
+Turn 4:
+The response must allow user's to create their own satellites.
+The response must contain two tabs, one of which is a moon tab showing representations of satellites around the moon.

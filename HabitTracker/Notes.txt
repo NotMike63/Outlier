@@ -1,0 +1,9 @@
+Turn 1:
+The response must contain a clean and well organized calendar like the attached image by
+The response must allow the calendar to update live when the user adds a new habit by
+The response should allow the user to create new habits by
+The response must allow users to click on a task and complete it
+The response must display a small confetti cloud to users around the completed task by
+
+Turn 2:
+The response must contain a light/dark UI control
