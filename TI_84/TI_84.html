@@ -4,31 +4,81 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TI-84 Calculator Simulator</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        :root {
+            --bg-color: #f0f0f0;
+            --text-color: #333;
+            --calculator-bg: #d3d3d3;
+            --calculator-border: #b0b0b0;
+            --screen-bg: #c0d8c0;
+            --screen-border: #333;
+            --button-shadow: rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #2c2c2c;
+            --text-color: #f0f0f0;
+            --calculator-bg: #a0a0a0;
+            --calculator-border: #808080;
+            --screen-bg: #90a890;
+            --screen-border: #1a1a1a;
+            --button-shadow: rgba(255,255,255,0.1);
+        }
+
         body {
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            background-color: #f0f0f0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
             font-family: Arial, sans-serif;
         }
 
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px;
+            background-color: var(--calculator-bg);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            filter: brightness(90%);
+        }
+
         .calculator {
-            background-color: #d3d3d3;
+            background-color: var(--calculator-bg);
             padding: 20px;
             border-radius: 15px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.3);
+            border: 2px solid var(--calculator-border);
+            box-shadow: 0 0 20px var(--button-shadow);
             width: 350px;
+            margin: 60px auto;
+        }
+
+        .calculator-header {
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+            font-family: 'Arial', sans-serif;
         }
 
         .screen {
-            background-color: #c0d8c0;
+            background-color: var(--screen-bg);
             height: 80px;
             margin-bottom: 15px;
             padding: 10px;
-            border: 3px solid #333;
+            border: 3px solid var(--screen-border);
             border-radius: 5px;
             font-family: monospace;
             font-size: 16px;
@@ -44,13 +94,15 @@
 
         button {
             padding: 15px;
-            font-size: 14px;
+            font-size: 12px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             transition: all 0.2s;
             position: relative;
             font-weight: bold;
+            font-family: 'Arial', sans-serif;
+            text-align: center;
         }
 
         button:hover {
@@ -87,18 +139,79 @@
             background-color: #ffffff;
             color: black;
         }
+
+        .small-text {
+            font-size: 10px;
+        }
+
+        .function-editor {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: var(--calculator-bg);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            z-index: 1000;
+        }
+
+        .function-editor input {
+            margin: 5px 0;
+            padding: 5px;
+            width: 200px;
+        }
+
+        .function-editor button {
+            margin-top: 10px;
+        }
+
+        .graph-container {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: var(--bg-color);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            z-index: 1000;
+        }
+
+        .graph-container canvas {
+            width: 500px;
+            height: 400px;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+        }
     </style>
 </head>
-<body>
+<body data-theme="light">
+    <button class="theme-toggle" onclick="toggleTheme()">Toggle Theme</button>
+
     <div class="calculator">
+        <div class="calculator-header">
+            TI-84 Plus Silver Edition<br>
+            TEXAS INSTRUMENTS
+        </div>
         <div class="screen" id="screen">0</div>
         <div class="button-grid">
             <!-- Row 1 -->
-            <button class="gray" onclick="handleButton('Y=')">Y=</button>
-            <button class="gray" onclick="handleButton('WINDOW')">WINDOW</button>
-            <button class="gray" onclick="handleButton('ZOOM')">ZOOM</button>
-            <button class="gray" onclick="handleButton('TRACE')">TRACE</button>
-            <button class="gray" onclick="handleButton('GRAPH')">GRAPH</button>
+            <button class="gray small-text" onclick="handleButton('STAT PLOT')">STAT PLOT</button>
+            <button class="gray small-text" onclick="handleButton('F1')">F1</button>
+            <button class="gray small-text" onclick="handleButton('F2')">F2</button>
+            <button class="gray small-text" onclick="handleButton('F3')">F3</button>
+            <button class="gray small-text" onclick="handleButton('F4')">F4</button>
 
             <!-- Row 2 -->
             <button class="yellow" onclick="handleButton('2ND')">2ND</button>
@@ -157,17 +270,38 @@
             <button class="gray" onclick="handleButton('+')">+</button>
 
             <!-- Row 10 -->
-            <button class="gray" onclick="handleButton('ON')">ON</button>
+            <button class="gray small-text" onclick="handleButton('ON')">ON</button>
             <button class="black" onclick="handleButton('0')">0</button>
             <button class="black" onclick="handleButton('.')">.</button>
             <button class="black" onclick="handleButton('(-)')">(-)</button>
-            <button class="white" onclick="evaluateExpression()">ENTER</button>
+            <button class="white small-text" onclick="evaluateExpression()">ENTER</button>
         </div>
+    </div>
+
+    <div class="function-editor" id="functionEditor">
+        <button class="close-btn" onclick="closeFunctionEditor()">×</button>
+        <h3>Y= Editor</h3>
+        <div>
+            <label>Y1=</label>
+            <input type="text" id="y1" placeholder="e.g., X²+2X+1">
+        </div>
+        <div>
+            <label>Y2=</label>
+            <input type="text" id="y2" placeholder="e.g., SIN(X)">
+        </div>
+        <button onclick="saveFunctions()">Save</button>
+    </div>
+
+    <div class="graph-container" id="graphContainer">
+        <button class="close-btn" onclick="closeGraph()">×</button>
+        <canvas id="graphCanvas"></canvas>
     </div>
 
     <script>
         let currentExpression = '';
         const screen = document.getElementById('screen');
+        let functions = [];
+        let chart;
 
         function handleButton(value) {
             if (value === 'ON') {
@@ -180,7 +314,16 @@
                 return;
             }
 
-            // Prevent multiple operators in a row (basic validation)
+            if (value === 'Y=') {
+                openFunctionEditor();
+                return;
+            }
+
+            if (value === 'F4') {
+                showGraph();
+                return;
+            }
+
             const lastChar = currentExpression.slice(-1);
             const operators = ['+', '-', '×', '÷', '^'];
 
@@ -204,13 +347,11 @@
 
         function evaluateExpression() {
             try {
-                // Replace calculator symbols with JavaScript operators
                 let evalExpression = currentExpression
                     .replace('×', '*')
                     .replace('÷', '/')
                     .replace('^', '**');
 
-                // Basic validation to prevent invalid expressions
                 if (!evalExpression || evalExpression.match(/[^0-9+\-*/^.()]/)) {
                     screen.textContent = "Error";
                     currentExpression = '';
@@ -226,7 +367,145 @@
             }
         }
 
-        // Add keyboard support
+        function toggleTheme() {
+            const body = document.body;
+            const currentTheme = body.getAttribute('data-theme');
+            body.setAttribute('data-theme', currentTheme === 'light' ? 'dark' : 'light');
+            if (chart) {
+                updateGraphTheme();
+            }
+        }
+
+        function openFunctionEditor() {
+            const editor = document.getElementById('functionEditor');
+            editor.style.display = 'block';
+        }
+
+        function closeFunctionEditor() {
+            const editor = document.getElementById('functionEditor');
+            editor.style.display = 'none';
+        }
+
+        function saveFunctions() {
+            const y1 = document.getElementById('y1').value;
+            const y2 = document.getElementById('y2').value;
+            functions = [];
+            if (y1) functions.push(y1);
+            if (y2) functions.push(y2);
+            closeFunctionEditor();
+            screen.textContent = "Functions saved";
+        }
+
+        function evaluateFunction(func, x) {
+            try {
+                let expression = func
+                    .replace(/X/g, x)
+                    .replace('SIN', 'Math.sin')
+                    .replace('COS', 'Math.cos')
+                    .replace('TAN', 'Math.tan')
+                    .replace('LOG', 'Math.log10')
+                    .replace('LN', 'Math.log')
+                    .replace('^', '**');
+                return eval(expression);
+            } catch (error) {
+                return null;
+            }
+        }
+
+        function showGraph() {
+            if (functions.length === 0) {
+                screen.textContent = "No functions to graph";
+                return;
+            }
+
+            const graphContainer = document.getElementById('graphContainer');
+            graphContainer.style.display = 'block';
+
+            const ctx = document.getElementById('graphCanvas').getContext('2d');
+
+            // Generate data points
+            const xValues = [];
+            const datasets = [];
+            const colors = ['#ff0000', '#0000ff'];
+
+            for (let x = -10; x <= 10; x += 0.1) {
+                xValues.push(x);
+            }
+
+            functions.forEach((func, index) => {
+                const yValues = xValues.map(x => evaluateFunction(func, x));
+                datasets.push({
+                    label: `Y${index + 1}=${func}`,
+                    data: yValues.map((y, i) => ({ x: xValues[i], y })),
+                    borderColor: colors[index],
+                    fill: false,
+                    pointRadius: 0
+                });
+            });
+
+            if (chart) {
+                chart.destroy();
+            }
+
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: xValues,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'bottom',
+                            title: {
+                                display: true,
+                                text: 'X'
+                            },
+                            grid: {
+                                color: document.body.getAttribute('data-theme') === 'dark' ? '#666' : '#ddd'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Y'
+                            },
+                            grid: {
+                                color: document.body.getAttribute('data-theme') === 'dark' ? '#666' : '#ddd'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        intersect: false
+                    }
+                }
+            });
+        }
+
+        function updateGraphTheme() {
+            if (chart) {
+                chart.options.scales.x.grid.color = document.body.getAttribute('data-theme') === 'dark' ? '#666' : '#ddd';
+                chart.options.scales.y.grid.color = document.body.getAttribute('data-theme') === 'dark' ? '#666' : '#ddd';
+                chart.update();
+            }
+        }
+
+        function closeGraph() {
+            const graphContainer = document.getElementById('graphContainer');
+            graphContainer.style.display = 'none';
+            if (chart) {
+                chart.destroy();
+            }
+        }
+
         document.addEventListener('keydown', (event) => {
             const key = event.key;
             if (key >= '0' && key <= '9' || key === '.') {

@@ -7,3 +7,11 @@ The response should contain all keys shown in the image, for example,
 
 Turn 2:
 The response must contain a UI toggle that switches the site's theme form dark to light and light to dark. For example,
+
+Turn 3:
+The response must allow the calculator's 'graph' button that opens a dynamic graph in the calculator, for example, using Chart.js
+The response should contain a graph that users can pan or zoom on, for example, using Chart.js and
+The response must implement the calculator's 'y=' button to open a list of y= equations the user can complete. For example,
+
+Turn 4:
+The response must allow the user to move the calculator around the screen when dragging on any non-button part of the calculator. For example,
