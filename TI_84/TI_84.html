@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TI-84 Calculator Simulator</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+
+        .calculator {
+            background-color: #d3d3d3;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.3);
+            width: 350px;
+        }
+
+        .screen {
+            background-color: #c0d8c0;
+            height: 80px;
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 3px solid #333;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 16px;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 5px;
+        }
+
+        button {
+            padding: 15px;
+            font-size: 14px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            font-weight: bold;
+        }
+
+        button:hover {
+            filter: brightness(90%);
+            transform: scale(1.05);
+        }
+
+        button:active {
+            transform: scale(0.95);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .gray {
+            background-color: #808080;
+            color: white;
+        }
+
+        .black {
+            background-color: #303030;
+            color: white;
+        }
+
+        .green {
+            background-color: #2ecc71;
+            color: black;
+        }
+
+        .yellow {
+            background-color: #f1c40f;
+            color: black;
+        }
+
+        .white {
+            background-color: #ffffff;
+            color: black;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <div class="screen" id="screen">0</div>
+        <div class="button-grid">
+            <!-- Row 1 -->
+            <button class="gray" onclick="handleButton('Y=')">Y=</button>
+            <button class="gray" onclick="handleButton('WINDOW')">WINDOW</button>
+            <button class="gray" onclick="handleButton('ZOOM')">ZOOM</button>
+            <button class="gray" onclick="handleButton('TRACE')">TRACE</button>
+            <button class="gray" onclick="handleButton('GRAPH')">GRAPH</button>
+
+            <!-- Row 2 -->
+            <button class="yellow" onclick="handleButton('2ND')">2ND</button>
+            <button class="gray" onclick="handleButton('MODE')">MODE</button>
+            <button class="gray" onclick="handleButton('DEL')">DEL</button>
+            <button class="green" onclick="handleButton('ALPHA')">ALPHA</button>
+            <button class="gray" onclick="handleButton('')"></button>
+
+            <!-- Row 3 -->
+            <button class="gray" onclick="handleButton('X,T,θ,n')">X,T,θ,n</button>
+            <button class="gray" onclick="handleButton('STAT')">STAT</button>
+            <button class="gray" onclick="clearScreen()">CLEAR</button>
+            <button class="gray" onclick="handleButton('')"></button>
+            <button class="gray" onclick="handleButton('')"></button>
+
+            <!-- Row 4 -->
+            <button class="gray" onclick="handleButton('MATH')">MATH</button>
+            <button class="gray" onclick="handleButton('APPS')">APPS</button>
+            <button class="gray" onclick="handleButton('PRGM')">PRGM</button>
+            <button class="gray" onclick="handleButton('VARS')">VARS</button>
+            <button class="gray" onclick="handleButton('')"></button>
+
+            <!-- Row 5 -->
+            <button class="gray" onclick="handleButton('X⁻¹')">X⁻¹</button>
+            <button class="gray" onclick="handleButton('SIN')">SIN</button>
+            <button class="gray" onclick="handleButton('COS')">COS</button>
+            <button class="gray" onclick="handleButton('TAN')">TAN</button>
+            <button class="gray" onclick="handleButton('^')">^</button>
+
+            <!-- Row 6 -->
+            <button class="gray" onclick="handleButton('X²')">X²</button>
+            <button class="gray" onclick="handleButton(',')">,</button>
+            <button class="gray" onclick="handleButton('(')">(</button>
+            <button class="gray" onclick="handleButton(')')">)</button>
+            <button class="gray" onclick="handleButton('÷')">÷</button>
+
+            <!-- Row 7 -->
+            <button class="gray" onclick="handleButton('LOG')">LOG</button>
+            <button class="black" onclick="handleButton('7')">7</button>
+            <button class="black" onclick="handleButton('8')">8</button>
+            <button class="black" onclick="handleButton('9')">9</button>
+            <button class="gray" onclick="handleButton('×')">×</button>
+
+            <!-- Row 8 -->
+            <button class="gray" onclick="handleButton('LN')">LN</button>
+            <button class="black" onclick="handleButton('4')">4</button>
+            <button class="black" onclick="handleButton('5')">5</button>
+            <button class="black" onclick="handleButton('6')">6</button>
+            <button class="gray" onclick="handleButton('-')">-</button>
+
+            <!-- Row 9 -->
+            <button class="gray" onclick="handleButton('STO→')">STO→</button>
+            <button class="black" onclick="handleButton('1')">1</button>
+            <button class="black" onclick="handleButton('2')">2</button>
+            <button class="black" onclick="handleButton('3')">3</button>
+            <button class="gray" onclick="handleButton('+')">+</button>
+
+            <!-- Row 10 -->
+            <button class="gray" onclick="handleButton('ON')">ON</button>
+            <button class="black" onclick="handleButton('0')">0</button>
+            <button class="black" onclick="handleButton('.')">.</button>
+            <button class="black" onclick="handleButton('(-)')">(-)</button>
+            <button class="white" onclick="evaluateExpression()">ENTER</button>
+        </div>
+    </div>
+
+    <script>
+        let currentExpression = '';
+        const screen = document.getElementById('screen');
+
+        function handleButton(value) {
+            if (value === 'ON') {
+                clearScreen();
+                return;
+            }
+
+            if (value === 'CLEAR') {
+                clearScreen();
+                return;
+            }
+
+            // Prevent multiple operators in a row (basic validation)
+            const lastChar = currentExpression.slice(-1);
+            const operators = ['+', '-', '×', '÷', '^'];
+
+            if (operators.includes(value) && operators.includes(lastChar)) {
+                return;
+            }
+
+            currentExpression += value;
+            updateScreen();
+        }
+
+        function clearScreen() {
+            currentExpression = '';
+            updateScreen();
+        }
+
+        function updateScreen() {
+            screen.textContent = currentExpression || '0';
+            screen.scrollLeft = screen.scrollWidth;
+        }
+
+        function evaluateExpression() {
+            try {
+                // Replace calculator symbols with JavaScript operators
+                let evalExpression = currentExpression
+                    .replace('×', '*')
+                    .replace('÷', '/')
+                    .replace('^', '**');
+
+                // Basic validation to prevent invalid expressions
+                if (!evalExpression || evalExpression.match(/[^0-9+\-*/^.()]/)) {
+                    screen.textContent = "Error";
+                    currentExpression = '';
+                    return;
+                }
+
+                const result = eval(evalExpression);
+                screen.textContent = result;
+                currentExpression = result.toString();
+            } catch (error) {
+                screen.textContent = "Error";
+                currentExpression = '';
+            }
+        }
+
+        // Add keyboard support
+        document.addEventListener('keydown', (event) => {
+            const key = event.key;
+            if (key >= '0' && key <= '9' || key === '.') {
+                handleButton(key);
+            } else if (key === '+') {
+                handleButton('+');
+            } else if (key === '-') {
+                handleButton('-');
+            } else if (key === '*') {
+                handleButton('×');
+            } else if (key === '/') {
+                handleButton('÷');
+            } else if (key === '^') {
+                handleButton('^');
+            } else if (key === 'Enter') {
+                evaluateExpression();
+            } else if (key === 'Escape') {
+                clearScreen();
+            } else if (key === 'Backspace') {
+                currentExpression = currentExpression.slice(0, -1);
+                updateScreen();
+            }
+        });
+    </script>
+</body>
+</html>

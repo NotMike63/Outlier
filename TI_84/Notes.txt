@@ -1,0 +1,9 @@
+Turn 1:
+The response must contain a calculator like the attached image, for example,
+The response must contain calculator buttons that visibly depress when the clicked, for example,
+The response must implement a live calculator screen that shows the buttons pressed, for example,
+The response must implement a hover effect over each calculator button
+The response should contain all keys shown in the image, for example,
+
+Turn 2:
+The response must contain a UI toggle that switches the site's theme form dark to light and light to dark. For example,
